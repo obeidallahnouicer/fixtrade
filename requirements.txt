@@ -33,6 +33,12 @@ pg8000==1.29.7
 # python-dateutil: Robust date parsing
 python-dateutil==2.8.2
 
+# --- NLP ---
+# transformers: HuggingFace transformer models for sentiment analysis
+transformers==4.46.3
+# torch: PyTorch backend for transformer inference
+torch==2.5.1
+
 # --- Testing ---
 # pytest: Test runner
 pytest==8.3.3
