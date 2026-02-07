@@ -1,35 +1,52 @@
 """
 Application configuration.
 
-Loads settings from environment variables and .env file.
-All configuration is centralized here — no scattered magic strings.
+Single source of truth: reads everything from .env file.
+No hardcoded values — all defaults live in .env only.
+Both the FastAPI app and the prediction module import from here.
 """
 
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class Settings(BaseSettings):
-    """Application settings loaded from environment.
+    """Application settings loaded entirely from environment / .env file."""
 
-    Attributes:
-        project_name: Display name for the API.
-        version: Current API version string.
-        debug: Enable debug mode. Must be False in production.
-        log_level: Logging level (DEBUG, INFO, WARNING, ERROR).
-        rate_limit_default: Default rate limit for all endpoints.
-        rate_limit_heavy: Rate limit for compute-heavy endpoints.
-        max_request_size_bytes: Maximum allowed request body size.
-    """
+    model_config = SettingsConfigDict(
+        env_file=".env", env_file_encoding="utf-8", extra="ignore"
+    )
 
-    model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8")
+    # --- Application ---
+    project_name: str
+    version: str
+    debug: bool
+    log_level: str
 
-    project_name: str = "FixTrade"
-    version: str = "0.1.0"
-    debug: bool = False
-    log_level: str = "INFO"
-    rate_limit_default: str = "60/minute"
-    rate_limit_heavy: str = "10/minute"
-    max_request_size_bytes: int = 1_048_576  # 1 MB
+    # --- PostgreSQL ---
+    postgres_host: str
+    postgres_port: int
+    postgres_db: str
+    postgres_user: str
+    postgres_password: str
+    database_url: str
+
+    # --- Redis ---
+    redis_host: str
+    redis_port: int
+    redis_db: int
+    redis_password: str
+    redis_url: str
+
+    # --- Data Paths ---
+    fixtrade_data_dir: str
+
+    # --- ML / Prediction ---
+    prediction_cache_ttl: int
+    model_dir: str
+
+    # --- Rate Limiting ---
+    rate_limit_default: str
+    rate_limit_heavy: str
 
 
 settings = Settings()
