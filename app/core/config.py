@@ -44,6 +44,10 @@ class Settings(BaseSettings):
     prediction_cache_ttl: int
     model_dir: str
 
+    # --- MLflow ---
+    mlflow_tracking_uri: str = "mlruns"
+    mlflow_experiment_name: str = "fixtrade-prediction"
+
     # --- Rate Limiting ---
     rate_limit_default: str
     rate_limit_heavy: str

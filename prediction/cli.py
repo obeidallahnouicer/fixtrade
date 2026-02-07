@@ -111,6 +111,25 @@ def cmd_warm_cache(args: argparse.Namespace) -> None:
     logger.info("Cache warmed for %d tickers.", warmed)
 
 
+def cmd_mlflow_ui(args: argparse.Namespace) -> None:
+    """Launch the MLflow tracking UI."""
+    import subprocess
+    from prediction.config import config
+
+    tracking_uri = config.mlflow.tracking_uri
+    port = args.port
+    logger.info("Starting MLflow UI at http://127.0.0.1:%d", port)
+    logger.info("Tracking URI: %s", tracking_uri)
+    subprocess.run(
+        [
+            sys.executable, "-m", "mlflow", "ui",
+            "--backend-store-uri", tracking_uri,
+            "--port", str(port),
+        ],
+        check=True,
+    )
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(
         description="FixTrade Prediction Module CLI"
@@ -143,6 +162,11 @@ def main() -> None:
     # Warm cache
     warm_parser = subparsers.add_parser("warm-cache", help="Pre-compute top ticker predictions")
     warm_parser.set_defaults(func=cmd_warm_cache)
+
+    # MLflow UI
+    mlflow_parser = subparsers.add_parser("mlflow-ui", help="Launch MLflow tracking dashboard")
+    mlflow_parser.add_argument("--port", type=int, default=5000, help="Port for MLflow UI (default 5000)")
+    mlflow_parser.set_defaults(func=cmd_mlflow_ui)
 
     args = parser.parse_args()
     args.func(args)

@@ -24,6 +24,7 @@ BVMT_COLUMN_MAP = {
     "SEANCE": "seance",
     "CODE": "code",
     "LIBELLE": "libelle",
+    "VALEUR": "libelle",
     "OUVERTURE": "ouverture",
     "CLOTURE": "cloture",
     "PLUS_HAUT": "plus_haut",
@@ -31,6 +32,9 @@ BVMT_COLUMN_MAP = {
     "QUANTITE_NEGOCIEE": "quantite_negociee",
     "VOLUME": "volume",
     "VARIATION": "variation",
+    "CAPITAUX": "capitaux",
+    "NB_TRANSACTION": "nb_transaction",
+    "GROUPE": "groupe",
     # Alternative column names sometimes seen in exports
     "Date": "seance",
     "Open": "ouverture",
@@ -144,6 +148,8 @@ class BVMTExtractor:
                         low_memory=False,
                     )
                     if len(df.columns) > 2:
+                        # Strip whitespace from column names (BVMT exports have trailing spaces)
+                        df.columns = df.columns.str.strip()
                         return df
                 except Exception:
                     continue

@@ -5,3 +5,15 @@ __pycache__/
 venv/
 .env.*
 .data/
+
+# Data files (raw CSVs, Medallion layers, Parquet)
+data/
+
+# MLflow tracking
+mlruns/
+
+# Trained models
+models/
+
+# Pytest cache
+.pytest_cache/

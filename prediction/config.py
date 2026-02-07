@@ -192,6 +192,18 @@ class LiquidityTierConfig:
 
 
 @dataclass(frozen=True)
+class MLflowConfig:
+    """MLflow experiment tracking settings."""
+
+    tracking_uri: str = field(default_factory=lambda: (
+        _s.mlflow_tracking_uri if (_s := _load_app_settings()) else "mlruns"
+    ))
+    experiment_name: str = field(default_factory=lambda: (
+        _s.mlflow_experiment_name if (_s := _load_app_settings()) else "fixtrade-prediction"
+    ))
+
+
+@dataclass(frozen=True)
 class PredictionConfig:
     """Top-level configuration aggregating all sub-configs."""
 
@@ -201,6 +213,7 @@ class PredictionConfig:
     model: ModelConfig = field(default_factory=ModelConfig)
     features: FeatureConfig = field(default_factory=FeatureConfig)
     liquidity: LiquidityTierConfig = field(default_factory=LiquidityTierConfig)
+    mlflow: MLflowConfig = field(default_factory=MLflowConfig)
 
     # BVMT tickers to track
     tracked_tickers: tuple[str, ...] = field(default_factory=lambda: (
