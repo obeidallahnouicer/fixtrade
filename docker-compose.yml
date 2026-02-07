@@ -19,5 +19,17 @@ services:
       timeout: 5s
       retries: 5
 
+  scraper:
+    build:
+      context: .
+    depends_on:
+      - db
+    env_file: .env
+    environment:
+      SCRAPING_POSTGRES_DSN: ${SCRAPING_POSTGRES_DSN}
+    volumes:
+      - .:/app:rw
+    command: ["scrapy", "crawl", "millim"]
+
 volumes:
   pgdata:
