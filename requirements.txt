@@ -25,6 +25,32 @@ gunicorn==23.0.0
 # Scrapy: Web scraping framework for news article collection
 scrapy==2.11.2
 
+# --- Data Processing ---
+# pandas: DataFrame operations for ETL and feature engineering
+pandas>=2.1.0
+# numpy: Numerical computing for ML pipelines
+numpy>=1.26.0
+# pyarrow: Parquet file read/write (columnar storage ~80% compression)
+pyarrow>=14.0.0
+
+# --- Machine Learning ---
+# scikit-learn: MinMaxScaler, metrics, preprocessing utilities
+scikit-learn>=1.4.0
+# xgboost: Gradient-boosted decision tree model
+xgboost>=2.0.0
+# prophet: Facebook Prophet for trend + seasonality decomposition
+prophet>=1.1.5
+# torch: PyTorch for LSTM neural network model
+torch>=2.1.0
+
+# --- Caching & Feature Store ---
+# redis: Redis client for prediction cache and feature store
+redis>=5.0.0
+
+# --- Experiment Tracking (optional) ---
+# mlflow: Model registry and experiment tracking
+# mlflow>=2.10.0
+
 # --- Testing ---
 # pytest: Test runner
 pytest==8.3.3
