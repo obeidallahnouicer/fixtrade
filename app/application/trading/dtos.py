@@ -1,0 +1,135 @@
+"""
+Data Transfer Objects for the trading application layer.
+
+DTOs carry data between the interface and application layers.
+They are plain dataclasses with no behavior.
+"""
+
+from dataclasses import dataclass
+from datetime import date
+from decimal import Decimal
+from uuid import UUID
+
+
+@dataclass(frozen=True)
+class PredictPriceCommand:
+    """Input DTO for requesting a price prediction.
+
+    Attributes:
+        symbol: BVMT stock ticker symbol.
+        horizon_days: Number of future trading days to predict (1-5).
+    """
+
+    symbol: str
+    horizon_days: int
+
+
+@dataclass(frozen=True)
+class PredictPriceResult:
+    """Output DTO for a single predicted price point.
+
+    Attributes:
+        symbol: BVMT stock ticker symbol.
+        target_date: The future date of this prediction.
+        predicted_close: Predicted closing price.
+        confidence_lower: Lower bound of the confidence interval.
+        confidence_upper: Upper bound of the confidence interval.
+    """
+
+    symbol: str
+    target_date: date
+    predicted_close: Decimal
+    confidence_lower: Decimal
+    confidence_upper: Decimal
+
+
+@dataclass(frozen=True)
+class GetSentimentQuery:
+    """Input DTO for retrieving sentiment for a symbol.
+
+    Attributes:
+        symbol: BVMT stock ticker symbol.
+        target_date: Optional specific date to query. Defaults to today.
+    """
+
+    symbol: str
+    target_date: date | None = None
+
+
+@dataclass(frozen=True)
+class SentimentResult:
+    """Output DTO for a sentiment analysis result.
+
+    Attributes:
+        symbol: BVMT stock ticker symbol.
+        date: The date this sentiment refers to.
+        score: Numeric sentiment score.
+        sentiment: Classification label (positive/negative/neutral).
+        article_count: Number of articles analyzed.
+    """
+
+    symbol: str
+    date: date
+    score: Decimal
+    sentiment: str
+    article_count: int
+
+
+@dataclass(frozen=True)
+class DetectAnomaliesQuery:
+    """Input DTO for requesting anomaly detection.
+
+    Attributes:
+        symbol: BVMT stock ticker symbol.
+    """
+
+    symbol: str
+
+
+@dataclass(frozen=True)
+class AnomalyResult:
+    """Output DTO for a detected anomaly.
+
+    Attributes:
+        id: Unique identifier of the anomaly.
+        symbol: BVMT stock ticker symbol.
+        anomaly_type: Category of anomaly (volume_spike, price_swing, etc.).
+        severity: Severity score.
+        description: Human-readable description.
+    """
+
+    id: UUID
+    symbol: str
+    anomaly_type: str
+    severity: Decimal
+    description: str
+
+
+@dataclass(frozen=True)
+class GetRecommendationQuery:
+    """Input DTO for requesting a trade recommendation.
+
+    Attributes:
+        symbol: BVMT stock ticker symbol.
+        portfolio_id: UUID of the portfolio to consider.
+    """
+
+    symbol: str
+    portfolio_id: UUID
+
+
+@dataclass(frozen=True)
+class RecommendationResult:
+    """Output DTO for a trade recommendation.
+
+    Attributes:
+        symbol: BVMT stock ticker symbol.
+        action: Recommended action (buy/sell/hold).
+        confidence: Confidence score of the recommendation.
+        reasoning: Explanation in natural language.
+    """
+
+    symbol: str
+    action: str
+    confidence: Decimal
+    reasoning: str
