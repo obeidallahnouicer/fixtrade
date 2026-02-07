@@ -1,8 +1,32 @@
-fastapi
-uvicorn[standard]
-asgiref
-gunicorn
-waitress
-pytest
-httpx
-scrapy
+# ============================================================
+# FixTrade — Python Dependencies
+# Each dependency is justified. No wildcard installs.
+# ============================================================
+
+# --- Web Framework ---
+# FastAPI: ASGI web framework for building the REST API
+fastapi==0.115.0
+# Uvicorn: ASGI server to run FastAPI in development and production
+uvicorn[standard]==0.30.6
+# Pydantic-settings: settings management via .env files (Pydantic v2)
+pydantic-settings==2.5.2
+
+# --- Security ---
+# slowapi: Rate limiting middleware for FastAPI/Starlette
+slowapi==0.1.9
+
+# --- WSGI Compatibility ---
+# asgiref: ASGI-to-WSGI bridge for legacy server deployments
+asgiref==3.8.1
+# gunicorn: Production WSGI/ASGI server
+gunicorn==23.0.0
+
+# --- Scraping ---
+# Scrapy: Web scraping framework for news article collection
+scrapy==2.11.2
+
+# --- Testing ---
+# pytest: Test runner
+pytest==8.3.3
+# httpx: Async HTTP client, required by FastAPI TestClient
+httpx==0.27.2
