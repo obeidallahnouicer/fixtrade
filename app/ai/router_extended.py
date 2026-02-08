@@ -13,11 +13,13 @@ import logging
 from typing import List, Dict, Any, Optional
 from datetime import date, datetime
 
+import numpy as np
+import pandas as pd
 from fastapi import APIRouter, HTTPException, Query, Body, Depends
 from pydantic import BaseModel, Field
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.ai.optimization import PortfolioOptimizer, CAPMCalculator
+from app.ai.optimization import PortfolioOptimizer, CAPMCalculator, OptimizationConstraints
 from app.ai.decision_engine import DecisionEngine
 from app.ai.simulator import PortfolioSimulator
 from app.ai.llm_explainer import LLMExplainer, ExplanationContext, LLMConfig
@@ -177,25 +179,35 @@ async def optimize_portfolio(request: OptimizationRequest):
     try:
         # TODO: Fetch real historical returns from database
         # Placeholder: generate synthetic returns
-        import numpy as np
         num_symbols = len(request.symbols)
-        returns = np.random.randn(250, num_symbols) * 0.02 + 0.001
+        returns_data = np.random.randn(250, num_symbols) * 0.02 + 0.001
+        returns_df = pd.DataFrame(returns_data, columns=request.symbols)
         
-        optimizer = PortfolioOptimizer(
-            returns=returns,
-            symbols=request.symbols,
-            risk_profile=RiskProfile(request.risk_profile)
-        )
+        # Create optimizer
+        optimizer = PortfolioOptimizer(risk_free_rate=0.05)
         
+        # Set constraints based on risk profile
+        risk_profile = RiskProfile(request.risk_profile)
+        if risk_profile == RiskProfile.CONSERVATIVE:
+            constraints = OptimizationConstraints(min_weight=0.0, max_weight=0.3)
+        elif risk_profile == RiskProfile.MODERATE:
+            constraints = OptimizationConstraints(min_weight=0.0, max_weight=0.4)
+        else:  # AGGRESSIVE
+            constraints = OptimizationConstraints(min_weight=0.0, max_weight=0.5)
+        
+        # Run optimization
         if request.optimization_method == "min_variance":
-            result = optimizer.minimum_variance_portfolio()
+            result = optimizer.minimum_variance_portfolio(returns_df, constraints)
         else:
-            result = optimizer.maximum_sharpe_portfolio()
+            result = optimizer.maximum_sharpe_portfolio(returns_df, constraints)
+        
+        # Convert weights array to dict mapping symbols to weights
+        weights_dict = dict(zip(request.symbols, result.weights.tolist()))
         
         return OptimizationResponse(
-            weights=result.weights,
+            weights=weights_dict,
             expected_return=result.expected_return * 100,
-            volatility=result.volatility * 100,
+            volatility=result.expected_volatility * 100,
             sharpe_ratio=result.sharpe_ratio,
             diversification_ratio=result.diversification_ratio,
             method=request.optimization_method,
@@ -216,16 +228,22 @@ async def get_efficient_frontier(request: EfficientFrontierRequest):
     """
     try:
         # TODO: Fetch real returns from database
-        import numpy as np
         num_symbols = len(request.symbols)
-        returns = np.random.randn(250, num_symbols) * 0.02 + 0.001
+        returns_data = np.random.randn(250, num_symbols) * 0.02 + 0.001
+        returns_df = pd.DataFrame(returns_data, columns=request.symbols)
         
-        optimizer = PortfolioOptimizer(
-            returns=returns,
-            symbols=request.symbols
+        # Create optimizer
+        optimizer = PortfolioOptimizer(risk_free_rate=0.05)
+        
+        # Use default constraints
+        constraints = OptimizationConstraints(min_weight=0.0, max_weight=1.0)
+        
+        # Calculate efficient frontier
+        frontier_results = optimizer.efficient_frontier(
+            returns_df, 
+            constraints,
+            n_points=request.num_points
         )
-        
-        frontier_results = optimizer.efficient_frontier(num_points=request.num_points)
         
         return EfficientFrontierResponse(
             returns=[r.expected_return * 100 for r in frontier_results],
@@ -337,18 +355,21 @@ async def get_detailed_recommendations(
         recommendations = [
             {
                 "symbol": s.symbol,
-                "decision": s.decision.value,
+                "action": s.decision.value,  # Changed from "decision" to "action"
                 "confidence": s.confidence,
                 "optimal_weight": s.optimal_weight,
+                "target_weight": s.optimal_weight,  # Added for response model
                 "current_weight": s.current_weight,
                 "weight_delta": s.weight_delta,
                 "expected_return": s.expected_return,
                 "capm_return": s.capm_return,
                 "contribution_to_risk": s.contribution_to_risk,
+                "risk_contribution": s.contribution_to_risk,  # Added for response model
                 "beta": s.beta,
                 "anomaly_detected": s.anomaly_detected,
                 "diversification_benefit": s.diversification_benefit,
-                "reasons": s.reasons
+                "reasons": s.reasons,
+                "explanation": "; ".join(s.reasons)  # Added for response model
             }
             for s in signals[:request.top_n]
         ]
