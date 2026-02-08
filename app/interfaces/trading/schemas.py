@@ -399,3 +399,77 @@ class DetectIntradayAnomaliesResponse(BaseModel):
     symbol: str
     days_scanned: int
     anomalies: list[AnomalyItem]
+
+
+# ------------------------------------------------------------------
+# Article-Symbol Linking schemas
+# ------------------------------------------------------------------
+
+
+class LinkArticleSymbolsRequest(BaseModel):
+    """Request schema for article-symbol linking endpoint.
+
+    Attributes:
+        batch_size: Number of unlinked articles to process (1-1000).
+    """
+
+    batch_size: int = Field(
+        default=200,
+        ge=1,
+        le=1000,
+        description="Maximum number of unlinked articles to scan",
+    )
+
+
+class LinkArticleSymbolsResponse(BaseModel):
+    """Response schema for article-symbol linking endpoint."""
+
+    articles_scanned: int
+    links_created: int
+    articles_with_no_match: int
+
+
+# ------------------------------------------------------------------
+# Daily Sentiment Aggregation schemas
+# ------------------------------------------------------------------
+
+
+class AggregateDailySentimentRequest(BaseModel):
+    """Request schema for daily sentiment aggregation endpoint.
+
+    Attributes:
+        symbol: Optional filter by stock symbol.
+        days_back: Number of past days to aggregate (1-365).
+    """
+
+    symbol: str | None = Field(
+        default=None,
+        min_length=SYMBOL_MIN_LEN,
+        max_length=SYMBOL_MAX_LEN,
+        description=SYMBOL_DESCRIPTION,
+    )
+    days_back: int = Field(
+        default=30,
+        ge=1,
+        le=365,
+        description="Number of past days to aggregate",
+    )
+
+
+class DailyScoreItemSchema(BaseModel):
+    """A single daily score in the aggregation response."""
+
+    symbol: str
+    score_date: date
+    score: Decimal
+    sentiment: str
+    article_count: int
+
+
+class AggregateDailySentimentResponse(BaseModel):
+    """Response schema for daily sentiment aggregation endpoint."""
+
+    symbols_processed: int
+    dates_processed: int
+    scores_upserted: int
+    scores: list[DailyScoreItemSchema]

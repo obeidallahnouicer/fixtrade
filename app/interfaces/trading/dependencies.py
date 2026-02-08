@@ -151,3 +151,35 @@ def get_detect_intraday_anomalies_use_case():
     return DetectIntradayAnomaliesUseCase(
         tick_repo=IntradayTickRepositoryAdapter(),
     )
+
+
+def get_link_article_symbols_use_case():
+    """Build LinkArticleSymbolsUseCase with its infrastructure dependencies."""
+    from app.application.trading.link_article_symbols import (
+        LinkArticleSymbolsUseCase,
+    )
+    from app.infrastructure.trading.article_symbol_repository import (
+        ArticleSymbolRepositoryAdapter,
+    )
+
+    engine = _get_db_engine()
+    return LinkArticleSymbolsUseCase(
+        article_repo=ScrapedArticleRepositoryAdapter(engine=engine),
+        symbol_repo=ArticleSymbolRepositoryAdapter(engine=engine),
+    )
+
+
+def get_aggregate_daily_sentiment_use_case():
+    """Build AggregateDailySentimentUseCase with its infrastructure dependencies."""
+    from app.application.trading.aggregate_daily_sentiment import (
+        AggregateDailySentimentUseCase,
+    )
+    from app.infrastructure.trading.sentiment_score_repository import (
+        SentimentScoreRepositoryAdapter,
+    )
+
+    engine = _get_db_engine()
+    return AggregateDailySentimentUseCase(
+        score_repo=SentimentScoreRepositoryAdapter(engine=engine),
+        db_engine=engine,
+    )

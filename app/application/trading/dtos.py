@@ -367,3 +367,67 @@ class DetectIntradayAnomaliesCommand:
 
     symbol: str
     days_back: int = 5
+
+
+# ------------------------------------------------------------------
+# Article-Symbol Linking DTOs
+# ------------------------------------------------------------------
+
+
+@dataclass(frozen=True)
+class LinkArticleSymbolsCommand:
+    """Input DTO for article-symbol linking.
+
+    Attributes:
+        batch_size: Maximum number of unlinked articles to process.
+    """
+
+    batch_size: int = 200
+
+
+@dataclass(frozen=True)
+class LinkArticleSymbolsResult:
+    """Output DTO for article-symbol linking."""
+
+    articles_scanned: int
+    links_created: int
+    articles_with_no_match: int
+
+
+# ------------------------------------------------------------------
+# Daily Sentiment Aggregation DTOs
+# ------------------------------------------------------------------
+
+
+@dataclass(frozen=True)
+class AggregateDailySentimentCommand:
+    """Input DTO for daily sentiment aggregation.
+
+    Attributes:
+        symbol: Optional filter — if set, only aggregate for this symbol.
+        days_back: Number of past days to aggregate.
+    """
+
+    symbol: str | None = None
+    days_back: int = 30
+
+
+@dataclass(frozen=True)
+class DailyScoreItem:
+    """A single aggregated daily score in the output."""
+
+    symbol: str
+    score_date: date
+    score: Decimal
+    sentiment: str
+    article_count: int
+
+
+@dataclass(frozen=True)
+class AggregateDailySentimentResult:
+    """Output DTO for daily sentiment aggregation."""
+
+    symbols_processed: int
+    dates_processed: int
+    scores_upserted: int
+    scores: list[DailyScoreItem]

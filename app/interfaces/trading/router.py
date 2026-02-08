@@ -32,10 +32,12 @@ from app.application.trading.predict_liquidity import PredictLiquidityUseCase
 from app.application.trading.predict_price import PredictPriceUseCase
 from app.application.trading.predict_volume import PredictVolumeUseCase
 from app.interfaces.trading.dependencies import (
+    get_aggregate_daily_sentiment_use_case,
     get_analyze_article_sentiment_use_case,
     get_detect_anomalies_use_case,
     get_detect_intraday_anomalies_use_case,
     get_evaluate_anomalies_use_case,
+    get_link_article_symbols_use_case,
     get_predict_liquidity_use_case,
     get_predict_price_use_case,
     get_predict_volume_use_case,
@@ -44,10 +46,13 @@ from app.interfaces.trading.dependencies import (
     get_sentiment_use_case,
 )
 from app.interfaces.trading.schemas import (
+    AggregateDailySentimentRequest,
+    AggregateDailySentimentResponse,
     AnalyzeArticleSentimentRequest,
     AnalyzeArticleSentimentResponse,
     AnomalyItem,
     ArticleSentimentItem,
+    DailyScoreItemSchema,
     DetectAnomaliesRequest,
     DetectAnomaliesResponse,
     DetectIntradayAnomaliesRequest,
@@ -59,6 +64,8 @@ from app.interfaces.trading.schemas import (
     GetRecentAnomaliesRequest,
     GetRecommendationRequest,
     GetSentimentRequest,
+    LinkArticleSymbolsRequest,
+    LinkArticleSymbolsResponse,
     PerTypeMetricsItem,
     PredictLiquidityItem,
     PredictLiquidityRequest,
@@ -402,3 +409,73 @@ def detect_intraday_anomalies(
         ],
     )
 
+
+@router.post(
+    "/sentiment/link-symbols",
+    response_model=LinkArticleSymbolsResponse,
+    responses={422: {"model": ErrorResponse}},
+    summary="Link articles to BVMT symbols",
+    description=(
+        "Scan unlinked scraped articles and match them to BVMT stock "
+        "symbols using keyword/alias matching. This must run before "
+        "daily sentiment aggregation for per-company scores."
+    ),
+)
+def link_article_symbols(
+    request: LinkArticleSymbolsRequest,
+    use_case=Depends(get_link_article_symbols_use_case),
+) -> LinkArticleSymbolsResponse:
+    """Link scraped articles to BVMT symbols via keyword matching."""
+    from app.application.trading.link_article_symbols import (
+        LinkArticleSymbolsCommand,
+    )
+
+    command = LinkArticleSymbolsCommand(batch_size=request.batch_size)
+    result = use_case.execute(command)
+    return LinkArticleSymbolsResponse(
+        articles_scanned=result.articles_scanned,
+        links_created=result.links_created,
+        articles_with_no_match=result.articles_with_no_match,
+    )
+
+
+@router.post(
+    "/sentiment/aggregate",
+    response_model=AggregateDailySentimentResponse,
+    responses={422: {"model": ErrorResponse}},
+    summary="Aggregate daily sentiment scores",
+    description=(
+        "Compute and persist the 'Score de Sentiment Quotidien' for each "
+        "BVMT symbol. Reads per-article sentiments linked via article_symbols "
+        "and writes aggregated daily scores to the sentiment_scores table."
+    ),
+)
+def aggregate_daily_sentiment(
+    request: AggregateDailySentimentRequest,
+    use_case=Depends(get_aggregate_daily_sentiment_use_case),
+) -> AggregateDailySentimentResponse:
+    """Compute daily aggregated sentiment scores per symbol."""
+    from app.application.trading.aggregate_daily_sentiment import (
+        AggregateDailySentimentCommand,
+    )
+
+    command = AggregateDailySentimentCommand(
+        symbol=request.symbol,
+        days_back=request.days_back,
+    )
+    result = use_case.execute(command)
+    return AggregateDailySentimentResponse(
+        symbols_processed=result.symbols_processed,
+        dates_processed=result.dates_processed,
+        scores_upserted=result.scores_upserted,
+        scores=[
+            DailyScoreItemSchema(
+                symbol=s.symbol,
+                score_date=s.score_date,
+                score=s.score,
+                sentiment=s.sentiment,
+                article_count=s.article_count,
+            )
+            for s in result.scores
+        ],
+    )
