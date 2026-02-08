@@ -109,6 +109,28 @@ class SentimentScore:
 
 
 @dataclass(frozen=True)
+class ScrapedArticle:
+    """A single scraped news article from the database."""
+
+    id: int
+    url: str
+    title: Optional[str]
+    summary: Optional[str]
+    content: Optional[str]
+    published_at: Optional[datetime]
+
+
+@dataclass(frozen=True)
+class ArticleSentiment:
+    """Sentiment analysis result for a single scraped article."""
+
+    article_id: int
+    sentiment_label: str
+    sentiment_score: int
+    confidence: Optional[Decimal]
+
+
+@dataclass(frozen=True)
 class AnomalyAlert:
     """An anomaly detected in market data."""
 
