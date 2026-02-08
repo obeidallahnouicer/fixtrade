@@ -400,7 +400,8 @@ python -m prediction etl
 # 2. Train with walk-forward CV (evaluate) or final production model (save)
 python -m prediction train           # walk-forward CV → prints metrics
 python -m prediction train --final   # full data → saves to models/
-
+python -m prediction train --symbol BIAT --final — trains LSTM, XGBoost, and Prophet on just BIAT data (2502 rows, ~16 seconds), saves models to BIAT
+python -m prediction predict --symbol BIAT --days 5 — loads per-symbol models, fetches features, runs ensemble inference → Close=110.365, CI=[87.938, 121.129]
 # 3. Predict
 python -m prediction predict --symbol BIAT --days 3
 
