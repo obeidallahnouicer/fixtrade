@@ -145,6 +145,87 @@ class RecommendationResponse(BaseModel):
     reasoning: str
 
 
+# ------------------------------------------------------------------
+# Volume Prediction schemas
+# ------------------------------------------------------------------
+
+
+class PredictVolumeRequest(BaseModel):
+    """Request schema for volume prediction endpoint.
+
+    Attributes:
+        symbol: BVMT stock ticker (2-10 uppercase chars).
+        horizon_days: Number of future days to predict (1-5).
+    """
+
+    symbol: str = Field(
+        ...,
+        min_length=SYMBOL_MIN_LEN,
+        max_length=SYMBOL_MAX_LEN,
+        pattern=SYMBOL_PATTERN,
+        description=SYMBOL_DESCRIPTION,
+    )
+    horizon_days: int = Field(
+        ..., ge=1, le=5, description="Prediction horizon in trading days (1-5)"
+    )
+
+
+class PredictVolumeItem(BaseModel):
+    """A single predicted volume point in the response."""
+
+    symbol: str
+    target_date: date
+    predicted_volume: int
+
+
+class PredictVolumeResponse(BaseModel):
+    """Response schema for volume prediction endpoint."""
+
+    predictions: list[PredictVolumeItem]
+
+
+# ------------------------------------------------------------------
+# Liquidity Probability schemas
+# ------------------------------------------------------------------
+
+
+class PredictLiquidityRequest(BaseModel):
+    """Request schema for liquidity probability endpoint.
+
+    Attributes:
+        symbol: BVMT stock ticker (2-10 uppercase chars).
+        horizon_days: Number of future days to predict (1-5).
+    """
+
+    symbol: str = Field(
+        ...,
+        min_length=SYMBOL_MIN_LEN,
+        max_length=SYMBOL_MAX_LEN,
+        pattern=SYMBOL_PATTERN,
+        description=SYMBOL_DESCRIPTION,
+    )
+    horizon_days: int = Field(
+        ..., ge=1, le=5, description="Prediction horizon in trading days (1-5)"
+    )
+
+
+class PredictLiquidityItem(BaseModel):
+    """A single liquidity probability forecast in the response."""
+
+    symbol: str
+    target_date: date
+    prob_low: Decimal
+    prob_medium: Decimal
+    prob_high: Decimal
+    predicted_tier: str
+
+
+class PredictLiquidityResponse(BaseModel):
+    """Response schema for liquidity probability endpoint."""
+
+    forecasts: list[PredictLiquidityItem]
+
+
 class HealthResponse(BaseModel):
     """Response schema for the health check endpoint."""
 

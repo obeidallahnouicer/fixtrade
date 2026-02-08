@@ -11,6 +11,10 @@ Implements the full inference flow:
 6. Cache result
 7. Return prediction
 
+Also supports:
+- Volume forecasting (next N trading days)
+- Liquidity probability classification (P(high/medium/low))
+
 SLA: Cache HIT < 50ms, Cache MISS < 2000ms
 """
 
@@ -24,8 +28,10 @@ import pandas as pd
 
 from prediction.config import PredictionConfig, config
 from prediction.models.ensemble import EnsemblePredictor, EnsemblePrediction
+from prediction.models.liquidity_classifier import LiquidityClassifier, LiquidityProbability
 from prediction.models.lstm import LSTMPredictor
 from prediction.models.prophet_model import ProphetPredictor
+from prediction.models.volume_predictor import VolumePredictor
 from prediction.models.xgboost_model import XGBoostPredictor
 from prediction.utils.cache import CacheClient
 
@@ -52,6 +58,43 @@ class PredictionResult:
         self.confidence_upper = Decimal(str(round(confidence_upper, 3)))
         self.model_name = model_name
         self.confidence_score = confidence_score
+
+
+class VolumeResult:
+    """Predicted daily transaction volume for one future day."""
+
+    def __init__(
+        self,
+        symbol: str,
+        target_date: date,
+        predicted_volume: float,
+    ) -> None:
+        self.symbol = symbol
+        self.target_date = target_date
+        self.predicted_volume = round(predicted_volume, 0)
+
+
+class LiquidityResult:
+    """Liquidity probability forecast for the next trading day."""
+
+    def __init__(
+        self,
+        symbol: str,
+        target_date: date,
+        prob_low: float,
+        prob_medium: float,
+        prob_high: float,
+    ) -> None:
+        self.symbol = symbol
+        self.target_date = target_date
+        self.prob_low = round(prob_low, 4)
+        self.prob_medium = round(prob_medium, 4)
+        self.prob_high = round(prob_high, 4)
+
+    @property
+    def predicted_tier(self) -> str:
+        probs = [self.prob_low, self.prob_medium, self.prob_high]
+        return ("low", "medium", "high")[int(np.argmax(probs))]
 
 
 class PredictionService:
@@ -269,6 +312,149 @@ class PredictionService:
         except Exception:
             logger.warning("Failed to load features for %s", symbol)
             return None
+
+    # ------------------------------------------------------------------
+    # Volume Prediction
+    # ------------------------------------------------------------------
+
+    def predict_volume(
+        self,
+        symbol: str,
+        horizon_days: int = 5,
+    ) -> list[VolumeResult]:
+        """Predict daily transaction volume for the next N trading days.
+
+        Args:
+            symbol: BVMT ticker symbol.
+            horizon_days: Number of future trading days (1-5).
+
+        Returns:
+            List of VolumeResult, one per future trading day.
+        """
+        features = self._get_latest_features(symbol)
+        if features is None or features.empty:
+            logger.warning("No features for volume prediction on %s.", symbol)
+            return []
+
+        from prediction.etl.transform.silver_to_gold import SilverToGoldTransformer
+        feature_cols = SilverToGoldTransformer.get_feature_columns(features)
+        X = features[feature_cols].replace([np.inf, -np.inf], np.nan).fillna(0)
+
+        vol_model = self._load_volume_model(symbol)
+        if vol_model is None:
+            logger.warning("No volume model found for %s.", symbol)
+            return []
+
+        results: list[VolumeResult] = []
+        base_date = date.today()
+
+        try:
+            preds = vol_model.predict(X)
+            # Use the last prediction for each horizon day
+            last_pred = float(preds[-1]) if len(preds) > 0 else 0.0
+
+            for day_offset in range(1, horizon_days + 1):
+                target_date = self._next_trading_day(base_date, day_offset)
+                results.append(VolumeResult(
+                    symbol=symbol,
+                    target_date=target_date,
+                    predicted_volume=last_pred,
+                ))
+        except Exception:
+            logger.exception("Volume prediction failed for %s", symbol)
+
+        return results
+
+    def _load_volume_model(self, symbol: str) -> VolumePredictor | None:
+        """Load the volume prediction model from registry."""
+        candidates: list[Path] = []
+        if symbol:
+            candidates.append(self._models_dir / "volume" / symbol.upper())
+        candidates.append(self._models_dir / "volume")
+
+        for path in candidates:
+            if path.exists() and (path / "volume_xgb_model.json").exists():
+                try:
+                    model = VolumePredictor()
+                    model.load_model(path)
+                    return model
+                except Exception:
+                    logger.warning("Failed to load volume model from %s", path)
+        return None
+
+    # ------------------------------------------------------------------
+    # Liquidity Probability
+    # ------------------------------------------------------------------
+
+    def predict_liquidity(
+        self,
+        symbol: str,
+        horizon_days: int = 5,
+    ) -> list[LiquidityResult]:
+        """Predict liquidity tier probabilities for the next N trading days.
+
+        Returns P(low), P(medium), P(high) for each future trading day.
+
+        Args:
+            symbol: BVMT ticker symbol.
+            horizon_days: Number of future trading days (1-5).
+
+        Returns:
+            List of LiquidityResult with probability vectors.
+        """
+        features = self._get_latest_features(symbol)
+        if features is None or features.empty:
+            logger.warning("No features for liquidity prediction on %s.", symbol)
+            return []
+
+        from prediction.etl.transform.silver_to_gold import SilverToGoldTransformer
+        feature_cols = SilverToGoldTransformer.get_feature_columns(features)
+        X = features[feature_cols].replace([np.inf, -np.inf], np.nan).fillna(0)
+
+        liq_model = self._load_liquidity_model(symbol)
+        if liq_model is None:
+            logger.warning("No liquidity model found for %s.", symbol)
+            return []
+
+        results: list[LiquidityResult] = []
+        base_date = date.today()
+
+        try:
+            probas = liq_model.predict_proba_tiers(X)
+            # Use the last row's probability for each horizon day
+            last_proba = probas[-1] if probas else None
+
+            if last_proba is not None:
+                for day_offset in range(1, horizon_days + 1):
+                    target_date = self._next_trading_day(base_date, day_offset)
+                    results.append(LiquidityResult(
+                        symbol=symbol,
+                        target_date=target_date,
+                        prob_low=last_proba.prob_low,
+                        prob_medium=last_proba.prob_medium,
+                        prob_high=last_proba.prob_high,
+                    ))
+        except Exception:
+            logger.exception("Liquidity prediction failed for %s", symbol)
+
+        return results
+
+    def _load_liquidity_model(self, symbol: str) -> LiquidityClassifier | None:
+        """Load the liquidity classifier from registry."""
+        candidates: list[Path] = []
+        if symbol:
+            candidates.append(self._models_dir / "liquidity" / symbol.upper())
+        candidates.append(self._models_dir / "liquidity")
+
+        for path in candidates:
+            if path.exists() and (path / "liquidity_xgb_model.json").exists():
+                try:
+                    model = LiquidityClassifier()
+                    model.load_model(path)
+                    return model
+                except Exception:
+                    logger.warning("Failed to load liquidity model from %s", path)
+        return None
 
     @staticmethod
     def _fallback_prediction(

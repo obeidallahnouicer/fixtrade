@@ -27,7 +27,12 @@ Public API
 from prediction.config import PredictionConfig, config
 from prediction.pipeline import ETLPipeline
 from prediction.training import TrainingPipeline
-from prediction.inference import PredictionService, PredictionResult
+from prediction.inference import (
+    PredictionService,
+    PredictionResult,
+    VolumeResult,
+    LiquidityResult,
+)
 
 __all__ = [
     "PredictionConfig",
@@ -36,4 +41,6 @@ __all__ = [
     "TrainingPipeline",
     "PredictionService",
     "PredictionResult",
+    "VolumeResult",
+    "LiquidityResult",
 ]
