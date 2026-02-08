@@ -14,7 +14,10 @@ class Settings(BaseSettings):
     """Application settings loaded entirely from environment / .env file."""
 
     model_config = SettingsConfigDict(
-        env_file=".env", env_file_encoding="utf-8", extra="ignore"
+        env_file=".env",
+        env_file_encoding="utf-8",
+        extra="ignore",
+        protected_namespaces=("settings_",),
     )
 
     # --- Application ---
