@@ -62,10 +62,11 @@ import re
 import unicodedata
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from typing import Any
-from unknownlabelserror import UnknownLabelError  
-from lowconfidenceerror import LowConfidenceError
 
 from transformers import pipeline  # type: ignore[import-untyped]
+
+from app.nlp.unknownlabelserror import UnknownLabelError
+from app.nlp.lowconfidenceerror import LowConfidenceError
 
 logger = logging.getLogger(__name__)
 
@@ -73,12 +74,15 @@ logger = logging.getLogger(__name__)
 # Internal constants
 # ---------------------------------------------------------------------------
 
-_MODEL_NAME: str = "jplu/tf-xlm-roberta-large"
+_MODEL_NAME: str = "cardiffnlp/twitter-xlm-roberta-base-sentiment-multilingual"
 
 _LABEL_MAP: dict[str, int] = {
     "positive": 1,
     "negative": -1,
     "neutral": 0,
+    "Positive": 1,
+    "Negative": -1,
+    "Neutral": 0,
 }
 
 _DEFAULT_MIN_CONFIDENCE: float = 0.0  # disabled by default
@@ -117,8 +121,9 @@ class SentimentAnalyzer:
     """Multilingual sentiment analyser for financial articles.
 
     Wraps the HuggingFace ``transformers`` sentiment-analysis pipeline
-    using the ``jplu/tf-xlm-roberta-large`` model so that French and
-    Arabic texts are supported out of the box.
+    using the ``cardiffnlp/twitter-xlm-roberta-base-sentiment-multilingual``
+    model (PyTorch-based XLM-RoBERTa) so that French and Arabic texts
+    are supported out of the box.
 
     Parameters
     ----------
