@@ -28,7 +28,7 @@ class PortfolioDataService:
         db: AsyncSession,
         symbols: List[str],
         lookback_days: int = 250
-    ) -> Tuple[np.ndarray, List[str]]:
+    ) -> Tuple[pd.DataFrame, List[str]]:
         """
         Fetch historical returns for assets.
         
@@ -38,8 +38,8 @@ class PortfolioDataService:
             lookback_days: Number of trading days to fetch
         
         Returns:
-            Tuple of (returns_matrix, symbols_list)
-            returns_matrix shape: (days, num_symbols)
+            Tuple of (returns_dataframe, symbols_list)
+            returns_dataframe: DataFrame with dates as index and symbols as columns
         """
         start_date = date.today() - timedelta(days=int(lookback_days * 1.5))
         
@@ -75,11 +75,17 @@ class PortfolioDataService:
         
         if not rows:
             logger.warning(f"No price data found for symbols: {symbols}")
-            # Return synthetic data as fallback
-            return np.random.randn(lookback_days, len(symbols)) * 0.02 + 0.001, symbols
+            # Return synthetic data as fallback DataFrame
+            synthetic_data = np.random.randn(lookback_days, len(symbols)) * 0.02 + 0.001
+            dates = pd.date_range(end=date.today(), periods=lookback_days, freq='D')
+            returns_df = pd.DataFrame(synthetic_data, index=dates, columns=symbols)
+            return returns_df, symbols
         
         # Convert to DataFrame for easier pivoting
         df = pd.DataFrame(rows, columns=["symbol", "trade_date", "daily_return"])
+        
+        # Convert Decimal to float to avoid type mixing issues with pandas operations
+        df["daily_return"] = df["daily_return"].astype(float)
         
         # Pivot to matrix format
         returns_df = df.pivot(index="trade_date", columns="symbol", values="daily_return")
@@ -90,21 +96,21 @@ class PortfolioDataService:
         # Get symbols that actually have data
         available_symbols = returns_df.columns.tolist()
         
-        # Take last N days
-        returns_matrix = returns_df.tail(lookback_days).values
+        # Take last N days and return as DataFrame
+        returns_df = returns_df.tail(lookback_days)
         
         logger.info(
             f"Fetched returns for {len(available_symbols)} symbols, "
-            f"{returns_matrix.shape[0]} days"
+            f"{len(returns_df)} days"
         )
         
-        return returns_matrix, available_symbols
+        return returns_df, available_symbols
     
     @staticmethod
     async def fetch_market_returns(
         db: AsyncSession,
         lookback_days: int = 250
-    ) -> np.ndarray:
+    ) -> pd.Series:
         """
         Fetch market index (TUNINDEX) returns.
         
@@ -113,7 +119,7 @@ class PortfolioDataService:
             lookback_days: Number of trading days
         
         Returns:
-            Array of market returns, shape: (days,)
+            Series of market returns indexed by date
         """
         start_date = date.today() - timedelta(days=int(lookback_days * 1.5))
         
@@ -144,10 +150,17 @@ class PortfolioDataService:
         
         if not rows:
             logger.warning("No market data found, using synthetic returns")
-            return np.random.randn(lookback_days) * 0.015 + 0.0008
+            dates = pd.date_range(end=date.today(), periods=lookback_days, freq='D')
+            synthetic_returns = np.random.randn(lookback_days) * 0.015 + 0.0008
+            return pd.Series(synthetic_returns, index=dates)
         
         df = pd.DataFrame(rows, columns=["trade_date", "market_return"])
-        market_returns = df["market_return"].tail(lookback_days).values
+        df = df.set_index("trade_date")
+        
+        # Convert Decimal to float to avoid type mixing issues with pandas operations
+        df["market_return"] = df["market_return"].astype(float)
+        
+        market_returns = df["market_return"].tail(lookback_days)
         
         logger.info(f"Fetched {len(market_returns)} days of market returns")
         
