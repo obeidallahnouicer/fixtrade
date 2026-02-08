@@ -9,12 +9,16 @@ Error mapping is handled by centralized error handlers.
 from fastapi import APIRouter, Depends
 
 from app.application.trading.dtos import (
+    AnalyzeArticleSentimentCommand,
     DetectAnomaliesQuery,
     GetRecommendationQuery,
     GetSentimentQuery,
     PredictLiquidityCommand,
     PredictPriceCommand,
     PredictVolumeCommand,
+)
+from app.application.trading.analyze_article_sentiment import (
+    AnalyzeArticleSentimentUseCase,
 )
 from app.application.trading.detect_anomalies import DetectAnomaliesUseCase
 from app.application.trading.get_recommendation import GetRecommendationUseCase
@@ -23,6 +27,7 @@ from app.application.trading.predict_liquidity import PredictLiquidityUseCase
 from app.application.trading.predict_price import PredictPriceUseCase
 from app.application.trading.predict_volume import PredictVolumeUseCase
 from app.interfaces.trading.dependencies import (
+    get_analyze_article_sentiment_use_case,
     get_detect_anomalies_use_case,
     get_predict_liquidity_use_case,
     get_predict_price_use_case,
@@ -31,7 +36,10 @@ from app.interfaces.trading.dependencies import (
     get_sentiment_use_case,
 )
 from app.interfaces.trading.schemas import (
+    AnalyzeArticleSentimentRequest,
+    AnalyzeArticleSentimentResponse,
     AnomalyItem,
+    ArticleSentimentItem,
     DetectAnomaliesRequest,
     DetectAnomaliesResponse,
     ErrorResponse,
@@ -222,3 +230,38 @@ def predict_liquidity(
             for r in results
         ]
     )
+
+
+@router.post(
+    "/sentiment/analyze",
+    response_model=AnalyzeArticleSentimentResponse,
+    responses={422: {"model": ErrorResponse}},
+    summary="Analyze article sentiment",
+    description="Run NLP sentiment analysis on unanalyzed scraped articles.",
+)
+def analyze_article_sentiment(
+    request: AnalyzeArticleSentimentRequest,
+    use_case: AnalyzeArticleSentimentUseCase = Depends(
+        get_analyze_article_sentiment_use_case
+    ),
+) -> AnalyzeArticleSentimentResponse:
+    """Analyze sentiment of unanalyzed articles."""
+    command = AnalyzeArticleSentimentCommand(batch_size=request.batch_size)
+    result = use_case.execute(command)
+    return AnalyzeArticleSentimentResponse(
+        total_analyzed=result.total_analyzed,
+        positive_count=result.positive_count,
+        negative_count=result.negative_count,
+        neutral_count=result.neutral_count,
+        failed_count=result.failed_count,
+        results=[
+            ArticleSentimentItem(
+                article_id=r.article_id,
+                sentiment_label=r.sentiment_label,
+                sentiment_score=r.sentiment_score,
+                confidence=r.confidence,
+            )
+            for r in result.results
+        ],
+    )
+
