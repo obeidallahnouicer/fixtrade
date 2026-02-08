@@ -65,8 +65,10 @@ services:
   scraper:
     build:
       context: .
+      dockerfile: docker/Dockerfile
     depends_on:
-      - db
+      postgres:
+        condition: service_healthy
     env_file: .env
     environment:
       SCRAPING_POSTGRES_DSN: ${SCRAPING_POSTGRES_DSN}
