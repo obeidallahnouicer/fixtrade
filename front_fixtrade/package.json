@@ -1,0 +1,23 @@
+{
+  "name": "fixtrade-dashboard",
+  "version": "1.0.0",
+  "description": "Tunisian Stock Market Dashboard",
+  "scripts": {
+    "dev:server": "npm run dev --prefix server",
+    "dev:client": "npm run dev --prefix client",
+    "dev": "concurrently \"npm run dev:server\" \"npm run dev:client\"",
+    "build": "npm run build --prefix client",
+    "start:server": "npm start --prefix server"
+  },
+  "keywords": [
+    "stock",
+    "dashboard",
+    "react",
+    "bvmt"
+  ],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "concurrently": "^9.2.1"
+  }
+}
