@@ -1,9 +1,11 @@
 __pycache__/
 *.pyc
+
+# Virtual envs
 .env
+.env.*
 .venv/
 venv/
-.env.*
 .data/
 
 # Data files (raw CSVs, Medallion layers, Parquet)
@@ -23,3 +25,11 @@ results/
 
 # Pytest cache
 .pytest_cache/
+
+# Database / runtime
+pgdata/
+*.sqlite
+
+# IDE / editor
+.vscode/
+.idea/
