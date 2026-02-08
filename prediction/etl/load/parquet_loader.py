@@ -69,6 +69,9 @@ class ParquetLoader:
     def load_layer(self, layer: str) -> pd.DataFrame:
         """Load all data from a Medallion layer.
 
+        Reconstructs partition columns (e.g. ``code``) from the
+        Hive-style directory structure ``col=value/``.
+
         Args:
             layer: One of 'bronze', 'silver', 'gold'.
 
@@ -84,7 +87,19 @@ class ParquetLoader:
         if not parquet_files:
             return pd.DataFrame()
 
-        frames = [pd.read_parquet(f) for f in parquet_files]
+        frames: list[pd.DataFrame] = []
+        for pf in parquet_files:
+            df = pd.read_parquet(pf)
+            # Reconstruct partition columns from Hive-style path parts
+            # e.g. .../silver/code=BIAT/data.parquet → code="BIAT"
+            rel = pf.relative_to(layer_path)
+            for part in rel.parts[:-1]:  # skip the filename
+                if "=" in part:
+                    col, val = part.split("=", 1)
+                    if col not in df.columns:
+                        df[col] = val
+            frames.append(df)
+
         return pd.concat(frames, ignore_index=True)
 
     def get_watermark(self, layer: str) -> date | None:
