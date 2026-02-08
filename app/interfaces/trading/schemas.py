@@ -238,3 +238,44 @@ class ErrorResponse(BaseModel):
 
     error: str
     detail: str | None = None
+
+
+# ------------------------------------------------------------------
+# Article Sentiment Analysis
+# ------------------------------------------------------------------
+
+
+class AnalyzeArticleSentimentRequest(BaseModel):
+    """Request schema for triggering article sentiment analysis.
+
+    Attributes:
+        batch_size: Number of articles to process (1-200).
+    """
+
+    batch_size: int = Field(
+        default=50,
+        ge=1,
+        le=200,
+        description="Maximum number of unanalyzed articles to process",
+    )
+
+
+class ArticleSentimentItem(BaseModel):
+    """A single article sentiment result."""
+
+    article_id: int
+    sentiment_label: str
+    sentiment_score: int
+    confidence: Decimal | None
+
+
+class AnalyzeArticleSentimentResponse(BaseModel):
+    """Response schema for article sentiment analysis endpoint."""
+
+    total_analyzed: int
+    positive_count: int
+    negative_count: int
+    neutral_count: int
+    failed_count: int
+    results: list[ArticleSentimentItem]
+
