@@ -12,5 +12,5 @@ class UnknownLabelError(ValueError):
         super().__init__(
             f"Model returned unknown sentiment label '{label}' "
             f"(confidence={confidence:.4f}).  Expected one of: "
-            f"{', '.join(sorted(_LABEL_MAP))}."
+            f"positive, negative, neutral."
         )
