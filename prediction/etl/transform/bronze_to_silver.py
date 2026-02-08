@@ -25,7 +25,7 @@ VALIDATION_RULES = {
     "cloture_positive": lambda df: df["cloture"] > 0,
     "high_gte_low": lambda df: df["plus_haut"] >= df["plus_bas"],
     "volume_non_negative": lambda df: df["quantite_negociee"] >= 0,
-    "no_future_dates": lambda df: pd.to_datetime(df["seance"]).dt.date <= date.today(),
+    "no_future_dates": lambda df: df["seance"].dt.date <= date.today(),
 }
 
 
@@ -103,14 +103,15 @@ class BronzeToSilverTransformer:
         if bronze_df.empty:
             return bronze_df
 
-        # Step 1: Validate
-        valid_df, _ = self._checker.validate(bronze_df)
+        # Step 1: Type coercion (must happen before validation so rules
+        #         operate on numeric / datetime values, not raw strings)
+        coerced_df = self._coerce_types(bronze_df)
 
-        # Step 2: Type coercion
-        silver_df = self._coerce_types(valid_df)
+        # Step 2: Validate
+        valid_df, _ = self._checker.validate(coerced_df)
 
         # Step 3: Handle missing values
-        silver_df = self._handle_nulls(silver_df)
+        silver_df = self._handle_nulls(valid_df)
 
         # Step 4: Sort by code and date
         silver_df = silver_df.sort_values(
@@ -124,7 +125,15 @@ class BronzeToSilverTransformer:
     def _coerce_types(df: pd.DataFrame) -> pd.DataFrame:
         """Ensure correct dtypes for all columns."""
         df = df.copy()
-        df["seance"] = pd.to_datetime(df["seance"])
+
+        # Parse dates — dayfirst=True because BVMT uses DD/MM/YYYY.
+        # errors="coerce" turns unparseable values (e.g. leaked headers) into NaT,
+        # which are then dropped along with other nulls downstream.
+        df["seance"] = pd.to_datetime(
+            df["seance"], dayfirst=True, format="mixed", errors="coerce"
+        )
+        df = df.dropna(subset=["seance"]).reset_index(drop=True)
+
         numeric_cols = ["ouverture", "cloture", "plus_haut", "plus_bas"]
         for col in numeric_cols:
             if col in df.columns:
