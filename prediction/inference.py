@@ -52,6 +52,16 @@ class PredictionResult:
         model_name: str = "ensemble",
         confidence_score: float = 0.0,
     ) -> None:
+        import math
+        
+        # Handle NaN values - replace with 0
+        if math.isnan(predicted_close) or math.isinf(predicted_close):
+            predicted_close = 0.0
+        if math.isnan(confidence_lower) or math.isinf(confidence_lower):
+            confidence_lower = 0.0
+        if math.isnan(confidence_upper) or math.isinf(confidence_upper):
+            confidence_upper = 0.0
+            
         self.symbol = symbol
         self.target_date = target_date
         self.predicted_close = Decimal(str(round(predicted_close, 3)))
