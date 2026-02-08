@@ -304,3 +304,65 @@ class AnalyzeArticleSentimentResponse(BaseModel):
     failed_count: int
     results: list[ArticleSentimentItem]
 
+
+# ------------------------------------------------------------------
+# Anomaly Evaluation schemas
+# ------------------------------------------------------------------
+
+
+class EvaluateAnomaliesRequest(BaseModel):
+    """Request schema for anomaly detection evaluation/backtesting.
+
+    Attributes:
+        symbol: BVMT stock ticker (2-10 uppercase chars).
+        days_back: Number of historical days for backtesting (30-365).
+        date_tolerance_days: Matching tolerance in days (0-5).
+    """
+
+    symbol: str = Field(
+        ...,
+        min_length=SYMBOL_MIN_LEN,
+        max_length=SYMBOL_MAX_LEN,
+        pattern=SYMBOL_PATTERN,
+        description=SYMBOL_DESCRIPTION,
+    )
+    days_back: int = Field(
+        default=90, ge=30, le=365,
+        description="Number of historical days for backtesting",
+    )
+    date_tolerance_days: int = Field(
+        default=1, ge=0, le=5,
+        description="Days of tolerance when matching anomalies (±N)",
+    )
+
+
+class EvaluationMetricsItem(BaseModel):
+    """Overall evaluation metrics."""
+
+    precision: float
+    recall: float
+    f1_score: float
+    true_positives: int
+    false_positives: int
+    false_negatives: int
+    support: int
+
+
+class PerTypeMetricsItem(BaseModel):
+    """Per anomaly-type metrics."""
+
+    anomaly_type: str
+    precision: float
+    recall: float
+    f1_score: float
+    support: int
+
+
+class EvaluateAnomaliesResponse(BaseModel):
+    """Response schema for anomaly evaluation endpoint."""
+
+    symbol: str
+    total_detected: int
+    total_known: int
+    overall: EvaluationMetricsItem
+    per_type: list[PerTypeMetricsItem]

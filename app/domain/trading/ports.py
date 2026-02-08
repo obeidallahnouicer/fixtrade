@@ -14,6 +14,7 @@ from uuid import UUID
 from app.domain.trading.entities import (
     AnomalyAlert,
     ArticleSentiment,
+    IntradayTick,
     LiquidityForecast,
     Portfolio,
     PricePrediction,
@@ -34,6 +35,52 @@ class StockPriceRepository(ABC):
     ) -> list[StockPrice]:
         """Return OHLCV history for a symbol within the date range."""
         # TODO: implement in infrastructure adapter
+        raise NotImplementedError
+
+
+class IntradayTickRepository(ABC):
+    """Port for retrieving and persisting intraday tick data.
+
+    Supports 1-minute bars and raw tick-by-tick records for
+    high-frequency anomaly detection.
+    """
+
+    @abstractmethod
+    def get_ticks(
+        self,
+        symbol: str,
+        start: datetime,
+        end: datetime,
+        tick_type: str = "1min",
+    ) -> list[IntradayTick]:
+        """Return intraday ticks for a symbol within the datetime range.
+
+        Args:
+            symbol: BVMT stock ticker.
+            start: Start datetime (inclusive).
+            end: End datetime (inclusive).
+            tick_type: Filter by tick type ("1min" or "tick").
+
+        Returns:
+            List of IntradayTick ordered by timestamp ascending.
+        """
+        raise NotImplementedError
+
+    @abstractmethod
+    def save_batch(self, ticks: list[IntradayTick]) -> int:
+        """Persist a batch of intraday ticks.
+
+        Args:
+            ticks: List of IntradayTick entities.
+
+        Returns:
+            Number of rows inserted (duplicates ignored).
+        """
+        raise NotImplementedError
+
+    @abstractmethod
+    def get_symbols_with_data(self, since: datetime) -> list[str]:
+        """Return symbols that have intraday data since a given datetime."""
         raise NotImplementedError
 
 

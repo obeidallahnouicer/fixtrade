@@ -11,6 +11,7 @@ from fastapi import APIRouter, Depends
 from app.application.trading.dtos import (
     AnalyzeArticleSentimentCommand,
     DetectAnomaliesQuery,
+    EvaluateAnomaliesCommand,
     GetRecentAnomaliesQuery,
     GetRecommendationQuery,
     GetSentimentQuery,
@@ -22,6 +23,7 @@ from app.application.trading.analyze_article_sentiment import (
     AnalyzeArticleSentimentUseCase,
 )
 from app.application.trading.detect_anomalies import DetectAnomaliesUseCase
+from app.application.trading.evaluate_anomalies import EvaluateAnomaliesUseCase
 from app.application.trading.get_recent_anomalies import GetRecentAnomaliesUseCase
 from app.application.trading.get_recommendation import GetRecommendationUseCase
 from app.application.trading.get_sentiment import GetSentimentUseCase
@@ -31,6 +33,7 @@ from app.application.trading.predict_volume import PredictVolumeUseCase
 from app.interfaces.trading.dependencies import (
     get_analyze_article_sentiment_use_case,
     get_detect_anomalies_use_case,
+    get_evaluate_anomalies_use_case,
     get_predict_liquidity_use_case,
     get_predict_price_use_case,
     get_predict_volume_use_case,
@@ -46,9 +49,13 @@ from app.interfaces.trading.schemas import (
     DetectAnomaliesRequest,
     DetectAnomaliesResponse,
     ErrorResponse,
+    EvaluateAnomaliesRequest,
+    EvaluateAnomaliesResponse,
+    EvaluationMetricsItem,
     GetRecentAnomaliesRequest,
     GetRecommendationRequest,
     GetSentimentRequest,
+    PerTypeMetricsItem,
     PredictLiquidityItem,
     PredictLiquidityRequest,
     PredictLiquidityResponse,
@@ -302,6 +309,54 @@ def analyze_article_sentiment(
                 confidence=r.confidence,
             )
             for r in result.results
+        ],
+    )
+
+
+@router.post(
+    "/anomalies/evaluate",
+    response_model=EvaluateAnomaliesResponse,
+    responses={422: {"model": ErrorResponse}},
+    summary="Evaluate anomaly detection performance",
+    description=(
+        "Backtest anomaly detection on historical data. "
+        "Computes Precision, Recall, and F1-Score against "
+        "statistically-generated ground-truth labels."
+    ),
+)
+def evaluate_anomalies(
+    request: EvaluateAnomaliesRequest,
+    use_case: EvaluateAnomaliesUseCase = Depends(get_evaluate_anomalies_use_case),
+) -> EvaluateAnomaliesResponse:
+    """Evaluate anomaly detection Precision/Recall/F1 on historical data."""
+    command = EvaluateAnomaliesCommand(
+        symbol=request.symbol,
+        days_back=request.days_back,
+        date_tolerance_days=request.date_tolerance_days,
+    )
+    result = use_case.execute(command)
+    return EvaluateAnomaliesResponse(
+        symbol=result.symbol,
+        total_detected=result.total_detected,
+        total_known=result.total_known,
+        overall=EvaluationMetricsItem(
+            precision=result.overall.precision,
+            recall=result.overall.recall,
+            f1_score=result.overall.f1_score,
+            true_positives=result.overall.true_positives,
+            false_positives=result.overall.false_positives,
+            false_negatives=result.overall.false_negatives,
+            support=result.overall.support,
+        ),
+        per_type=[
+            PerTypeMetricsItem(
+                anomaly_type=m.anomaly_type,
+                precision=m.precision,
+                recall=m.recall,
+                f1_score=m.f1_score,
+                support=m.support,
+            )
+            for m in result.per_type
         ],
     )
 
