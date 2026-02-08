@@ -27,6 +27,7 @@ import numpy as np
 import pandas as pd
 
 from prediction.config import PredictionConfig, config
+from prediction.db_sink import DatabaseSink
 from prediction.models.ensemble import EnsemblePredictor, EnsemblePrediction
 from prediction.models.liquidity_classifier import LiquidityClassifier, LiquidityProbability
 from prediction.models.lstm import LSTMPredictor
@@ -113,6 +114,7 @@ class PredictionService:
         self._cache = cache or CacheClient(redis_url=self._cfg.redis.url)
         self._ensemble: EnsemblePredictor | None = None
         self._models_dir = self._cfg.paths.models_dir
+        self._db = DatabaseSink()
 
     def predict(
         self,
@@ -204,6 +206,9 @@ class PredictionService:
         self._cache.set_prediction(
             symbol, self._serialize_predictions(results), model
         )
+
+        # 6. Persist to database
+        self._persist_price_predictions(results)
 
         return results
 
@@ -363,6 +368,9 @@ class PredictionService:
         except Exception:
             logger.exception("Volume prediction failed for %s", symbol)
 
+        # Persist volume predictions to database
+        self._persist_volume_predictions(results)
+
         return results
 
     def _load_volume_model(self, symbol: str) -> VolumePredictor | None:
@@ -437,6 +445,9 @@ class PredictionService:
         except Exception:
             logger.exception("Liquidity prediction failed for %s", symbol)
 
+        # Persist liquidity predictions to database
+        self._persist_liquidity_predictions(results)
+
         return results
 
     def _load_liquidity_model(self, symbol: str) -> LiquidityClassifier | None:
@@ -474,6 +485,72 @@ class PredictionService:
                 confidence_score=0.0,
             ))
         return results
+
+    # ------------------------------------------------------------------
+    # Database persistence helpers
+    # ------------------------------------------------------------------
+
+    def _persist_price_predictions(self, results: list[PredictionResult]) -> None:
+        """Persist price predictions to PostgreSQL."""
+        if not results:
+            return
+        try:
+            rows = [
+                {
+                    "symbol": r.symbol,
+                    "target_date": r.target_date,
+                    "predicted_close": float(r.predicted_close),
+                    "confidence_lower": float(r.confidence_lower),
+                    "confidence_upper": float(r.confidence_upper),
+                    "confidence_score": r.confidence_score,
+                    "horizon_days": 1,
+                }
+                for r in results
+                if r.model_name != "fallback"
+            ]
+            if rows:
+                model_name = results[0].model_name
+                self._db.persist_price_predictions(rows, model_name=model_name)
+        except Exception:
+            logger.debug("DB persistence skipped for price predictions.", exc_info=True)
+
+    def _persist_volume_predictions(self, results: list["VolumeResult"]) -> None:
+        """Persist volume predictions to PostgreSQL."""
+        if not results:
+            return
+        try:
+            rows = [
+                {
+                    "symbol": r.symbol,
+                    "target_date": r.target_date,
+                    "predicted_volume": r.predicted_volume,
+                    "horizon_days": i + 1,
+                }
+                for i, r in enumerate(results)
+            ]
+            self._db.persist_volume_predictions(rows)
+        except Exception:
+            logger.debug("DB persistence skipped for volume predictions.", exc_info=True)
+
+    def _persist_liquidity_predictions(self, results: list["LiquidityResult"]) -> None:
+        """Persist liquidity predictions to PostgreSQL."""
+        if not results:
+            return
+        try:
+            rows = [
+                {
+                    "symbol": r.symbol,
+                    "target_date": r.target_date,
+                    "prob_low": r.prob_low,
+                    "prob_medium": r.prob_medium,
+                    "prob_high": r.prob_high,
+                    "predicted_tier": r.predicted_tier,
+                }
+                for r in results
+            ]
+            self._db.persist_liquidity_predictions(rows)
+        except Exception:
+            logger.debug("DB persistence skipped for liquidity predictions.", exc_info=True)
 
     @staticmethod
     def _next_trading_day(from_date: date, days_ahead: int) -> date:

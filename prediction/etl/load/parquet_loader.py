@@ -137,7 +137,14 @@ class ParquetLoader:
             part_dir = layer_path / Path(*parts)
             part_dir.mkdir(parents=True, exist_ok=True)
 
-            group.drop(columns=partition_cols, errors="ignore").to_parquet(
+            out = group.drop(columns=partition_cols, errors="ignore")
+
+            # Fix mixed-type object columns → str (avoids PyArrow errors)
+            for col in out.columns:
+                if out[col].dtype == "object":
+                    out[col] = out[col].astype(str)
+
+            out.to_parquet(
                 part_dir / "data.parquet",
                 index=False,
                 engine="pyarrow",
