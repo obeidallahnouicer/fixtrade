@@ -21,6 +21,7 @@ from app.core.config import settings
 from app.interfaces.health import router as health_router
 from app.interfaces.trading.router import router as trading_router
 from app.ai.router import router as ai_router
+from app.ai.router_extended import router as portfolio_router
 from app.shared.errors.handlers import register_error_handlers
 from app.shared.logging import configure_logging
 from app.shared.security.headers import SecurityHeadersMiddleware
@@ -118,6 +119,7 @@ def create_app() -> FastAPI:
     app.include_router(health_router, prefix="/api/v1")
     app.include_router(trading_router, prefix="/api/v1")
     app.include_router(ai_router, prefix="/api/v1")
+    app.include_router(portfolio_router, prefix="/api/v1")
 
     return app
 
