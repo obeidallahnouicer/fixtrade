@@ -114,13 +114,6 @@ def get_recent_anomalies_use_case():
 
 
 def get_recommendation_use_case() -> GetRecommendationUseCase:
-    """Build GetRecentAnomaliesUseCase with its infrastructure dependencies."""
-    return GetRecentAnomaliesUseCase(
-        alert_repo=AnomalyAlertRepositoryAdapter(),
-    )
-
-
-def get_recommendation_use_case() -> GetRecommendationUseCase:
     """Build GetRecommendationUseCase with its infrastructure dependencies."""
     return GetRecommendationUseCase(
         portfolio_repo=PortfolioRepositoryAdapter(),
