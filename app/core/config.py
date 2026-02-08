@@ -52,6 +52,16 @@ class Settings(BaseSettings):
     mlflow_tracking_uri: str = "mlruns"
     mlflow_experiment_name: str = "fixtrade-prediction"
 
+    # --- AI Agent (Groq) ---
+    groq_api_key: str = ""
+    groq_model: str = "llama-3.3-70b-versatile"
+    groq_max_tokens: int = 1024
+    groq_temperature: float = 0.7
+
+    # --- AI / Groq ---
+    groq_api_key: str = ""
+    groq_model: str = "llama-3.3-70b-versatile"
+
     # --- Rate Limiting ---
     rate_limit_default: str
     rate_limit_heavy: str
