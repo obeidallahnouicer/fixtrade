@@ -120,27 +120,27 @@ class RedisConfig:
 class ModelConfig:
     """ML model hyperparameters and training settings."""
 
-    # LSTM
-    lstm_sequence_length: int = 60
-    lstm_hidden_size: int = 128
+    # LSTM — balanced for CPU: short sequences, bigger batches, moderate capacity
+    lstm_sequence_length: int = 30
+    lstm_hidden_size: int = 64
     lstm_num_layers: int = 2
-    lstm_dropout: float = 0.2
-    lstm_learning_rate: float = 0.001
-    lstm_epochs: int = 100
-    lstm_batch_size: int = 32
-    lstm_patience: int = 10
+    lstm_dropout: float = 0.3
+    lstm_learning_rate: float = 0.002
+    lstm_epochs: int = 50
+    lstm_batch_size: int = 512
+    lstm_patience: int = 8
 
-    # XGBoost
-    xgb_n_estimators: int = 500
-    xgb_max_depth: int = 6
-    xgb_learning_rate: float = 0.05
-    xgb_subsample: float = 0.8
-    xgb_colsample_bytree: float = 0.8
+    # XGBoost — strong tree learner with regularisation
+    xgb_n_estimators: int = 400
+    xgb_max_depth: int = 7
+    xgb_learning_rate: float = 0.03
+    xgb_subsample: float = 0.85
+    xgb_colsample_bytree: float = 0.75
     xgb_early_stopping_rounds: int = 20
 
     # Prophet
-    prophet_changepoint_prior_scale: float = 0.05
-    prophet_seasonality_prior_scale: float = 10.0
+    prophet_changepoint_prior_scale: float = 0.1
+    prophet_seasonality_prior_scale: float = 5.0
     prophet_yearly_seasonality: bool = True
     prophet_weekly_seasonality: bool = True
 

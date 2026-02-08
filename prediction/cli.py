@@ -54,8 +54,18 @@ def cmd_train(args: argparse.Namespace) -> None:
     etl = ETLPipeline()
     features_df = etl._loader.load_layer("silver")
     if features_df.empty:
-        logger.error("No Silver-layer data. Run ETL first: python -m prediction.cli etl")
+        logger.error("No Silver-layer data. Run ETL first: python -m prediction etl")
         sys.exit(1)
+
+    # --top-n: keep only the N tickers with the most rows (most liquid)
+    if args.top_n and "code" in features_df.columns:
+        counts = features_df["code"].value_counts()
+        top_tickers = counts.head(args.top_n).index.tolist()
+        features_df = features_df[features_df["code"].isin(top_tickers)]
+        logger.info(
+            "Filtered to top %d tickers (%d rows): %s",
+            args.top_n, len(features_df), top_tickers[:5],
+        )
 
     trainer = TrainingPipeline()
 
@@ -149,6 +159,10 @@ def main() -> None:
     train_parser.add_argument(
         "--final", action="store_true",
         help="Train the final production model (saves to registry)",
+    )
+    train_parser.add_argument(
+        "--top-n", type=int, default=None, dest="top_n",
+        help="Train only on the top N most-traded tickers (speeds up training)",
     )
     train_parser.set_defaults(func=cmd_train)
 

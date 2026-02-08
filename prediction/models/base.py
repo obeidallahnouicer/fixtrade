@@ -154,6 +154,14 @@ class BasePredictionModel(ABC):
     @staticmethod
     def _compute_metrics(y_true: np.ndarray, y_pred: np.ndarray) -> ModelMetrics:
         """Compute standard regression + directional accuracy metrics."""
+        # Drop NaN pairs (e.g. LSTM pads first seq_len rows with NaN)
+        valid = ~(np.isnan(y_true) | np.isnan(y_pred))
+        y_true = y_true[valid]
+        y_pred = y_pred[valid]
+
+        if len(y_true) == 0:
+            return ModelMetrics()
+
         residuals = y_true - y_pred
         mae = np.mean(np.abs(residuals))
         rmse = np.sqrt(np.mean(residuals ** 2))
