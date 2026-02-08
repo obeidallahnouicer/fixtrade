@@ -94,3 +94,9 @@ httpx==0.27.2
 psycopg2-binary==2.9.11
 
 asyncpg==0.27.0
+
+# --- Streamlit Dashboard ---
+# streamlit: Interactive dashboard frontend
+streamlit>=1.31.0
+# plotly: Interactive charts and visualizations
+plotly>=5.18.0
