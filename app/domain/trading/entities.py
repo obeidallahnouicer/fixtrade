@@ -62,6 +62,42 @@ class PricePrediction:
 
 
 @dataclass(frozen=True)
+class VolumePrediction:
+    """Predicted daily transaction volume for a future trading day."""
+
+    symbol: str
+    target_date: date
+    predicted_volume: int
+
+
+@dataclass(frozen=True)
+class LiquidityForecast:
+    """Probability distribution over liquidity tiers for a future trading day.
+
+    Tiers:
+        low   — volume < 1 000
+        medium — 1 000 ≤ volume < 10 000
+        high  — volume ≥ 10 000
+    """
+
+    symbol: str
+    target_date: date
+    prob_low: Decimal
+    prob_medium: Decimal
+    prob_high: Decimal
+
+    @property
+    def predicted_tier(self) -> str:
+        """Return the tier with the highest probability."""
+        probs = [
+            (self.prob_low, "low"),
+            (self.prob_medium, "medium"),
+            (self.prob_high, "high"),
+        ]
+        return max(probs, key=lambda t: t[0])[1]
+
+
+@dataclass(frozen=True)
 class SentimentScore:
     """Aggregated daily sentiment score for a given stock."""
 
@@ -70,6 +106,28 @@ class SentimentScore:
     score: Decimal
     sentiment: Sentiment
     article_count: int
+
+
+@dataclass(frozen=True)
+class ScrapedArticle:
+    """A single scraped news article from the database."""
+
+    id: int
+    url: str
+    title: Optional[str]
+    summary: Optional[str]
+    content: Optional[str]
+    published_at: Optional[datetime]
+
+
+@dataclass(frozen=True)
+class ArticleSentiment:
+    """Sentiment analysis result for a single scraped article."""
+
+    article_id: int
+    sentiment_label: str
+    sentiment_score: int
+    confidence: Optional[Decimal]
 
 
 @dataclass(frozen=True)

@@ -211,3 +211,16 @@ class ModelMonitor:
             logger.warning(
                 "⚠️  [%s] Prediction drift detected.", report.model_name
             )
+
+    def check_retrain_needed(self) -> bool:
+        """Check if ANY tracked model needs retraining.
+
+        Scans all model names seen in the evaluation history
+        and returns True if at least one model should be retrained.
+        Used by the real-time scheduler's drift-check task.
+        """
+        model_names = {r.model_name for r in self._history}
+        for name in model_names:
+            if self.should_retrain(name):
+                return True
+        return False

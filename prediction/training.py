@@ -22,11 +22,14 @@ import numpy as np
 import pandas as pd
 
 from prediction.config import PredictionConfig, config
+from prediction.db_sink import DatabaseSink
 from prediction.etl.transform.silver_to_gold import SilverToGoldTransformer
 from prediction.models.base import BasePredictionModel, ModelMetrics
 from prediction.models.ensemble import EnsemblePredictor
+from prediction.models.liquidity_classifier import LiquidityClassifier
 from prediction.models.lstm import LSTMPredictor
 from prediction.models.prophet_model import ProphetPredictor
+from prediction.models.volume_predictor import VolumePredictor
 from prediction.models.xgboost_model import XGBoostPredictor
 from prediction.utils.metrics import ModelMonitor
 
@@ -148,6 +151,8 @@ class TrainingPipeline:
         self._monitor = ModelMonitor()
         self._models_dir = self._cfg.paths.models_dir
         self._mlflow_ok = _setup_mlflow(self._cfg)
+        self._db = DatabaseSink()
+        self._db.ensure_tables()
 
     def run(
         self,
@@ -284,6 +289,16 @@ class TrainingPipeline:
                         f"avg_{name}_r2": m.r_squared,
                     })
 
+            # ── Volume prediction training ──
+            vol_metrics = self._train_volume_cv(features_df, feature_cols)
+            if vol_metrics:
+                avg_metrics["VolumeXGB"] = vol_metrics
+
+            # ── Liquidity classification training ──
+            liq_metrics = self._train_liquidity_cv(features_df, feature_cols)
+            if liq_metrics:
+                avg_metrics["LiquidityXGB"] = liq_metrics
+
         return avg_metrics
 
     def train_final_model(
@@ -403,6 +418,10 @@ class TrainingPipeline:
             # Save to registry
             self._save_models(ensemble, symbol=symbol)
 
+            # Train and save volume + liquidity final models
+            self._train_and_save_volume_model(features_df, feature_cols, symbol)
+            self._train_and_save_liquidity_model(features_df, feature_cols, symbol)
+
             # Log model artifacts to MLflow
             if self._mlflow_ok:
                 mlflow.log_artifacts(
@@ -410,6 +429,336 @@ class TrainingPipeline:
                 )
 
         return ensemble
+
+    # ------------------------------------------------------------------
+    # Volume & Liquidity training helpers
+    # ------------------------------------------------------------------
+
+    def _train_volume_cv(
+        self,
+        features_df: pd.DataFrame,
+        feature_cols: list[str],
+    ) -> ModelMetrics | None:
+        """Train volume prediction model across CV splits.
+
+        Uses target_volume_1d as the regression target.
+        """
+        target_col = "target_volume_1d"
+
+        logger.info("=" * 60)
+        logger.info("VOLUME PREDICTION TRAINING")
+        logger.info("=" * 60)
+
+        mcfg = self._cfg.model
+        all_vol_metrics: list[ModelMetrics] = []
+
+        for split in self._cv_splits:
+            transformer = SilverToGoldTransformer(
+                train_end_year=split.train_end_year,
+                val_end_year=split.val_end_year,
+            )
+            train_df, val_df, _ = transformer.create_training_view(features_df)
+
+            # Check that targets were created (volume column may be absent)
+            if target_col not in train_df.columns:
+                logger.warning("No volume target column found. Skipping volume training.")
+                return None
+
+            if train_df.empty or val_df.empty:
+                continue
+
+            # Drop rows where volume target is NaN
+            train_df = train_df.dropna(subset=[target_col])
+            val_df = val_df.dropna(subset=[target_col])
+
+            if train_df.empty or val_df.empty:
+                continue
+
+            X_tr = train_df[feature_cols].replace([np.inf, -np.inf], np.nan).fillna(0)
+            y_tr = train_df[target_col]
+            X_vl = val_df[feature_cols].replace([np.inf, -np.inf], np.nan).fillna(0)
+            y_vl = val_df[target_col]
+
+            vol_model = VolumePredictor(
+                n_estimators=mcfg.vol_xgb_n_estimators,
+                max_depth=mcfg.vol_xgb_max_depth,
+                learning_rate=mcfg.vol_xgb_learning_rate,
+                subsample=mcfg.vol_xgb_subsample,
+                colsample_bytree=mcfg.vol_xgb_colsample_bytree,
+                early_stopping_rounds=mcfg.vol_xgb_early_stopping_rounds,
+            )
+
+            child_ctx = (
+                mlflow.start_run(
+                    run_name=f"VolumeXGB_{split.name}",
+                    nested=True,
+                )
+                if self._mlflow_ok
+                else _nullcontext()
+            )
+
+            with child_ctx:
+                try:
+                    vol_model.fit(X_tr, y_tr, X_vl, y_vl)
+                    metrics = vol_model.evaluate(X_vl, y_vl)
+                    all_vol_metrics.append(metrics)
+
+                    if self._mlflow_ok:
+                        mlflow.log_metrics({
+                            "vol_mae": metrics.mae,
+                            "vol_rmse": metrics.rmse,
+                            "vol_r2": metrics.r_squared,
+                        })
+                except Exception:
+                    logger.exception("Volume training failed on %s", split.name)
+
+        if not all_vol_metrics:
+            return None
+
+        avg = ModelMetrics(
+            mae=np.mean([m.mae for m in all_vol_metrics]),
+            rmse=np.mean([m.rmse for m in all_vol_metrics]),
+            mape=np.mean([m.mape for m in all_vol_metrics]),
+            directional_accuracy=np.mean([m.directional_accuracy for m in all_vol_metrics]),
+            r_squared=np.mean([m.r_squared for m in all_vol_metrics]),
+        )
+        logger.info("[VolumeXGB] Avg CV: %s", avg)
+
+        if self._mlflow_ok:
+            mlflow.log_metrics({
+                "avg_VolumeXGB_mae": avg.mae,
+                "avg_VolumeXGB_rmse": avg.rmse,
+                "avg_VolumeXGB_r2": avg.r_squared,
+            })
+
+        return avg
+
+    def _train_liquidity_cv(
+        self,
+        features_df: pd.DataFrame,
+        feature_cols: list[str],
+    ) -> ModelMetrics | None:
+        """Train liquidity classification model across CV splits.
+
+        Uses liquidity_label as the classification target (0/1/2).
+        """
+        target_col = "liquidity_label"
+
+        logger.info("=" * 60)
+        logger.info("LIQUIDITY CLASSIFICATION TRAINING")
+        logger.info("=" * 60)
+
+        mcfg = self._cfg.model
+        all_liq_metrics: list[ModelMetrics] = []
+
+        for split in self._cv_splits:
+            transformer = SilverToGoldTransformer(
+                train_end_year=split.train_end_year,
+                val_end_year=split.val_end_year,
+            )
+            train_df, val_df, _ = transformer.create_training_view(features_df)
+
+            # Check that labels were created (volume column may be absent)
+            if target_col not in train_df.columns:
+                logger.warning("No liquidity_label column. Skipping liquidity training.")
+                return None
+
+            if train_df.empty or val_df.empty:
+                continue
+
+            # Drop rows where liquidity label is NaN
+            train_df = train_df.dropna(subset=[target_col])
+            val_df = val_df.dropna(subset=[target_col])
+
+            if train_df.empty or val_df.empty:
+                continue
+
+            X_tr = train_df[feature_cols].replace([np.inf, -np.inf], np.nan).fillna(0)
+            y_tr = train_df[target_col]
+            X_vl = val_df[feature_cols].replace([np.inf, -np.inf], np.nan).fillna(0)
+            y_vl = val_df[target_col]
+
+            liq_model = LiquidityClassifier(
+                n_estimators=mcfg.liq_xgb_n_estimators,
+                max_depth=mcfg.liq_xgb_max_depth,
+                learning_rate=mcfg.liq_xgb_learning_rate,
+                subsample=mcfg.liq_xgb_subsample,
+                colsample_bytree=mcfg.liq_xgb_colsample_bytree,
+            )
+
+            child_ctx = (
+                mlflow.start_run(
+                    run_name=f"LiquidityXGB_{split.name}",
+                    nested=True,
+                )
+                if self._mlflow_ok
+                else _nullcontext()
+            )
+
+            with child_ctx:
+                try:
+                    liq_model.fit(X_tr, y_tr, X_vl, y_vl)
+                    metrics = liq_model.evaluate(X_vl, y_vl)
+                    all_liq_metrics.append(metrics)
+
+                    if self._mlflow_ok:
+                        mlflow.log_metrics({
+                            "liq_accuracy": metrics.directional_accuracy,
+                        })
+                except Exception:
+                    logger.exception("Liquidity training failed on %s", split.name)
+
+        if not all_liq_metrics:
+            return None
+
+        avg = ModelMetrics(
+            directional_accuracy=np.mean(
+                [m.directional_accuracy for m in all_liq_metrics]
+            ),
+        )
+        logger.info(
+            "[LiquidityXGB] Avg CV Accuracy: %.2f%%",
+            avg.directional_accuracy * 100,
+        )
+
+        if self._mlflow_ok:
+            mlflow.log_metrics({
+                "avg_LiquidityXGB_accuracy": avg.directional_accuracy,
+            })
+
+        return avg
+
+    def _train_and_save_volume_model(
+        self,
+        features_df: pd.DataFrame,
+        feature_cols: list[str],
+        symbol: str | None = None,
+    ) -> VolumePredictor | None:
+        """Train final volume model on all data and save to registry."""
+        target_col = "target_volume_1d"
+
+        max_year = pd.to_datetime(features_df["seance"]).dt.year.max()
+        transformer = SilverToGoldTransformer(
+            train_end_year=max_year - 1,
+            val_end_year=max_year,
+        )
+        train_df, val_df, _ = transformer.create_training_view(features_df)
+
+        if target_col not in train_df.columns:
+            return None
+
+        train_df = train_df.dropna(subset=[target_col])
+        val_df = val_df.dropna(subset=[target_col])
+
+        if train_df.empty:
+            return None
+        if val_df.empty:
+            all_df = train_df.sort_values("seance").reset_index(drop=True)
+            split_idx = int(len(all_df) * 0.8)
+            train_df = all_df.iloc[:split_idx]
+            val_df = all_df.iloc[split_idx:]
+
+        X_tr = train_df[feature_cols].replace([np.inf, -np.inf], np.nan).fillna(0)
+        y_tr = train_df[target_col]
+        X_vl = val_df[feature_cols].replace([np.inf, -np.inf], np.nan).fillna(0)
+        y_vl = val_df[target_col]
+
+        mcfg = self._cfg.model
+        vol_model = VolumePredictor(
+            n_estimators=mcfg.vol_xgb_n_estimators,
+            max_depth=mcfg.vol_xgb_max_depth,
+            learning_rate=mcfg.vol_xgb_learning_rate,
+        )
+        vol_model.fit(X_tr, y_tr, X_vl, y_vl)
+
+        save_dir = self._models_dir / "volume"
+        if symbol:
+            save_dir = save_dir / symbol.upper()
+        vol_model.save_model(save_dir)
+        logger.info("[VolumeXGB] Final model saved to %s", save_dir)
+
+        # Register in database
+        vol_metrics = vol_model.evaluate(X_vl, y_vl)
+        self._db.persist_model_metrics(
+            model_name="VolumeXGB",
+            ticker=symbol,
+            metrics={
+                "mae": vol_metrics.mae,
+                "rmse": vol_metrics.rmse,
+                "mape": vol_metrics.mape,
+                "directional_accuracy": vol_metrics.directional_accuracy,
+                "r_squared": vol_metrics.r_squared,
+            },
+            artifact_path=str(save_dir),
+        )
+
+        return vol_model
+
+    def _train_and_save_liquidity_model(
+        self,
+        features_df: pd.DataFrame,
+        feature_cols: list[str],
+        symbol: str | None = None,
+    ) -> LiquidityClassifier | None:
+        """Train final liquidity classifier on all data and save to registry."""
+        target_col = "liquidity_label"
+
+        max_year = pd.to_datetime(features_df["seance"]).dt.year.max()
+        transformer = SilverToGoldTransformer(
+            train_end_year=max_year - 1,
+            val_end_year=max_year,
+        )
+        train_df, val_df, _ = transformer.create_training_view(features_df)
+
+        if target_col not in train_df.columns:
+            return None
+
+        train_df = train_df.dropna(subset=[target_col])
+        val_df = val_df.dropna(subset=[target_col])
+
+        if train_df.empty:
+            return None
+        if val_df.empty:
+            all_df = train_df.sort_values("seance").reset_index(drop=True)
+            split_idx = int(len(all_df) * 0.8)
+            train_df = all_df.iloc[:split_idx]
+            val_df = all_df.iloc[split_idx:]
+
+        X_tr = train_df[feature_cols].replace([np.inf, -np.inf], np.nan).fillna(0)
+        y_tr = train_df[target_col]
+        X_vl = val_df[feature_cols].replace([np.inf, -np.inf], np.nan).fillna(0)
+        y_vl = val_df[target_col]
+
+        mcfg = self._cfg.model
+        liq_model = LiquidityClassifier(
+            n_estimators=mcfg.liq_xgb_n_estimators,
+            max_depth=mcfg.liq_xgb_max_depth,
+            learning_rate=mcfg.liq_xgb_learning_rate,
+        )
+        liq_model.fit(X_tr, y_tr, X_vl, y_vl)
+
+        save_dir = self._models_dir / "liquidity"
+        if symbol:
+            save_dir = save_dir / symbol.upper()
+        liq_model.save_model(save_dir)
+        logger.info("[LiquidityXGB] Final model saved to %s", save_dir)
+
+        # Register in database
+        liq_metrics = liq_model.evaluate(X_vl, y_vl)
+        self._db.persist_model_metrics(
+            model_name="LiquidityXGB",
+            ticker=symbol,
+            metrics={
+                "mae": getattr(liq_metrics, "mae", 0),
+                "rmse": getattr(liq_metrics, "rmse", 0),
+                "mape": getattr(liq_metrics, "mape", 0),
+                "directional_accuracy": liq_metrics.directional_accuracy,
+                "r_squared": getattr(liq_metrics, "r_squared", 0),
+            },
+            artifact_path=str(save_dir),
+        )
+
+        return liq_model
 
     # ------------------------------------------------------------------
     # Private helpers
@@ -459,6 +808,30 @@ class TrainingPipeline:
             save_path = self._models_dir / "ensemble"
         ensemble.save_model(save_path)
         logger.info("Models saved to %s", save_path)
+
+        # Register each base model in the database
+        for name, model in ensemble._models.items():
+            if model.is_fitted:
+                try:
+                    metrics = model.evaluate(
+                        ensemble._last_X_val, ensemble._last_y_val
+                    ) if hasattr(ensemble, "_last_X_val") else None
+                except Exception:
+                    metrics = None
+
+                metric_dict = {
+                    "mae": metrics.mae if metrics else 0,
+                    "rmse": metrics.rmse if metrics else 0,
+                    "mape": metrics.mape if metrics else 0,
+                    "directional_accuracy": metrics.directional_accuracy if metrics else 0,
+                    "r_squared": metrics.r_squared if metrics else 0,
+                }
+                self._db.persist_model_metrics(
+                    model_name=name,
+                    ticker=symbol,
+                    metrics=metric_dict,
+                    artifact_path=str(save_path / name),
+                )
 
     @staticmethod
     def _average_metrics(

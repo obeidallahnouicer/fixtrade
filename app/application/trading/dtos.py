@@ -6,7 +6,7 @@ They are plain dataclasses with no behavior.
 """
 
 from dataclasses import dataclass
-from datetime import date
+from datetime import date, datetime
 from decimal import Decimal
 from uuid import UUID
 
@@ -93,6 +93,7 @@ class AnomalyResult:
     Attributes:
         id: Unique identifier of the anomaly.
         symbol: BVMT stock ticker symbol.
+        detected_at: When the anomaly was detected.
         anomaly_type: Category of anomaly (volume_spike, price_swing, etc.).
         severity: Severity score.
         description: Human-readable description.
@@ -100,9 +101,25 @@ class AnomalyResult:
 
     id: UUID
     symbol: str
+    detected_at: datetime
     anomaly_type: str
     severity: Decimal
     description: str
+
+
+@dataclass(frozen=True)
+class GetRecentAnomaliesQuery:
+    """Input DTO for requesting recent anomaly alerts.
+
+    Attributes:
+        symbol: Optional filter by stock symbol.
+        limit: Maximum number of alerts to return.
+        hours_back: Number of hours to look back.
+    """
+
+    symbol: str | None = None
+    limit: int = 10
+    hours_back: int = 24
 
 
 @dataclass(frozen=True)
@@ -133,3 +150,129 @@ class RecommendationResult:
     action: str
     confidence: Decimal
     reasoning: str
+
+
+# ------------------------------------------------------------------
+# Volume Prediction DTOs
+# ------------------------------------------------------------------
+
+
+@dataclass(frozen=True)
+class PredictVolumeCommand:
+    """Input DTO for requesting a volume prediction.
+
+    Attributes:
+        symbol: BVMT stock ticker symbol.
+        horizon_days: Number of future trading days to predict (1-5).
+    """
+
+    symbol: str
+    horizon_days: int
+
+
+@dataclass(frozen=True)
+class PredictVolumeResult:
+    """Output DTO for a single predicted volume point.
+
+    Attributes:
+        symbol: BVMT stock ticker symbol.
+        target_date: The future date of this prediction.
+        predicted_volume: Predicted daily transaction volume.
+    """
+
+    symbol: str
+    target_date: date
+    predicted_volume: int
+
+
+# ------------------------------------------------------------------
+# Liquidity Probability DTOs
+# ------------------------------------------------------------------
+
+
+@dataclass(frozen=True)
+class PredictLiquidityCommand:
+    """Input DTO for requesting a liquidity probability forecast.
+
+    Attributes:
+        symbol: BVMT stock ticker symbol.
+        horizon_days: Number of future trading days to predict (1-5).
+    """
+
+    symbol: str
+    horizon_days: int
+
+
+@dataclass(frozen=True)
+class PredictLiquidityResult:
+    """Output DTO for a liquidity probability forecast.
+
+    Attributes:
+        symbol: BVMT stock ticker symbol.
+        target_date: The future date of this forecast.
+        prob_low: Probability of low liquidity (volume < 1 000).
+        prob_medium: Probability of medium liquidity (1 000 ≤ vol < 10 000).
+        prob_high: Probability of high liquidity (volume ≥ 10 000).
+        predicted_tier: The most likely liquidity tier.
+    """
+
+    symbol: str
+    target_date: date
+    prob_low: Decimal
+    prob_medium: Decimal
+    prob_high: Decimal
+    predicted_tier: str
+
+
+# ------------------------------------------------------------------
+# Article Sentiment Analysis DTOs
+# ------------------------------------------------------------------
+
+
+@dataclass(frozen=True)
+class AnalyzeArticleSentimentCommand:
+    """Input DTO for triggering sentiment analysis on unanalyzed articles.
+
+    Attributes:
+        batch_size: Maximum number of articles to process in one run.
+    """
+
+    batch_size: int = 50
+
+
+@dataclass(frozen=True)
+class ArticleSentimentResult:
+    """Output DTO for a single article's sentiment analysis.
+
+    Attributes:
+        article_id: Database ID of the scraped article.
+        sentiment_label: Classification label (positive/negative/neutral).
+        sentiment_score: Numeric score (-1, 0, 1).
+        confidence: Model confidence (0.0-1.0), if available.
+    """
+
+    article_id: int
+    sentiment_label: str
+    sentiment_score: int
+    confidence: Decimal | None
+
+
+@dataclass(frozen=True)
+class AnalyzeArticleSentimentResult:
+    """Output DTO summarizing a batch sentiment analysis run.
+
+    Attributes:
+        total_analyzed: Number of articles analyzed in this run.
+        positive_count: Number of articles classified as positive.
+        negative_count: Number of articles classified as negative.
+        neutral_count: Number of articles classified as neutral.
+        failed_count: Number of articles that failed analysis.
+        results: Per-article sentiment results.
+    """
+
+    total_analyzed: int
+    positive_count: int
+    negative_count: int
+    neutral_count: int
+    failed_count: int
+    results: list[ArticleSentimentResult]

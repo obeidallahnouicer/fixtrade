@@ -18,6 +18,7 @@ from pathlib import Path
 import pandas as pd
 
 from prediction.config import PredictionConfig, config
+from prediction.db_sink import DatabaseSink
 from prediction.etl.extract.bvmt_extractor import BVMTExtractor
 from prediction.etl.load.parquet_loader import ParquetLoader
 from prediction.etl.transform.bronze_to_silver import BronzeToSilverTransformer
@@ -48,6 +49,8 @@ class ETLPipeline:
             val_end_year=self._cfg.model.train_test_split_year,
             prediction_horizons=self._cfg.features.prediction_horizons,
         )
+        self._db = DatabaseSink()
+        self._db.ensure_tables()
 
     def run(self) -> pd.DataFrame:
         """Execute the full ETL pipeline.
@@ -103,6 +106,9 @@ class ETLPipeline:
             "Gold splits — Train: %d, Val: %d, Test: %d",
             len(train_df), len(val_df), len(test_df),
         )
+
+        # 6. Persist to PostgreSQL
+        self._persist_to_database(enriched_df, "silver")
 
         logger.info("ETL pipeline complete. %d rows ready.", len(enriched_df))
         return enriched_df
@@ -161,6 +167,9 @@ class ETLPipeline:
         )
         self._save_gold_splits(train_df, val_df, test_df)
 
+        # Persist to PostgreSQL (incremental)
+        self._persist_to_database(silver_new, "silver")
+
         logger.info(
             "Incremental ETL: %d new rows processed.", len(silver_new)
         )
@@ -197,6 +206,52 @@ class ETLPipeline:
 
         for name, split_df in [("train", train_df), ("val", val_df), ("test", test_df)]:
             if not split_df.empty:
+                out = split_df.copy()
+                # Fix mixed-type object columns → str (avoids PyArrow errors)
+                for col in out.columns:
+                    if out[col].dtype == "object":
+                        out[col] = out[col].astype(str)
                 out_path = gold_path / f"{name}.parquet"
-                split_df.to_parquet(out_path, index=False, engine="pyarrow")
-                logger.info("Saved %d rows to %s", len(split_df), out_path)
+                out.to_parquet(out_path, index=False, engine="pyarrow")
+                logger.info("Saved %d rows to %s", len(out), out_path)
+
+    def _persist_to_database(
+        self,
+        df: pd.DataFrame,
+        layer: str,
+    ) -> None:
+        """Persist transformed data to PostgreSQL.
+
+        Writes Silver-layer rows to ``stock_prices`` and records
+        ETL watermarks in ``etl_watermarks``.
+        """
+        if df.empty:
+            return
+
+        logger.info("Phase 6: DATABASE PERSISTENCE")
+
+        # 1. Upsert cleaned prices to stock_prices table
+        n_rows = self._db.persist_silver_prices(df)
+        logger.info("Database: upserted %d rows to stock_prices.", n_rows)
+
+        # 2. Record ETL watermarks per ticker
+        if "seance" in df.columns:
+            max_date = pd.to_datetime(df["seance"]).max().date()
+            total_rows = len(df)
+
+            # Global watermark
+            self._db.persist_watermark(layer, None, max_date, total_rows)
+
+            # Per-ticker watermarks
+            sym_col = None
+            for col in ("libelle", "code"):
+                if col in df.columns:
+                    sym_col = col
+                    break
+            if sym_col:
+                for ticker in df[sym_col].unique():
+                    ticker_df = df[df[sym_col] == ticker]
+                    ticker_max = pd.to_datetime(ticker_df["seance"]).max().date()
+                    self._db.persist_watermark(
+                        layer, str(ticker), ticker_max, len(ticker_df)
+                    )

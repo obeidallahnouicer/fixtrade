@@ -149,6 +149,21 @@ class ModelConfig:
     ensemble_xgb_weight: float = 0.35
     ensemble_prophet_weight: float = 0.20
 
+    # Volume prediction (XGBoost regressor)
+    vol_xgb_n_estimators: int = 300
+    vol_xgb_max_depth: int = 6
+    vol_xgb_learning_rate: float = 0.05
+    vol_xgb_subsample: float = 0.85
+    vol_xgb_colsample_bytree: float = 0.75
+    vol_xgb_early_stopping_rounds: int = 20
+
+    # Liquidity classifier (XGBoost multi-class)
+    liq_xgb_n_estimators: int = 250
+    liq_xgb_max_depth: int = 5
+    liq_xgb_learning_rate: float = 0.05
+    liq_xgb_subsample: float = 0.85
+    liq_xgb_colsample_bytree: float = 0.75
+
     # Training
     train_test_split_year: int = 2025
     validation_year: int = 2024
@@ -180,6 +195,9 @@ class FeatureConfig:
 
     # Target horizons (days ahead)
     prediction_horizons: tuple[int, ...] = (1, 2, 3, 5)
+
+    # Volume target horizons (days ahead)
+    volume_prediction_horizons: tuple[int, ...] = (1, 2, 3, 5)
 
 
 @dataclass(frozen=True)

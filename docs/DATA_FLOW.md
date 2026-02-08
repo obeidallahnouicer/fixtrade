@@ -203,6 +203,8 @@ momentum_5d       : 0.015       ← lag (1.5% up over 5 days)
 
 For each prediction horizon *h* ∈ {1, 2, 3, 5} days:
 
+#### Price targets
+
 ```
 target_hd[row i] = cloture[row i + h]   (using .shift(-h) within each ticker)
 ```
@@ -214,7 +216,28 @@ target_hd[row i] = cloture[row i + h]   (using .shift(-h) within each ticker)
 | …    | …       | …         | …         | …         | …         |
 | last | 99.20   | NaN       | NaN       | NaN       | NaN       |
 
-Rows with NaN targets (end of each ticker's series) → dropped from training.
+#### Volume targets
+
+```
+target_volume_hd[row i] = quantite_negociee[row i + h]
+```
+
+| Row  | quantite_negociee | target_volume_1d | target_volume_5d |
+|------|-------------------|------------------|------------------|
+| i    | 12345             | 8901             | 15432            |
+| i+1  | 8901              | 7654             | 11200            |
+
+#### Liquidity label (classification target)
+
+Based on **next-day volume** (`.shift(-1)` of `quantite_negociee`):
+
+| Tier   | Condition                  | Label |
+|--------|----------------------------|-------|
+| Low    | next-day volume < 1,000    | 0     |
+| Medium | 1,000 ≤ volume < 10,000    | 1     |
+| High   | volume ≥ 10,000            | 2     |
+
+Rows with NaN **price** targets (end of each ticker's series) → dropped from training. Volume/liquidity NaN rows are handled separately.
 
 ### Chronological splits (no shuffling — ever)
 
@@ -284,7 +307,31 @@ After 3 CV splits → **average metrics** across splits for each model.
 
 ### Final model training
 
-`python -m prediction train --final` trains on **all available data** and saves the ensemble to `models/`.
+`python -m prediction train --final` trains on **all available data** and saves:
+- **Ensemble** (LSTM + XGBoost + Prophet) → `models/ensemble/`
+- **Volume predictor** (XGBoost regressor with log1p transform) → `models/volume/`
+- **Liquidity classifier** (XGBoost multi-class, 3 tiers) → `models/liquidity/`
+
+### Model 4: VolumePredictor (XGBoost)
+
+**Code**: `prediction/models/volume_predictor.py`
+
+```
+Input: flat feature row → XGBRegressor (300 trees, depth=6, lr=0.05)
+Target: log1p(next-day volume) — inverse-transformed at prediction time via expm1()
+Best for: estimating daily transaction volume (heavily skewed distribution → log transform)
+```
+
+### Model 5: LiquidityClassifier (XGBoost)
+
+**Code**: `prediction/models/liquidity_classifier.py`
+
+```
+Input: flat feature row → XGBClassifier (250 trees, depth=5, lr=0.05, objective=multi:softprob)
+Output: P(low), P(medium), P(high) — probability vector for 3 liquidity tiers
+Metric: Classification accuracy (~93.8% on walk-forward CV)
+Best for: predicting next-day liquidity regime to guide trading decisions
+```
 
 ---
 
@@ -400,14 +447,98 @@ python -m prediction etl
 # 2. Train with walk-forward CV (evaluate) or final production model (save)
 python -m prediction train           # walk-forward CV → prints metrics
 python -m prediction train --final   # full data → saves to models/
-python -m prediction train --symbol BIAT --final — trains LSTM, XGBoost, and Prophet on just BIAT data (2502 rows, ~16 seconds), saves models to BIAT
-python -m prediction predict --symbol BIAT --days 5 — loads per-symbol models, fetches features, runs ensemble inference → Close=110.365, CI=[87.938, 121.129]
+python -m prediction train --symbol BIAT --final   # single-ticker training
+
 # 3. Predict
 python -m prediction predict --symbol BIAT --days 3
+python -m prediction predict-volume --symbol BIAT --days 5
+python -m prediction predict-liquidity --symbol BIAT --days 5
 
 # 4. Pre-warm cache for top tickers (run daily at 8 AM)
 python -m prediction warm-cache
+
+# 5. Real-time pipeline (see next section)
+python -m prediction scheduler                  # start automated scheduler
+python -m prediction scheduler --run etl        # run a single task and exit
+python -m prediction watch                      # watch data/raw for new CSVs
+python -m prediction watch --auto-retrain       # + auto-retrain on new data
+python -m prediction stream --port 8000         # start WebSocket/SSE server
 ```
+
+---
+
+## Real-Time Prediction Pipeline
+
+**Code**: `prediction/realtime/` → `RealtimeScheduler`, `PredictionStreamManager`, `DataWatcher`
+
+### Architecture
+
+```
+ ┌──────────────┐   ┌───────────────┐   ┌───────────────────┐
+ │  DataWatcher │   │   Scheduler   │   │  Stream Manager   │
+ │  (polling)   │──▶│  (APScheduler │──▶│  (WebSocket/SSE)  │
+ │  data/raw/   │   │   or thread)  │   │  broadcast to     │
+ └──────────────┘   └───────┬───────┘   │  connected clients│
+                            │           └───────────────────┘
+              ┌─────────────┼─────────────────┐
+              ▼             ▼                 ▼
+        ┌──────────┐  ┌──────────┐   ┌──────────────┐
+        │   ETL    │  │ Retrain  │   │  Refresh     │
+        │ (incr.)  │  │ (weekly) │   │  Predictions │
+        └──────────┘  └──────────┘   │  + Broadcast │
+                                     └──────────────┘
+```
+
+### Scheduled Tasks (APScheduler with Africa/Tunis timezone)
+
+| Task                    | Schedule                | What it does                             |
+|-------------------------|-------------------------|------------------------------------------|
+| Pre-market cache warm   | Mon–Fri 08:00           | Warm Redis cache for top 10 tickers       |
+| Post-market ETL         | Mon–Fri 15:30           | Incremental ETL for the day's data        |
+| Prediction refresh      | Mon–Fri 16:00           | Regenerate predictions + broadcast via WS |
+| Weekly retrain          | Sunday 02:00            | Full model retraining on latest data      |
+| Drift check             | Every 6 hours           | Model drift detection → auto-retrain      |
+
+### WebSocket Protocol
+
+Endpoint: `ws://host/api/v1/realtime/ws/predictions`
+
+```json
+// Client → Server: subscribe to specific tickers
+{"action": "subscribe", "symbols": ["BIAT", "SFBT"]}
+
+// Client → Server: ping
+{"action": "ping"}
+
+// Server → Client: new prediction
+{"event": "prediction", "symbol": "BIAT", "data": {"predictions": [...]}, "timestamp": "..."}
+
+// Server → Client: system event (ETL complete, retrain finished)
+{"event": "task_completed", "symbol": null, "data": {"task": "retrain", "duration_seconds": 45.2}}
+```
+
+### SSE Endpoint
+
+`GET /api/v1/realtime/stream/predictions?symbols=BIAT,SFBT`
+
+Returns `text/event-stream` for clients that can't use WebSocket (curl, dashboards).
+
+### File Watcher
+
+Monitors `data/raw/` for new or modified CSV files using MD5 fingerprinting.
+When a change is detected:
+1. Triggers incremental ETL
+2. Optionally retrains models (`--auto-retrain`)
+3. Broadcasts update events to connected clients
+
+### REST Control Endpoints
+
+| Method | Endpoint                                    | Description                          |
+|--------|---------------------------------------------|--------------------------------------|
+| GET    | `/api/v1/realtime/scheduler/status`         | Scheduler state + recent task history|
+| POST   | `/api/v1/realtime/scheduler/run/{task}`     | Trigger a task on demand              |
+| GET    | `/api/v1/realtime/watcher/status`           | File watcher state + change log      |
+| GET    | `/api/v1/realtime/stream/status`            | WebSocket connection stats            |
 
 ---
 
@@ -424,6 +555,8 @@ The monitor tracks every evaluation and triggers alerts:
 | Drift detected in 3+ consecutive evals | Log warning + retrain   |
 
 **Drift detection**: If `|mean(predictions) − mean(actuals)| / |mean(actuals)| > 5%`, drift is flagged.
+
+The `RealtimeScheduler` runs a drift-check task every 6 hours. If drift is detected, it automatically triggers model retraining.
 
 ---
 
@@ -455,7 +588,7 @@ prediction/
 ├── pipeline.py              ← ETLPipeline: orchestrates Extract → Bronze → Silver → Gold
 ├── training.py              ← TrainingPipeline: walk-forward CV + final model training
 ├── inference.py             ← PredictionService: cache → features → model → predict → cache
-├── cli.py                   ← CLI commands: etl, train, predict, warm-cache
+├── cli.py                   ← CLI commands: etl, train, predict, warm-cache, scheduler, watch, stream
 │
 ├── etl/
 │   ├── extract/
@@ -478,7 +611,15 @@ prediction/
 │   ├── lstm.py              ← LSTMPredictor (PyTorch stacked LSTM)
 │   ├── xgboost_model.py     ← XGBoostPredictor (gradient-boosted trees)
 │   ├── prophet_model.py     ← ProphetPredictor (trend + seasonality)
-│   └── ensemble.py          ← EnsemblePredictor (weighted avg + liquidity tiers)
+│   ├── ensemble.py          ← EnsemblePredictor (weighted avg + liquidity tiers)
+│   ├── volume_predictor.py  ← VolumePredictor (XGBoost log1p regressor)
+│   └── liquidity_classifier.py ← LiquidityClassifier (XGBoost multi-class softprob)
+│
+├── realtime/
+│   ├── __init__.py          ← Public API: RealtimeScheduler, PredictionStreamManager, DataWatcher
+│   ├── scheduler.py         ← APScheduler-based task orchestrator (cron triggers)
+│   ├── stream.py            ← WebSocket/SSE broadcast manager (per-symbol subscriptions)
+│   └── watcher.py           ← Filesystem observer (MD5 diff, auto-ETL on new CSVs)
 │
 └── utils/
     ├── cache.py             ← CacheClient (Redis + in-memory fallback)
@@ -505,24 +646,33 @@ ML hyperparameters are in `prediction/config.py` as frozen dataclasses.
 
 ## Test Coverage
 
-60 tests total — all passing ✅
+89 tests total — all passing ✅
 
-| Test Class              | Count | What it validates                                    |
-|-------------------------|-------|------------------------------------------------------|
-| `TestConfig`            | 3     | Config loads, paths consistent, weights sum to 1     |
-| `TestTechnicalFeatures` | 5     | SMA, RSI, MACD compute correctly + shift(1) verified |
-| `TestTemporalFeatures`  | 2     | Calendar features + cyclical encoding bounds          |
-| `TestVolumeFeatures`    | 2     | Volume indicators + shift verification                |
-| `TestLagFeatures`       | 1     | Lag/momentum columns present                          |
-| `TestFeaturePipeline`   | 1     | Full pipeline produces 30+ feature columns            |
-| `TestDataQuality`       | 2     | Positive close, high ≥ low validation                 |
-| `TestBronzeToSilver`    | 2     | Transform types correct + sorted                      |
-| `TestSilverToGold`      | 3     | Training view, targets, inference view                |
-| `TestModelMetrics`      | 1     | MAE, RMSE, MAPE, dir_acc, R² computation              |
-| `TestEnsemble`          | 4     | Tier classification, model selection, dynamic weights  |
-| `TestCache`             | 3     | In-memory fallback, invalidation, feature store        |
-| `TestModelMonitor`      | 3     | Evaluation, drift detection, retrain trigger           |
-| `TestParquetLoader`     | 3     | Save/load roundtrip, watermark, partitioned save       |
-| `TestPredictionService` | 3     | Fallback prediction, weekend skip, serialization       |
-| `TestAntiLeakage`       | 2     | Features use only past data, targets are future        |
-| *(app tests)*           | 20    | Domain entities, API endpoints, trading logic          |
+| Test Class                  | Count | What it validates                                    |
+|-----------------------------|-------|------------------------------------------------------|
+| `TestConfig`                | 3     | Config loads, paths consistent, weights sum to 1     |
+| `TestTechnicalFeatures`     | 5     | SMA, RSI, MACD compute correctly + shift(1) verified |
+| `TestTemporalFeatures`      | 2     | Calendar features + cyclical encoding bounds          |
+| `TestVolumeFeatures`        | 2     | Volume indicators + shift verification                |
+| `TestLagFeatures`           | 1     | Lag/momentum columns present                          |
+| `TestFeaturePipeline`       | 1     | Full pipeline produces 30+ feature columns            |
+| `TestDataQuality`           | 2     | Positive close, high ≥ low validation                 |
+| `TestBronzeToSilver`        | 2     | Transform types correct + sorted                      |
+| `TestSilverToGold`          | 5     | Training view, targets, inference view, volume targets, liquidity labels |
+| `TestModelMetrics`          | 1     | MAE, RMSE, MAPE, dir_acc, R² computation              |
+| `TestEnsemble`              | 4     | Tier classification, model selection, dynamic weights  |
+| `TestCache`                 | 3     | In-memory fallback, invalidation, feature store        |
+| `TestModelMonitor`          | 3     | Evaluation, drift detection, retrain trigger           |
+| `TestParquetLoader`         | 3     | Save/load roundtrip, watermark, partitioned save       |
+| `TestPredictionService`     | 3     | Fallback prediction, weekend skip, serialization       |
+| `TestAntiLeakage`           | 2     | Features use only past data, targets are future        |
+| `TestVolumePredictor`       | 2     | Fit + predict, save/load roundtrip                     |
+| `TestLiquidityClassifier`   | 3     | Fit + predict_proba, save/load, evaluate accuracy      |
+| `TestVolumePredictionEntity`| 2     | Volume & liquidity domain entities                     |
+| `TestStreamEvent`           | 3     | JSON serialization, SSE format, UTC timestamp          |
+| `TestPredictionStreamMgr`   | 8     | Connect/disconnect, broadcast, subscriptions, ping, SSE |
+| `TestRealtimeScheduler`     | 5     | Initial state, unknown task, status, history, run_now  |
+| `TestDataWatcher`           | 8     | Snapshot, diff (create/modify/delete), ignore, hash    |
+| `TestModelMonitorRetrain`   | 3     | No history, healthy model, drifted model → retrain     |
+| `TestTaskResult`            | 2     | Field values, status enum                              |
+| *(app tests)*               | 16    | Domain entities, API endpoints, trading logic          |

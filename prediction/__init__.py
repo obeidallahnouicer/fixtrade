@@ -10,16 +10,21 @@ Architecture
 - **Features**: 50+ engineered indicators (technical, temporal, volume, lag)
 - **Models**: LSTM · XGBoost · Prophet → Ensemble (liquidity-tiered)
 - **Serving**: Redis-backed cache, walk-forward validated
+- **Real-time**: WebSocket/SSE streaming, scheduler, file watcher
 
 Quick start (CLI)
 -----------------
     python -m prediction etl               # ingest + transform raw data
     python -m prediction train --final     # train ensemble on all data
     python -m prediction predict --symbol BIAT --days 3
+    python -m prediction scheduler         # start automated pipeline
+    python -m prediction watch             # watch data/raw for new CSVs
+    python -m prediction stream            # start WebSocket/SSE server
 
 Public API
 ----------
     from prediction import PredictionService, ETLPipeline, TrainingPipeline
+    from prediction.realtime import RealtimeScheduler, PredictionStreamManager, DataWatcher
     from prediction.config import config
 """
 
@@ -27,7 +32,12 @@ Public API
 from prediction.config import PredictionConfig, config
 from prediction.pipeline import ETLPipeline
 from prediction.training import TrainingPipeline
-from prediction.inference import PredictionService, PredictionResult
+from prediction.inference import (
+    PredictionService,
+    PredictionResult,
+    VolumeResult,
+    LiquidityResult,
+)
 
 __all__ = [
     "PredictionConfig",
@@ -36,4 +46,6 @@ __all__ = [
     "TrainingPipeline",
     "PredictionService",
     "PredictionResult",
+    "VolumeResult",
+    "LiquidityResult",
 ]

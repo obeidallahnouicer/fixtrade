@@ -1,5 +1,8 @@
 import scrapy
 
-class ExampleItem(scrapy.Item):
+class ArticleItem(scrapy.Item):
     title = scrapy.Field()
-    link = scrapy.Field()
+    url = scrapy.Field()
+    date = scrapy.Field()
+    summary = scrapy.Field()
+    content = scrapy.Field()

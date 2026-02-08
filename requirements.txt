@@ -30,8 +30,12 @@ scrapy==2.11.2
 SQLAlchemy==2.0.46
 # pg8000: Pure-Python Postgres driver (no native build required on Windows)
 pg8000==1.29.7
-# python-dateutil: Robust date parsing
+# python-dateutil: Robust date parsing (fallback)
 python-dateutil==2.8.2
+# dateparser: Flexible, multi-locale date parsing for scraped dates
+dateparser==1.1.8
+# dateparser: parse dates in multiple locales (English/French, etc.)
+dateparser==1.1.8
 
 # --- NLP ---
 # transformers: HuggingFace transformer models for sentiment analysis
@@ -63,8 +67,20 @@ redis>=5.0.0
 # mlflow: Model registry, experiment tracking, metric comparison
 mlflow>=2.10.0
 
+# --- Real-Time Pipeline ---
+# APScheduler: Cron-like job scheduling for auto-retraining & cache warming
+APScheduler>=3.10.0
+# websockets: WebSocket protocol support (used by uvicorn/fastapi)
+websockets>=12.0
+
+# --- AI / LLM ---
+# groq: Fast LLM inference API for explainability
+groq>=0.4.0
+
 # --- Testing ---
 # pytest: Test runner
 pytest==8.3.3
 # httpx: Async HTTP client, required by FastAPI TestClient
 httpx==0.27.2
+
+psycopg2-binary==2.9.11

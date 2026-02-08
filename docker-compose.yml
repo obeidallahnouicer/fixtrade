@@ -62,5 +62,19 @@ services:
       timeout: 5s
       retries: 3
 
+  scraper:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+    depends_on:
+      postgres:
+        condition: service_healthy
+    env_file: .env
+    environment:
+      SCRAPING_POSTGRES_DSN: ${SCRAPING_POSTGRES_DSN}
+    volumes:
+      - .:/app:rw
+    command: ["scrapy", "crawl", "millim"]
+
 volumes:
   pgdata:

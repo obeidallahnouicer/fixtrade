@@ -22,8 +22,8 @@ from pathlib import Path
 DB_HOST = os.getenv("POSTGRES_HOST", "localhost")
 DB_PORT = os.getenv("POSTGRES_PORT", "5432")
 DB_NAME = os.getenv("POSTGRES_DB", "fixtrade")
-DB_USER = os.getenv("POSTGRES_USER", "postgres")
-DB_PASS = os.getenv("POSTGRES_PASSWORD", "")
+DB_USER = os.getenv("POSTGRES_USER", "fixtrade")
+DB_PASS = os.getenv("POSTGRES_PASSWORD", "fixtrade")
 
 RAW_DIR = Path(__file__).resolve().parent.parent / "data" / "raw"
 
