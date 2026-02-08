@@ -133,3 +133,75 @@ class RecommendationResult:
     action: str
     confidence: Decimal
     reasoning: str
+
+
+# ------------------------------------------------------------------
+# Volume Prediction DTOs
+# ------------------------------------------------------------------
+
+
+@dataclass(frozen=True)
+class PredictVolumeCommand:
+    """Input DTO for requesting a volume prediction.
+
+    Attributes:
+        symbol: BVMT stock ticker symbol.
+        horizon_days: Number of future trading days to predict (1-5).
+    """
+
+    symbol: str
+    horizon_days: int
+
+
+@dataclass(frozen=True)
+class PredictVolumeResult:
+    """Output DTO for a single predicted volume point.
+
+    Attributes:
+        symbol: BVMT stock ticker symbol.
+        target_date: The future date of this prediction.
+        predicted_volume: Predicted daily transaction volume.
+    """
+
+    symbol: str
+    target_date: date
+    predicted_volume: int
+
+
+# ------------------------------------------------------------------
+# Liquidity Probability DTOs
+# ------------------------------------------------------------------
+
+
+@dataclass(frozen=True)
+class PredictLiquidityCommand:
+    """Input DTO for requesting a liquidity probability forecast.
+
+    Attributes:
+        symbol: BVMT stock ticker symbol.
+        horizon_days: Number of future trading days to predict (1-5).
+    """
+
+    symbol: str
+    horizon_days: int
+
+
+@dataclass(frozen=True)
+class PredictLiquidityResult:
+    """Output DTO for a liquidity probability forecast.
+
+    Attributes:
+        symbol: BVMT stock ticker symbol.
+        target_date: The future date of this forecast.
+        prob_low: Probability of low liquidity (volume < 1 000).
+        prob_medium: Probability of medium liquidity (1 000 ≤ vol < 10 000).
+        prob_high: Probability of high liquidity (volume ≥ 10 000).
+        predicted_tier: The most likely liquidity tier.
+    """
+
+    symbol: str
+    target_date: date
+    prob_low: Decimal
+    prob_medium: Decimal
+    prob_high: Decimal
+    predicted_tier: str

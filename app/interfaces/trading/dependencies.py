@@ -9,7 +9,9 @@ These are the composition root for the trading context.
 from app.application.trading.detect_anomalies import DetectAnomaliesUseCase
 from app.application.trading.get_recommendation import GetRecommendationUseCase
 from app.application.trading.get_sentiment import GetSentimentUseCase
+from app.application.trading.predict_liquidity import PredictLiquidityUseCase
 from app.application.trading.predict_price import PredictPriceUseCase
+from app.application.trading.predict_volume import PredictVolumeUseCase
 from app.infrastructure.trading.anomaly_detection_adapter import (
     AnomalyDetectionAdapter,
 )
@@ -28,6 +30,20 @@ from app.infrastructure.trading.sentiment_analysis_adapter import (
 def get_predict_price_use_case() -> PredictPriceUseCase:
     """Build PredictPriceUseCase with its infrastructure dependencies."""
     return PredictPriceUseCase(
+        prediction_port=PricePredictionAdapter(),
+    )
+
+
+def get_predict_volume_use_case() -> PredictVolumeUseCase:
+    """Build PredictVolumeUseCase with its infrastructure dependencies."""
+    return PredictVolumeUseCase(
+        prediction_port=PricePredictionAdapter(),
+    )
+
+
+def get_predict_liquidity_use_case() -> PredictLiquidityUseCase:
+    """Build PredictLiquidityUseCase with its infrastructure dependencies."""
+    return PredictLiquidityUseCase(
         prediction_port=PricePredictionAdapter(),
     )
 

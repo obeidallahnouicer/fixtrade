@@ -115,6 +115,55 @@ def cmd_predict(args: argparse.Namespace) -> None:
         )
 
 
+def cmd_predict_volume(args: argparse.Namespace) -> None:
+    """Predict daily transaction volume for the next N trading days."""
+    from prediction.inference import PredictionService
+
+    service = PredictionService()
+    results = service.predict_volume(
+        symbol=args.symbol,
+        horizon_days=args.days,
+    )
+
+    if not results:
+        logger.warning("No volume predictions for %s.", args.symbol)
+        return
+
+    for r in results:
+        logger.info(
+            "%s | %s | Volume=%.0f",
+            r.symbol,
+            r.target_date,
+            r.predicted_volume,
+        )
+
+
+def cmd_predict_liquidity(args: argparse.Namespace) -> None:
+    """Predict liquidity tier probabilities for the next N trading days."""
+    from prediction.inference import PredictionService
+
+    service = PredictionService()
+    results = service.predict_liquidity(
+        symbol=args.symbol,
+        horizon_days=args.days,
+    )
+
+    if not results:
+        logger.warning("No liquidity predictions for %s.", args.symbol)
+        return
+
+    for r in results:
+        logger.info(
+            "%s | %s | P(low)=%.4f  P(med)=%.4f  P(high)=%.4f  → %s",
+            r.symbol,
+            r.target_date,
+            r.prob_low,
+            r.prob_medium,
+            r.prob_high,
+            r.predicted_tier,
+        )
+
+
 def cmd_warm_cache(args: argparse.Namespace) -> None:
     """Pre-compute predictions for top tickers."""
     from prediction.config import config
@@ -190,6 +239,26 @@ def main() -> None:
     predict_parser.add_argument("--days", type=int, default=1, help="Horizon days (1-5)")
     predict_parser.add_argument("--model", default="ensemble", help="Model name")
     predict_parser.set_defaults(func=cmd_predict)
+
+    # Predict Volume
+    vol_parser = subparsers.add_parser(
+        "predict-volume", help="Predict daily transaction volume"
+    )
+    vol_parser.add_argument("--symbol", required=True, help="Ticker symbol")
+    vol_parser.add_argument(
+        "--days", type=int, default=5, help="Horizon days (1-5)"
+    )
+    vol_parser.set_defaults(func=cmd_predict_volume)
+
+    # Predict Liquidity
+    liq_parser = subparsers.add_parser(
+        "predict-liquidity", help="Predict liquidity tier probabilities"
+    )
+    liq_parser.add_argument("--symbol", required=True, help="Ticker symbol")
+    liq_parser.add_argument(
+        "--days", type=int, default=5, help="Horizon days (1-5)"
+    )
+    liq_parser.set_defaults(func=cmd_predict_liquidity)
 
     # Warm cache
     warm_parser = subparsers.add_parser("warm-cache", help="Pre-compute top ticker predictions")

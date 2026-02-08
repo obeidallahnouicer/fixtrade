@@ -13,11 +13,13 @@ from uuid import UUID
 
 from app.domain.trading.entities import (
     AnomalyAlert,
+    LiquidityForecast,
     Portfolio,
     PricePrediction,
     SentimentScore,
     StockPrice,
     TradeRecommendation,
+    VolumePrediction,
 )
 
 
@@ -41,7 +43,20 @@ class PricePredictionPort(ABC):
         self, symbol: str, horizon_days: int
     ) -> list[PricePrediction]:
         """Return predicted closing prices for the next N trading days."""
-        # TODO: implement in infrastructure adapter
+        raise NotImplementedError
+
+    @abstractmethod
+    def predict_volume(
+        self, symbol: str, horizon_days: int
+    ) -> list[VolumePrediction]:
+        """Return predicted daily transaction volumes for the next N trading days."""
+        raise NotImplementedError
+
+    @abstractmethod
+    def predict_liquidity(
+        self, symbol: str, horizon_days: int
+    ) -> list[LiquidityForecast]:
+        """Return liquidity tier probabilities for the next N trading days."""
         raise NotImplementedError
 
 

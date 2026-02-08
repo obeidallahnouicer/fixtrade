@@ -12,15 +12,21 @@ from app.application.trading.dtos import (
     DetectAnomaliesQuery,
     GetRecommendationQuery,
     GetSentimentQuery,
+    PredictLiquidityCommand,
     PredictPriceCommand,
+    PredictVolumeCommand,
 )
 from app.application.trading.detect_anomalies import DetectAnomaliesUseCase
 from app.application.trading.get_recommendation import GetRecommendationUseCase
 from app.application.trading.get_sentiment import GetSentimentUseCase
+from app.application.trading.predict_liquidity import PredictLiquidityUseCase
 from app.application.trading.predict_price import PredictPriceUseCase
+from app.application.trading.predict_volume import PredictVolumeUseCase
 from app.interfaces.trading.dependencies import (
     get_detect_anomalies_use_case,
+    get_predict_liquidity_use_case,
     get_predict_price_use_case,
+    get_predict_volume_use_case,
     get_recommendation_use_case,
     get_sentiment_use_case,
 )
@@ -31,9 +37,15 @@ from app.interfaces.trading.schemas import (
     ErrorResponse,
     GetRecommendationRequest,
     GetSentimentRequest,
+    PredictLiquidityItem,
+    PredictLiquidityRequest,
+    PredictLiquidityResponse,
     PredictPriceItem,
     PredictPriceRequest,
     PredictPriceResponse,
+    PredictVolumeItem,
+    PredictVolumeRequest,
+    PredictVolumeResponse,
     RecommendationResponse,
     SentimentResponse,
 )
@@ -148,4 +160,65 @@ def get_recommendation(
         action=result.action,
         confidence=result.confidence,
         reasoning=result.reasoning,
+    )
+
+
+@router.post(
+    "/predictions/volume",
+    response_model=PredictVolumeResponse,
+    responses={422: {"model": ErrorResponse}},
+    summary="Predict transaction volume",
+    description="Predict daily transaction volume for a BVMT stock over 1-5 trading days.",
+)
+def predict_volume(
+    request: PredictVolumeRequest,
+    use_case: PredictVolumeUseCase = Depends(get_predict_volume_use_case),
+) -> PredictVolumeResponse:
+    """Predict daily transaction volume for a given symbol and horizon."""
+    command = PredictVolumeCommand(
+        symbol=request.symbol,
+        horizon_days=request.horizon_days,
+    )
+    results = use_case.execute(command)
+    return PredictVolumeResponse(
+        predictions=[
+            PredictVolumeItem(
+                symbol=r.symbol,
+                target_date=r.target_date,
+                predicted_volume=r.predicted_volume,
+            )
+            for r in results
+        ]
+    )
+
+
+@router.post(
+    "/predictions/liquidity",
+    response_model=PredictLiquidityResponse,
+    responses={422: {"model": ErrorResponse}},
+    summary="Predict liquidity probabilities",
+    description="Predict probability of high/medium/low liquidity for a BVMT stock.",
+)
+def predict_liquidity(
+    request: PredictLiquidityRequest,
+    use_case: PredictLiquidityUseCase = Depends(get_predict_liquidity_use_case),
+) -> PredictLiquidityResponse:
+    """Predict liquidity tier probabilities for a given symbol."""
+    command = PredictLiquidityCommand(
+        symbol=request.symbol,
+        horizon_days=request.horizon_days,
+    )
+    results = use_case.execute(command)
+    return PredictLiquidityResponse(
+        forecasts=[
+            PredictLiquidityItem(
+                symbol=r.symbol,
+                target_date=r.target_date,
+                prob_low=r.prob_low,
+                prob_medium=r.prob_medium,
+                prob_high=r.prob_high,
+                predicted_tier=r.predicted_tier,
+            )
+            for r in results
+        ]
     )

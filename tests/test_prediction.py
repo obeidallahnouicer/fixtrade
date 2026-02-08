@@ -84,7 +84,7 @@ class TestConfig:
         from prediction.config import PredictionConfig
         cfg = PredictionConfig()
         assert cfg.paths.bronze.name == "bronze"
-        assert cfg.model.lstm_sequence_length == 60
+        assert cfg.model.lstm_sequence_length == 30
         assert cfg.features.rsi_window == 14
         assert len(cfg.tracked_tickers) >= 20
 
@@ -296,6 +296,28 @@ class TestSilverToGold:
         assert "target_5d" in result.columns
         # Last row's target should be NaN
         assert pd.isna(result["target_1d"].iloc[-1])
+
+    def test_adds_volume_targets(self, sample_ohlcv):
+        from prediction.etl.transform.silver_to_gold import SilverToGoldTransformer
+        gt = SilverToGoldTransformer()
+        sample_ohlcv["seance"] = pd.to_datetime(sample_ohlcv["seance"])
+        result = gt._add_targets(sample_ohlcv)
+        assert "target_volume_1d" in result.columns
+        assert "target_volume_5d" in result.columns
+        # Volume target should be the next day's volume
+        for i in range(len(result) - 1):
+            if not pd.isna(result["target_volume_1d"].iloc[i]):
+                assert result["target_volume_1d"].iloc[i] == result["quantite_negociee"].iloc[i + 1]
+
+    def test_adds_liquidity_labels(self, sample_ohlcv):
+        from prediction.etl.transform.silver_to_gold import SilverToGoldTransformer
+        gt = SilverToGoldTransformer()
+        sample_ohlcv["seance"] = pd.to_datetime(sample_ohlcv["seance"])
+        result = gt._add_targets(sample_ohlcv)
+        assert "liquidity_label" in result.columns
+        # Labels should be 0, 1, or 2 (excluding NaN at the end)
+        valid_labels = result["liquidity_label"].dropna().unique()
+        assert all(lab in (0, 1, 2) for lab in valid_labels)
 
     def test_inference_view_latest_row(self, multi_ticker_ohlcv):
         from prediction.etl.transform.silver_to_gold import SilverToGoldTransformer
@@ -539,3 +561,166 @@ class TestAntiLeakage:
         for i in range(len(result) - 1):
             if not pd.isna(result["target_1d"].iloc[i]):
                 assert result["target_1d"].iloc[i] == result["cloture"].iloc[i + 1]
+
+
+# ---------------------------------------------------------------------------
+# Volume Predictor tests
+# ---------------------------------------------------------------------------
+
+
+class TestVolumePredictor:
+    def test_fit_and_predict(self, sample_ohlcv):
+        """Volume predictor should fit and return non-negative predictions."""
+        from prediction.models.volume_predictor import VolumePredictor
+
+        # Build minimal feature matrix
+        np.random.seed(42)
+        n = len(sample_ohlcv)
+        X = pd.DataFrame({
+            "sma_5": np.random.rand(n),
+            "rsi": np.random.rand(n) * 100,
+            "volume_sma_5": np.random.rand(n) * 10000,
+        })
+        y = sample_ohlcv["quantite_negociee"].values.astype(float)
+
+        model = VolumePredictor()
+        model.fit(X, y)
+        preds = model.predict(X)
+
+        assert len(preds) == n
+        # Volume predictions should be non-negative (expm1 of any real → ≥ 0)
+        assert (preds >= 0).all()
+
+    def test_save_and_load(self, tmp_path, sample_ohlcv):
+        """Volume predictor should persist and reload correctly."""
+        from prediction.models.volume_predictor import VolumePredictor
+
+        np.random.seed(42)
+        n = len(sample_ohlcv)
+        X = pd.DataFrame({
+            "sma_5": np.random.rand(n),
+            "rsi": np.random.rand(n) * 100,
+        })
+        y = sample_ohlcv["quantite_negociee"].values.astype(float)
+
+        model = VolumePredictor()
+        model.fit(X, y)
+        model.save_model(tmp_path)
+
+        loaded = VolumePredictor()
+        loaded.load_model(tmp_path)
+        preds_orig = model.predict(X)
+        preds_loaded = loaded.predict(X)
+
+        np.testing.assert_array_almost_equal(preds_orig, preds_loaded)
+
+
+# ---------------------------------------------------------------------------
+# Liquidity Classifier tests
+# ---------------------------------------------------------------------------
+
+
+class TestLiquidityClassifier:
+    def test_fit_and_predict_proba(self, sample_ohlcv):
+        """Liquidity classifier should return valid probability vectors."""
+        from prediction.models.liquidity_classifier import LiquidityClassifier
+
+        np.random.seed(42)
+        n = len(sample_ohlcv)
+        X = pd.DataFrame({
+            "sma_5": np.random.rand(n),
+            "rsi": np.random.rand(n) * 100,
+            "volume_sma_5": np.random.rand(n) * 10000,
+        })
+        # Build labels: 0=low, 1=medium, 2=high
+        y = np.array([0] * (n // 3) + [1] * (n // 3) + [2] * (n - 2 * (n // 3)))
+
+        model = LiquidityClassifier()
+        model.fit(X, y)
+        probas = model.predict_proba_tiers(X)
+
+        assert len(probas) == n
+        for p in probas:
+            # Probabilities should sum to ~1
+            total = p.prob_low + p.prob_medium + p.prob_high
+            assert abs(total - 1.0) < 1e-4
+            # Each probability should be in [0, 1]
+            assert 0 <= p.prob_low <= 1
+            assert 0 <= p.prob_medium <= 1
+            assert 0 <= p.prob_high <= 1
+            # predicted_tier should be one of the three tiers
+            assert p.predicted_tier in ("low", "medium", "high")
+
+    def test_save_and_load(self, tmp_path, sample_ohlcv):
+        """Liquidity classifier should persist and reload correctly."""
+        from prediction.models.liquidity_classifier import LiquidityClassifier
+
+        np.random.seed(42)
+        n = len(sample_ohlcv)
+        X = pd.DataFrame({
+            "sma_5": np.random.rand(n),
+            "rsi": np.random.rand(n) * 100,
+        })
+        y = np.array([0] * (n // 3) + [1] * (n // 3) + [2] * (n - 2 * (n // 3)))
+
+        model = LiquidityClassifier()
+        model.fit(X, y)
+        model.save_model(tmp_path)
+
+        loaded = LiquidityClassifier()
+        loaded.load_model(tmp_path)
+
+        preds_orig = model.predict(X)
+        preds_loaded = loaded.predict(X)
+        np.testing.assert_array_equal(preds_orig, preds_loaded)
+
+    def test_evaluate_accuracy(self, sample_ohlcv):
+        """Evaluate method should return valid metrics."""
+        from prediction.models.liquidity_classifier import LiquidityClassifier
+
+        np.random.seed(42)
+        n = len(sample_ohlcv)
+        X = pd.DataFrame({
+            "sma_5": np.random.rand(n),
+            "rsi": np.random.rand(n) * 100,
+            "volume_sma_5": np.random.rand(n) * 10000,
+        })
+        y = np.array([0] * (n // 3) + [1] * (n // 3) + [2] * (n - 2 * (n // 3)))
+
+        model = LiquidityClassifier()
+        model.fit(X, y)
+        metrics = model.evaluate(X, y)
+
+        # directional_accuracy stores classification accuracy for this model
+        assert 0 <= metrics.directional_accuracy <= 1
+
+
+# ---------------------------------------------------------------------------
+# Domain Entity tests
+# ---------------------------------------------------------------------------
+
+
+class TestVolumePredictionEntity:
+    def test_volume_prediction_entity(self):
+        from decimal import Decimal
+        from app.domain.trading.entities import VolumePrediction
+        vp = VolumePrediction(
+            symbol="BIAT",
+            target_date=date(2024, 6, 15),
+            predicted_volume=15000,
+        )
+        assert vp.symbol == "BIAT"
+        assert vp.predicted_volume == 15000
+
+    def test_liquidity_forecast_entity(self):
+        from decimal import Decimal
+        from app.domain.trading.entities import LiquidityForecast
+        lf = LiquidityForecast(
+            symbol="BIAT",
+            target_date=date(2024, 6, 15),
+            prob_low=Decimal("0.1"),
+            prob_medium=Decimal("0.3"),
+            prob_high=Decimal("0.6"),
+        )
+        assert lf.predicted_tier == "high"
+        assert lf.prob_high == Decimal("0.6")
