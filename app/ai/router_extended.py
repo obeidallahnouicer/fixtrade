@@ -319,17 +319,39 @@ async def get_detailed_recommendations(
             llm_config=llm_config
         )
         
-        recommendations = engine.generate_recommendations(
-            symbols=available_symbols,
+        portfolio_recommendation = engine.generate_recommendations(
             returns=returns,
             market_returns=market_returns,
-            current_weights=current_weights,
-            anomalies=anomalies
+            current_portfolio=current_weights,
+            risk_profile=RiskProfile(request.risk_profile),
+            anomalies=anomalies,
+            total_value=10000.0,  # TODO: Get from user portfolio
+            cash_available=0.0     # TODO: Get from user portfolio
         )
         
+        # Extract signals and convert to dict format
+        signals = portfolio_recommendation.signals
+        
         # Sort by confidence and take top N
-        recommendations.sort(key=lambda x: x["confidence"], reverse=True)
-        recommendations = recommendations[:request.top_n]
+        signals.sort(key=lambda x: x.confidence, reverse=True)
+        recommendations = [
+            {
+                "symbol": s.symbol,
+                "decision": s.decision.value,
+                "confidence": s.confidence,
+                "optimal_weight": s.optimal_weight,
+                "current_weight": s.current_weight,
+                "weight_delta": s.weight_delta,
+                "expected_return": s.expected_return,
+                "capm_return": s.capm_return,
+                "contribution_to_risk": s.contribution_to_risk,
+                "beta": s.beta,
+                "anomaly_detected": s.anomaly_detected,
+                "diversification_benefit": s.diversification_benefit,
+                "reasons": s.reasons
+            }
+            for s in signals[:request.top_n]
+        ]
         
         # Save to database if portfolio_id provided
         if request.portfolio_id:
