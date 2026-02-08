@@ -97,14 +97,21 @@ class PredictionService:
 
         logger.info("[Cache MISS] %s/%s — running inference", symbol, model)
 
-        # 2. Load the ensemble (or specific model)
-        ensemble = self._get_ensemble()
+        # 2. Load the ensemble (or specific model) — prefer per-symbol models
+        ensemble = self._get_ensemble(symbol)
 
         # 3. Fetch latest features
         features = self._get_latest_features(symbol)
         if features is None or features.empty:
             logger.warning("No features available for %s. Using fallback.", symbol)
             return self._fallback_prediction(symbol, horizon_days)
+
+        # Strip metadata columns — keep only numeric feature columns
+        from prediction.etl.transform.silver_to_gold import SilverToGoldTransformer
+        feature_cols = SilverToGoldTransformer.get_feature_columns(features)
+        features = features[feature_cols].replace(
+            [np.inf, -np.inf], np.nan
+        ).fillna(0)
 
         # 4. Run inference
         results: list[PredictionResult] = []
@@ -140,7 +147,15 @@ class PredictionService:
                     ))
             except Exception:
                 logger.exception("Inference failed for %s day %d", symbol, day_offset)
-                results.append(self._fallback_prediction(symbol, 1)[0])
+                results.append(PredictionResult(
+                    symbol=symbol,
+                    target_date=target_date,
+                    predicted_close=0.0,
+                    confidence_lower=0.0,
+                    confidence_upper=0.0,
+                    model_name="fallback",
+                    confidence_score=0.0,
+                ))
 
         # 5. Cache result
         self._cache.set_prediction(
@@ -149,8 +164,12 @@ class PredictionService:
 
         return results
 
-    def _get_ensemble(self) -> EnsemblePredictor:
-        """Load or return the cached ensemble model."""
+    def _get_ensemble(self, symbol: str | None = None) -> EnsemblePredictor:
+        """Load or return the cached ensemble model.
+
+        Tries per-symbol models first (models/ensemble/{SYMBOL}/),
+        then falls back to global models (models/ensemble/).
+        """
         if self._ensemble is not None and self._ensemble.is_fitted:
             return self._ensemble
 
@@ -162,23 +181,38 @@ class PredictionService:
             }
         )
 
-        ensemble_path = self._models_dir / "ensemble"
-        if ensemble_path.exists():
-            try:
-                self._ensemble.load_model(ensemble_path)
-                logger.info("Ensemble model loaded from registry.")
-            except Exception:
-                logger.warning("Failed to load ensemble. Models not trained.")
-        else:
+        # Try per-symbol models first, then fall back to global
+        candidates: list[Path] = []
+        if symbol:
+            candidates.append(self._models_dir / "ensemble" / symbol.upper())
+        candidates.append(self._models_dir / "ensemble")
+
+        loaded = False
+        for ensemble_path in candidates:
+            if ensemble_path.exists() and (ensemble_path / "ensemble_weights.json").exists():
+                try:
+                    self._ensemble.load_model(ensemble_path)
+                    logger.info("Ensemble model loaded from %s", ensemble_path)
+                    loaded = True
+                    break
+                except Exception:
+                    logger.warning("Failed to load ensemble from %s.", ensemble_path)
+
+        if not loaded:
             logger.warning(
-                "No trained models found at %s. Predictions will use fallback.",
-                ensemble_path,
+                "No trained models found. Predictions will use fallback. "
+                "Train first: python -m prediction train --symbol %s --final",
+                symbol or "<SYMBOL>",
             )
 
         return self._ensemble
 
     def _get_latest_features(self, symbol: str) -> pd.DataFrame | None:
-        """Fetch latest features from cache or compute on-the-fly."""
+        """Fetch latest features from cache or compute on-the-fly.
+
+        Returns enough rows for LSTM sequence creation (60+).
+        Scans all Silver partitions to collect data across code variants.
+        """
         # Try Redis feature store first
         today_str = date.today().isoformat()
         cached = self._cache.get_features(symbol, today_str)
@@ -187,19 +221,54 @@ class PredictionService:
 
         # Fallback: load from Silver layer Parquet
         silver_path = self._cfg.paths.base_dir / "silver"
-        if silver_path.exists():
-            try:
-                parquet_files = sorted(silver_path.rglob("*.parquet"))
-                for pf in parquet_files:
-                    df = pd.read_parquet(pf)
-                    if "code" in df.columns:
-                        ticker_df = df[df["code"] == symbol]
-                        if not ticker_df.empty:
-                            return ticker_df.sort_values("seance").tail(1)
-            except Exception:
-                logger.warning("Failed to load features for %s", symbol)
+        if not silver_path.exists():
+            return None
 
-        return None
+        try:
+            import pyarrow.parquet as pq
+
+            matched_frames: list[pd.DataFrame] = []
+            for pf in sorted(silver_path.rglob("*.parquet")):
+                # Fast check: read only the libelle column to see if this
+                # partition contains data for the requested symbol
+                schema = pq.read_schema(pf)
+                if "libelle" in schema.names:
+                    tbl = pq.read_table(pf, columns=["libelle"])
+                    labels = tbl.column("libelle").to_pylist()
+                    if not any(str(lb).upper() == symbol.upper() for lb in labels):
+                        continue
+                # Full read for matching partition
+                df = pd.read_parquet(pf)
+
+                # Reconstruct partition column from directory path
+                if "code" not in df.columns:
+                    for part in pf.relative_to(silver_path).parent.parts:
+                        if part.startswith("code="):
+                            df["code"] = part.split("=", 1)[1]
+                            break
+
+                # Match by symbol name (libelle) or by numeric code
+                if "libelle" in df.columns:
+                    ticker_df = df[df["libelle"].str.upper() == symbol.upper()]
+                elif "code" in df.columns:
+                    ticker_df = df[df["code"] == symbol]
+                else:
+                    continue
+
+                if not ticker_df.empty:
+                    matched_frames.append(ticker_df)
+
+            if not matched_frames:
+                return None
+
+            combined = pd.concat(matched_frames, ignore_index=True)
+            combined = combined.sort_values("seance").reset_index(drop=True)
+            # Return enough rows for LSTM sequences (need 60+)
+            n_rows = max(100, self._cfg.model.lstm_sequence_length + 10)
+            return combined.tail(n_rows)
+        except Exception:
+            logger.warning("Failed to load features for %s", symbol)
+            return None
 
     @staticmethod
     def _fallback_prediction(
