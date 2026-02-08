@@ -13,9 +13,11 @@ from uuid import UUID
 
 from app.domain.trading.entities import (
     AnomalyAlert,
+    ArticleSentiment,
     LiquidityForecast,
     Portfolio,
     PricePrediction,
+    ScrapedArticle,
     SentimentScore,
     StockPrice,
     TradeRecommendation,
@@ -68,7 +70,15 @@ class SentimentAnalysisPort(ABC):
         self, symbol: str, target_date: Optional[date] = None
     ) -> SentimentScore:
         """Return aggregated sentiment score for a symbol on a given date."""
-        # TODO: implement in infrastructure adapter
+        raise NotImplementedError
+
+    @abstractmethod
+    def analyze_text(self, text: str) -> int:
+        """Run NLP inference on raw text and return a sentiment score.
+
+        Returns:
+            1 for positive, -1 for negative, 0 for neutral.
+        """
         raise NotImplementedError
 
 
@@ -105,4 +115,35 @@ class DecisionEnginePort(ABC):
     def recommend(self, symbol: str, portfolio_id: UUID) -> TradeRecommendation:
         """Return a buy/sell/hold recommendation for a symbol."""
         # TODO: implement in infrastructure adapter
+        raise NotImplementedError
+
+
+class ScrapedArticleRepository(ABC):
+    """Port for reading scraped articles from storage."""
+
+    @abstractmethod
+    def get_unanalyzed_articles(self, limit: int = 100) -> list[ScrapedArticle]:
+        """Return articles that have not yet been sentiment-analyzed."""
+        raise NotImplementedError
+
+    @abstractmethod
+    def get_article_text(self, article: ScrapedArticle) -> str:
+        """Return the best available text for NLP analysis.
+
+        Prefers content, falls back to summary, then title.
+        """
+        raise NotImplementedError
+
+
+class ArticleSentimentRepository(ABC):
+    """Port for persisting per-article sentiment analysis results."""
+
+    @abstractmethod
+    def save(self, result: ArticleSentiment) -> None:
+        """Persist a single article sentiment result."""
+        raise NotImplementedError
+
+    @abstractmethod
+    def save_batch(self, results: list[ArticleSentiment]) -> None:
+        """Persist multiple article sentiment results."""
         raise NotImplementedError
