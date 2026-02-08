@@ -11,7 +11,7 @@ CREATE TABLE IF NOT EXISTS stock_prices (
     id              BIGSERIAL PRIMARY KEY,
     symbol          VARCHAR(50)    NOT NULL,
     code_isin       VARCHAR(30),
-    groupe          VARCHAR(20),
+    groupe          VARCHAR(50),
     seance          DATE           NOT NULL,
     ouverture       NUMERIC(12,3),
     cloture         NUMERIC(12,3)  NOT NULL,
@@ -48,7 +48,40 @@ CREATE TABLE IF NOT EXISTS price_predictions (
 CREATE INDEX IF NOT EXISTS idx_predictions_symbol ON price_predictions (symbol);
 CREATE INDEX IF NOT EXISTS idx_predictions_created ON price_predictions (created_at DESC);
 
--- ── Sentiment Scores ─────────────────────────────────────────
+-- ── Scraped Articles ─────────────────────────────────────────
+CREATE TABLE IF NOT EXISTS scraped_articles (
+    id              BIGSERIAL PRIMARY KEY,
+    url             VARCHAR(1024)  NOT NULL,
+    title           VARCHAR(512),
+    summary         TEXT,
+    content         TEXT,
+    published_at    TIMESTAMPTZ,
+    created_at      TIMESTAMPTZ    DEFAULT NOW(),
+
+    CONSTRAINT uix_url UNIQUE (url)
+);
+
+CREATE INDEX IF NOT EXISTS idx_scraped_articles_published
+    ON scraped_articles (published_at DESC);
+
+-- ── Article Sentiments (per-article NLP result) ──────────────
+CREATE TABLE IF NOT EXISTS article_sentiments (
+    id              BIGSERIAL PRIMARY KEY,
+    article_id      BIGINT         NOT NULL REFERENCES scraped_articles(id) ON DELETE CASCADE,
+    sentiment_label VARCHAR(10)    NOT NULL CHECK (sentiment_label IN ('positive', 'negative', 'neutral')),
+    sentiment_score INTEGER        NOT NULL CHECK (sentiment_score IN (-1, 0, 1)),
+    confidence      NUMERIC(5,4),
+    analyzed_at     TIMESTAMPTZ    DEFAULT NOW(),
+
+    CONSTRAINT uq_article_sentiment UNIQUE (article_id)
+);
+
+CREATE INDEX IF NOT EXISTS idx_article_sentiments_article
+    ON article_sentiments (article_id);
+CREATE INDEX IF NOT EXISTS idx_article_sentiments_analyzed
+    ON article_sentiments (analyzed_at DESC);
+
+-- ── Sentiment Scores (aggregated daily per symbol) ───────────
 CREATE TABLE IF NOT EXISTS sentiment_scores (
     id              BIGSERIAL PRIMARY KEY,
     symbol          VARCHAR(20)    NOT NULL,

@@ -62,10 +62,11 @@ import re
 import unicodedata
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from typing import Any
-from unknownlabelserror import UnknownLabelError  
-from lowconfidenceerror import LowConfidenceError
 
 from transformers import pipeline  # type: ignore[import-untyped]
+
+from app.nlp.unknownlabelserror import UnknownLabelError
+from app.nlp.lowconfidenceerror import LowConfidenceError
 
 logger = logging.getLogger(__name__)
 
@@ -73,12 +74,26 @@ logger = logging.getLogger(__name__)
 # Internal constants
 # ---------------------------------------------------------------------------
 
-_MODEL_NAME: str = "jplu/tf-xlm-roberta-large"
+# Using nlptown/bert-base-multilingual-uncased-sentiment
+# Small multilingual model (~180MB) - supports 6 languages including French
+# Outputs 1-5 stars, we'll map: 1-2 stars = negative, 3 = neutral, 4-5 = positive
+_MODEL_NAME: str = "nlptown/bert-base-multilingual-uncased-sentiment"
 
 _LABEL_MAP: dict[str, int] = {
+    "1 star": -1,
+    "2 stars": -1,
+    "3 stars": 0,
+    "4 stars": 1,
+    "5 stars": 1,
+    "POSITIVE": 1,
+    "NEGATIVE": -1,
+    "NEUTRAL": 0,
     "positive": 1,
     "negative": -1,
     "neutral": 0,
+    "Positive": 1,
+    "Negative": -1,
+    "Neutral": 0,
 }
 
 _DEFAULT_MIN_CONFIDENCE: float = 0.0  # disabled by default
@@ -114,11 +129,11 @@ _ARABIC_DIACRITICS_RE: re.Pattern[str] = re.compile(
 
 
 class SentimentAnalyzer:
-    """Multilingual sentiment analyser for financial articles.
+    """Multilingual sentiment analyser for financial articles (French/Arabic).
 
     Wraps the HuggingFace ``transformers`` sentiment-analysis pipeline
-    using the ``jplu/tf-xlm-roberta-large`` model so that French and
-    Arabic texts are supported out of the box.
+    using ``nlptown/bert-base-multilingual-uncased-sentiment`` - a small
+    multilingual BERT model (~180MB) supporting 6 languages including French.
 
     Parameters
     ----------
