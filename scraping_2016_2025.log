@@ -1,0 +1,1486 @@
+nohup: ignoring input
+/home/obeid/.local/lib/python3.14/site-packages/itemadapter/_imports.py:45: UserWarning: Core Pydantic V1 functionality isn't compatible with Python 3.14 or greater.
+  import pydantic.v1 as pydantic_v1
+2026-02-08 04:29:35 [scrapy.utils.log] INFO: Scrapy 2.11.2 started (bot: scraping)
+2026-02-08 04:29:35 [scrapy.utils.log] INFO: Versions: lxml 5.3.0.0, libxml2 2.12.10, cssselect 1.4.0, parsel 1.11.0, w3lib 2.4.0, Twisted 25.5.0, Python 3.14.0 (main, Oct 17 2025, 00:00:00) [GCC 15.2.1 20251022 (Red Hat 15.2.1-3)], pyOpenSSL 25.3.0 (OpenSSL 3.5.5 27 Jan 2026), cryptography 46.0.4, Platform Linux-6.17.7-300.fc43.x86_64-x86_64-with-glibc2.42
+2026-02-08 04:29:35 [ilboursa_historical] INFO: Will scrape 3653 days from 2016-01-01 to 2025-12-31
+2026-02-08 04:29:35 [scrapy.addons] INFO: Enabled addons:
+[]
+2026-02-08 04:29:35 [py.warnings] WARNING: /home/obeid/.local/lib/python3.14/site-packages/scrapy/utils/request.py:254: ScrapyDeprecationWarning: '2.6' is a deprecated value for the 'REQUEST_FINGERPRINTER_IMPLEMENTATION' setting.
+
+It is also the default value. In other words, it is normal to get this warning if you have not defined a value for the 'REQUEST_FINGERPRINTER_IMPLEMENTATION' setting. This is so for backward compatibility reasons, but it will change in a future version of Scrapy.
+
+See the documentation of the 'REQUEST_FINGERPRINTER_IMPLEMENTATION' setting for information on how to handle this deprecation.
+  return cls(crawler)
+
+2026-02-08 04:29:35 [scrapy.utils.log] DEBUG: Using reactor: twisted.internet.epollreactor.EPollReactor
+2026-02-08 04:29:35 [scrapy.extensions.telnet] INFO: Telnet Password: 03a11a66c6aa33d5
+2026-02-08 04:29:35 [scrapy.middleware] INFO: Enabled extensions:
+['scrapy.extensions.corestats.CoreStats',
+ 'scrapy.extensions.telnet.TelnetConsole',
+ 'scrapy.extensions.memusage.MemoryUsage',
+ 'scrapy.extensions.logstats.LogStats']
+2026-02-08 04:29:35 [scrapy.crawler] INFO: Overridden settings:
+{'BOT_NAME': 'scraping',
+ 'CONCURRENT_REQUESTS': 8,
+ 'DOWNLOAD_DELAY': 1.0,
+ 'EDITOR': '/usr/bin/nano',
+ 'NEWSPIDER_MODULE': 'scraping.spiders',
+ 'ROBOTSTXT_OBEY': True,
+ 'SPIDER_MODULES': ['scraping.spiders'],
+ 'USER_AGENT': 'fixtrade-scraper/1.0 (+https://example.com)'}
+2026-02-08 04:29:35 [scrapy.middleware] INFO: Enabled downloader middlewares:
+['scrapy.downloadermiddlewares.offsite.OffsiteMiddleware',
+ 'scrapy.downloadermiddlewares.robotstxt.RobotsTxtMiddleware',
+ 'scrapy.downloadermiddlewares.httpauth.HttpAuthMiddleware',
+ 'scrapy.downloadermiddlewares.downloadtimeout.DownloadTimeoutMiddleware',
+ 'scrapy.downloadermiddlewares.defaultheaders.DefaultHeadersMiddleware',
+ 'scrapy.downloadermiddlewares.useragent.UserAgentMiddleware',
+ 'scrapy.downloadermiddlewares.retry.RetryMiddleware',
+ 'scrapy.downloadermiddlewares.redirect.MetaRefreshMiddleware',
+ 'scrapy.downloadermiddlewares.httpcompression.HttpCompressionMiddleware',
+ 'scrapy.downloadermiddlewares.redirect.RedirectMiddleware',
+ 'scrapy.downloadermiddlewares.cookies.CookiesMiddleware',
+ 'scrapy.downloadermiddlewares.httpproxy.HttpProxyMiddleware',
+ 'scrapy.downloadermiddlewares.stats.DownloaderStats']
+2026-02-08 04:29:35 [scrapy.middleware] INFO: Enabled spider middlewares:
+['scrapy.spidermiddlewares.httperror.HttpErrorMiddleware',
+ 'scrapy.spidermiddlewares.referer.RefererMiddleware',
+ 'scrapy.spidermiddlewares.urllength.UrlLengthMiddleware',
+ 'scrapy.spidermiddlewares.depth.DepthMiddleware']
+2026-02-08 04:29:35 [scrapy.middleware] INFO: Enabled item pipelines:
+['scraping.pipelines.PostgresPipeline']
+2026-02-08 04:29:35 [scrapy.core.engine] INFO: Spider opened
+2026-02-08 04:29:35 [ilboursa_historical] INFO: PostgresPipeline connected to DB
+2026-02-08 04:29:35 [ilboursa_historical] INFO: DB engine url: postgresql://fixtrade:***@localhost:5432/fixtrade
+2026-02-08 04:29:35 [ilboursa_historical] INFO: scraped_articles rows at open: 39
+2026-02-08 04:29:35 [scrapy.extensions.logstats] INFO: Crawled 0 pages (at 0 pages/min), scraped 0 items (at 0 items/min)
+2026-02-08 04:29:35 [scrapy.extensions.telnet] INFO: Telnet console listening on 127.0.0.1:6023
+2026-02-08 04:29:35 [scrapy.core.engine] DEBUG: Crawled (200) <GET https://www.ilboursa.com/robots.txt> (referer: None)
+2026-02-08 04:29:36 [scrapy.core.engine] DEBUG: Crawled (200) <GET https://www.ilboursa.com/marches/actualites_bourse_tunis?date=01/01/2016> (referer: None)
+2026-02-08 04:29:36 [ilboursa_historical] INFO: Found 22 articles on 2016-01-01
+2026-02-08 04:29:38 [scrapy.core.engine] DEBUG: Crawled (200) <GET https://www.ilboursa.com/marches/actualites_bourse_tunis?date=02/01/2016> (referer: None)
+2026-02-08 04:29:38 [ilboursa_historical] INFO: Found 22 articles on 2016-01-02
+2026-02-08 04:29:38 [scrapy.dupefilters] DEBUG: Filtered duplicate request: <GET https://www.ilboursa.com/marches/la-biat-et-la-bad-signent-une-convention-de-50-millions-de-dollars-en-faveur-des-entreprises-tunisiennes_59619> - no more duplicates will be shown (see DUPEFILTER_DEBUG to show all duplicates)
+2026-02-08 04:29:39 [scrapy.core.engine] DEBUG: Crawled (200) <GET https://www.ilboursa.com/marches/actualites_bourse_tunis?date=03/01/2016> (referer: None)
+2026-02-08 04:29:39 [ilboursa_historical] INFO: Found 22 articles on 2016-01-03
+2026-02-08 04:29:40 [scrapy.core.engine] DEBUG: Crawled (200) <GET https://www.ilboursa.com/marches/actualites_bourse_tunis?date=04/01/2016> (referer: None)
+2026-02-08 04:29:40 [ilboursa_historical] INFO: Found 22 articles on 2016-01-04
+2026-02-08 04:29:42 [scrapy.core.engine] DEBUG: Crawled (200) <GET https://www.ilboursa.com/marches/actualites_bourse_tunis?date=05/01/2016> (referer: None)
+2026-02-08 04:29:42 [ilboursa_historical] INFO: Found 22 articles on 2016-01-05
+2026-02-08 04:29:43 [scrapy.core.engine] DEBUG: Crawled (200) <GET https://www.ilboursa.com/marches/actualites_bourse_tunis?date=06/01/2016> (referer: None)
+2026-02-08 04:29:43 [ilboursa_historical] INFO: Found 22 articles on 2016-01-06
+2026-02-08 04:29:44 [scrapy.core.engine] DEBUG: Crawled (200) <GET https://www.ilboursa.com/marches/actualites_bourse_tunis?date=07/01/2016> (referer: None)
+2026-02-08 04:29:44 [ilboursa_historical] INFO: Found 22 articles on 2016-01-07
+2026-02-08 04:29:45 [scrapy.core.engine] DEBUG: Crawled (200) <GET https://www.ilboursa.com/marches/actualites_bourse_tunis?date=08/01/2016> (referer: None)
+2026-02-08 04:29:45 [ilboursa_historical] INFO: Found 22 articles on 2016-01-08
+2026-02-08 04:29:46 [scrapy.core.engine] DEBUG: Crawled (200) <GET https://www.ilboursa.com/marches/actualites_bourse_tunis?date=09/01/2016> (referer: None)
+2026-02-08 04:29:46 [ilboursa_historical] INFO: Found 22 articles on 2016-01-09
+2026-02-08 04:29:48 [scrapy.core.engine] DEBUG: Crawled (200) <GET https://www.ilboursa.com/marches/le-groupe-marocain-ocp-sallie-a-mistral-ai-pour-industrialiser-lintelligence-artificielle_59521> (referer: https://www.ilboursa.com/marches/actualites_bourse_tunis?date=01/01/2016)
+2026-02-08 04:29:48 [ilboursa_historical] DEBUG: Duplicate url skipped: https://www.ilboursa.com/marches/le-groupe-marocain-ocp-sallie-a-mistral-ai-pour-industrialiser-lintelligence-artificielle_59521
+2026-02-08 04:29:48 [scrapy.core.scraper] WARNING: Dropped: Duplicate item https://www.ilboursa.com/marches/le-groupe-marocain-ocp-sallie-a-mistral-ai-pour-industrialiser-lintelligence-artificielle_59521
+{'content': 'Le Groupe marocain OCP, via sa Business Unit Rock Solutions '
+            'Strategic, a officialisé le 2 février 2026 à Paris un partenariat '
+            'stratégique avec Mistral AI, dans le cadre de son programme '
+            'Bionic.\n'
+            'Selon OCP, la signature de cet accord repose sur deux piliers '
+            'essentiels. Le premier vise à établir un cadre indépendant '
+            "d'évaluation, de gouvernance et de contrôle des agents "
+            "d'intelligence artificielle développés dans le cadre du programme "
+            'Bionic.\n'
+            "L'objectif est de garantir l'évolutivité, la conformité "
+            'réglementaire et la fiabilité de ces systèmes, particulièrement '
+            "lorsqu'ils interviennent dans des décisions critiques de "
+            "l'entreprise.\n"
+            "Le second pilier concerne le développement d'un modèle d'IA "
+            'propriétaire, natif et évolutif, conçu pour répondre aux besoins '
+            "uniques et stratégiques de l'écosystème OCP.\n"
+            'Ce modèle doit contribuer à la création de valeur à chaque étape '
+            "de la chaîne, depuis l'extraction et le traitement des phosphates "
+            "jusqu'à la production de fertilisants et l'optimisation des "
+            'opérations industrielles.\n'
+            "Créée en avril 2023 à Paris, Mistral AI s'est imposée en à peine "
+            "deux ans comme le visage européen de l'intelligence artificielle "
+            "de pointe. Derrière l'entreprise, trois chercheurs français "
+            'passés par Google DeepMind et Meta avait une ambition assumée de '
+            'construire des grands modèles de langage (LLM) capables de '
+            'rivaliser avec les mastodontes américains.\n'
+            'En parallèle, le Groupe OCP a engagé depuis plusieurs années un '
+            'changement profond de son appareil industriel par la donnée et '
+            "l'intelligence artificielle.\n"
+            "L'IA y sert déjà à piloter des opérations minières complexes, "
+            'optimiser les flux logistiques, analyser des volumes massifs de '
+            'données industrielles et renforcer la maintenance prédictive des '
+            "installations. L'objectif est de réduire les coûts, sécuriser la "
+            'production et gagner en réactivité sur une chaîne de valeur qui '
+            "va de l'extraction du phosphate jusqu'aux solutions de "
+            'fertilisation.\n'
+            "OCP investit aussi dans l'écosystème, notamment via des "
+            "programmes d'innovation et de recherche liés à la chimie, aux "
+            "procédés industriels et à l'agriculture intelligente, où l'IA "
+            "devient un levier de compétitivité autant qu'un outil de "
+            'transition vers des modèles plus durables.\n'
+            'Publié le 04/02/26 08:12',
+ 'date': datetime.datetime(2016, 1, 1, 0, 0),
+ 'summary': '',
+ 'title': 'Le groupe marocain OCP s’allie à Mistral AI pour industrialiser '
+          'l’intelligence artificielle',
+ 'url': 'https://www.ilboursa.com/marches/le-groupe-marocain-ocp-sallie-a-mistral-ai-pour-industrialiser-lintelligence-artificielle_59521'}
+2026-02-08 04:29:49 [scrapy.core.engine] DEBUG: Crawled (200) <GET https://www.ilboursa.com/marches/les-prets-chinois-a-lafrique-chutent-de-pres-de-moitie-entre-2023-et-2024_59522> (referer: https://www.ilboursa.com/marches/actualites_bourse_tunis?date=01/01/2016)
+2026-02-08 04:29:49 [ilboursa_historical] DEBUG: Duplicate url skipped: https://www.ilboursa.com/marches/les-prets-chinois-a-lafrique-chutent-de-pres-de-moitie-entre-2023-et-2024_59522
+2026-02-08 04:29:49 [scrapy.core.scraper] WARNING: Dropped: Duplicate item https://www.ilboursa.com/marches/les-prets-chinois-a-lafrique-chutent-de-pres-de-moitie-entre-2023-et-2024_59522
+{'content': 'Selon un rapport du Global Development Policy Center de '
+            "l'Université de Boston, les prêts annuels accordés par la Chine à "
+            "l'Afrique ont chuté de 46 % entre 2023 et 2024.\n"
+            'En 2024, les financements chinois se sont limités à 2,1 milliards '
+            "de dollars (environ 1,8 milliard d'euros), contre 3,9 milliards "
+            "de dollars (3,3 milliards d'euros) l'année précédente. Un niveau "
+            'historiquement bas si on le compare à la décennie précédente, '
+            "lorsque la Chine s'imposait comme l'un des principaux bailleurs "
+            "bilatéraux de l'Afrique.\n"
+            'À partir de 2006, les prêts chinois ont entamé une montée en '
+            'puissance continue, avec une forte accélération entre 2012 et '
+            '2018, au cœur du déploiement des Nouvelles Routes de la Soie '
+            '(BRI).\n'
+            'Durant cette période, les volumes annuels ont régulièrement '
+            'dépassé les 10 milliards de dollars, culminant en 2016 à 28,8 '
+            "milliards de dollars (24,4 milliards d'euros), un sommet jamais "
+            'retrouvé depuis.\n'
+            "La rupture s'opère après la pandémie. Depuis 2020, les flux "
+            "annuels n'ont plus franchi la barre des 5 milliards de dollars, "
+            'souligne le rapport. Les auteurs parlent d\'une " évolution vers '
+            'un engagement plus sélectif " : moins de projets, mais jugés plus '
+            'stratégiques, financièrement viables et susceptibles de générer '
+            'des retours concrets pour la Chine.\n'
+            'Par ailleurs, les engagements de 2024 se concentrent notamment en '
+            'Angola, principal bénéficiaire, au Kenya, en Égypte, en '
+            'République démocratique du Congo et au Sénégal.\n'
+            'Le rapport souligne que cette contraction des prêts ne relève pas '
+            "d'un simple ajustement budgétaire, mais s'inscrit dans une "
+            'inflexion plus profonde de la diplomatie chinoise sur le '
+            'continent.\n'
+            "Longtemps axée sur le financement massif d'infrastructures et sur "
+            "des mécanismes de financement d'État à État, l'approche de Pékin "
+            "évolue vers des formats plus diversifiés, s'appuyant sur la "
+            "coopération économique, l'influence culturelle et les échanges "
+            'humains.\n'
+            'Le 8 janvier, Pékin a annoncé un vaste programme interculturel '
+            'prévoyant près de 600 activités : initiatives en faveur de la '
+            'jeunesse, festivals, projets de développement économique, '
+            'coopération intellectuelle et programmes de formation.\n'
+            "Pour les auteurs du rapport, cela traduit le passage d'une "
+            'relation fondée principalement sur la solidarité politique et les '
+            'grands projets emblématiques à un partenariat plus multiforme, '
+            'entre diplomatie économique, soft power et coopération '
+            'sectorielle ciblée.\n'
+            'En miroir, notent-ils, les priorités politiques collectives des '
+            'pays africains apparaissent, elles, moins clairement articulées, '
+            "ce qui complique l'émergence d'une position continentale unifiée "
+            "face à cette nouvelle phase de l'engagement chinois.\n"
+            'Publié le 04/02/26 09:18',
+ 'date': datetime.datetime(2016, 1, 1, 0, 0),
+ 'summary': '',
+ 'title': 'Les prêts chinois à l’Afrique chutent de près de moitié entre 2023 '
+          'et 2024',
+ 'url': 'https://www.ilboursa.com/marches/les-prets-chinois-a-lafrique-chutent-de-pres-de-moitie-entre-2023-et-2024_59522'}
+2026-02-08 04:29:50 [scrapy.core.engine] DEBUG: Crawled (200) <GET https://www.ilboursa.com/marches/amen-invest-devoile-sa-strategie-d-investissement-pour-2026_59523> (referer: https://www.ilboursa.com/marches/actualites_bourse_tunis?date=01/01/2016)
+2026-02-08 04:29:51 [ilboursa_historical] DEBUG: Duplicate url skipped: https://www.ilboursa.com/marches/amen-invest-devoile-sa-strategie-d-investissement-pour-2026_59523
+2026-02-08 04:29:51 [scrapy.core.scraper] WARNING: Dropped: Duplicate item https://www.ilboursa.com/marches/amen-invest-devoile-sa-strategie-d-investissement-pour-2026_59523
+{'content': "À l'orée de 2026, dans un environnement de marché à la fois "
+            'porteur et plus contraignant, marqué par une détente progressive '
+            "des taux d'intérêt et par l'entrée en vigueur de l'Impôt sur la "
+            'Fortune Mobilière et Immobilière dans le cadre de la Loi de '
+            "Finances 2026, les arbitrages d'allocation d'actifs se "
+            "complexifient et renforcent la nécessité d'une gestion actions "
+            'structurée, disciplinée et fiscalement consciente.\n'
+            "C'est dans ce contexte macro-financier profondément renouvelé que "
+            "l'intermédiaire en Bourse Amen Invest a déployé sa nouvelle gamme "
+            'de portefeuilles types actions 2026, construits selon une '
+            'approche Smart Beta rigoureuse et éprouvée, visant à capter les '
+            'moteurs structurels de performance actions tout en intégrant les '
+            'nouvelles contraintes réglementaires et Economiques.\n'
+            "En tant qu'intermédiaire en bourse de référence, la démarche "
+            "d'Amen Invest repose sur une analyse fondamentale active, "
+            'combinant une méthodologie stricte de construction de '
+            'portefeuilles avec une lecture fine des facteurs de performance, '
+            "afin d'offrir aux investisseurs avertis des solutions robustes, "
+            'cohérentes et adaptées à un régime de marché en transition.\n'
+            "L'approche d'investissement d'Amen Invest repose sur une analyse "
+            'fondamentale rigoureuse des entreprises tunisiennes, avec une '
+            'orientation résolument long terme visant à capter une création de '
+            'valeur durable, au-delà des cycles conjoncturels.\n'
+            'La construction des portefeuilles intègre une gestion active et '
+            'disciplinée du risque, fondée sur des règles strictes de '
+            'diversification et une prise en compte systématique de '
+            "l'environnement macroéconomique, afin d'exploiter le potentiel "
+            'des principaux secteurs domestiques.\n'
+            'Cette philosophie se décline à travers une stratégie Smart Beta, '
+            "fondée sur l'efficience de critères actifs de sélection articulés "
+            'autour de trois moteurs complémentaires – valorisation, '
+            "croissance et rendement - permettant d'optimiser durablement le "
+            'couple rendement/risque.\n'
+            'Dans un contexte 2026 marqué par un assouplissement monétaire '
+            "progressif et une évolution du cadre fiscal de l'épargne, cette "
+            'approche vise à positionner les actions comme un vecteur central '
+            'de diversification et de performance à long terme, aussi bien '
+            'pour les investisseurs institutionnels que pour les personnes '
+            'physiques.\n'
+            'Le portefeuille actions 2026 repose sur une méthodologie '
+            'systématique et transparente, éprouvée en 2025 et ajustée aux '
+            'conditions macroéconomiques en vigueur. La sélection des titres s '
+            "' appuie sur une analyse rigoureuse des fondamentaux, ratios de "
+            'valorisation et de rentabilité, perspectives sectorielles et '
+            'qualité de la gouvernance avec un biais mesuré en faveur des '
+            "secteurs les plus sensibles à la détente des taux d'intérêt.\n"
+            'La construction du portefeuille privilégie une diversification '
+            'sectorielle équilibrée, couvrant les segments bancaire, '
+            'agroalimentaire, leasing et financier, ainsi que certains '
+            'secteurs industriels et automobiles, afin de limiter les risques '
+            'de concentration.\n'
+            'La pondération des lignes, initialement encadrée par des bornes '
+            "strictes, fait l'objet d'ajustements dynamiques en fonction des "
+            "performances, de l'évolution des marchés et des effets potentiels "
+            "du cadre fiscal sur les flux d'investissement.\n"
+            "Un dispositif de suivi trimestriel permet d'intégrer les "
+            'évolutions des taux et des paramètres fiscaux dans les décisions '
+            'de réallocation, garantissant une adaptation maîtrisée du '
+            "portefeuille tout en préservant la cohérence stratégique d'une "
+            "année sur l'autre.\n"
+            "L'adoption de nos portefeuilles types doit s 'inscrire dans une "
+            "démarche rigoureuse. Afin d'optimiser votre allocation pour 2026, "
+            'nous préconisons une approche en trois temps :\n'
+            "L'année 2026 s'ouvre sur un paysage boursier tunisien en pleine "
+            'mutation. Si les ajustements fiscaux imposent une lecture '
+            'prudente à court terme, la résilience opérationnelle dont font '
+            'preuve les sociétés cotées constitue un moteur de confiance pour '
+            "l'avenir.\n"
+            "Dans ce contexte, la sélectivité n ' est plus une option, mais "
+            'une nécessité stratégique. La méthodologie de portefeuille type '
+            "d'Amen Invest ne vise pas à prédire l'évolution du marché, mais à "
+            'identifier des entreprises présentant des profils de risque et de '
+            'rendement cohérents avec les défis de demain.\n'
+            'Plus que jamais, la performance durable se construira sur la '
+            'capacité à distinguer les acteurs agiles capables de naviguer '
+            'dans ce nouvel environnement réglementaire. Nous restons '
+            'convaincus que la Bourse de Tunis recèle des gisements de valeur '
+            "pour l'investisseur qui privilégie la rigueur de l'analyse et un "
+            'horizon de long terme.\n'
+            'Publié le 04/02/26 09:30',
+ 'date': datetime.datetime(2016, 1, 1, 0, 0),
+ 'summary': '',
+ 'title': "Amen Invest dévoile sa stratégie d'investissement pour 2026",
+ 'url': 'https://www.ilboursa.com/marches/amen-invest-devoile-sa-strategie-d-investissement-pour-2026_59523'}
+2026-02-08 04:29:52 [scrapy.core.engine] DEBUG: Crawled (200) <GET https://www.ilboursa.com/marches/le-service-de-la-dette-exterieure-des-pays-africains-depassera-les-90-milliards-de-dollars-en-2026_59531> (referer: https://www.ilboursa.com/marches/actualites_bourse_tunis?date=01/01/2016)
+2026-02-08 04:29:52 [ilboursa_historical] DEBUG: Duplicate url skipped: https://www.ilboursa.com/marches/le-service-de-la-dette-exterieure-des-pays-africains-depassera-les-90-milliards-de-dollars-en-2026_59531
+2026-02-08 04:29:52 [scrapy.core.scraper] WARNING: Dropped: Duplicate item https://www.ilboursa.com/marches/le-service-de-la-dette-exterieure-des-pays-africains-depassera-les-90-milliards-de-dollars-en-2026_59531
+{'content': 'Les gouvernements africains font face à une pression sans '
+            'précédent sur leur dette extérieure, avec des remboursements qui '
+            'devraient dépasser 90 milliards de dollars cette année.\n'
+            "C'est ce qui ressort du dernier rapport de l'agence Standard & "
+            "Poor's Global Ratings sur les perspectives souveraines du "
+            "continent. Selon l'analyse, les paiements de la dette extérieure "
+            "des États africains sont aujourd'hui plus de trois fois "
+            'supérieurs à ceux de 2012.\n'
+            "L'agence alerte sur la fragilité croissante des finances "
+            'publiques africaines, alors que les échéances de remboursement en '
+            'devises fortes prévues en 2026 pourraient accentuer la pression '
+            'sur les réserves extérieures et creuser les risques de '
+            'refinancement. " Les remboursements de dette extérieure des '
+            'gouvernements approchent d\'un pic ", souligne le rapport.\n'
+            ':\n'
+            'Les raisons sont structurelles : une dette historiquement élevée '
+            'combinée à des bases de revenus limitées et concentrées maintient '
+            'les pays dans une position vulnérable. Les risques extérieurs, '
+            "fluctuations des taux de change, hausse des taux d'intérêt "
+            'mondiaux, et dépendance aux marchés internationaux, se sont '
+            'également accentués, amplifiant les menaces pour la stabilité '
+            'économique.\n'
+            "Le rapport souligne également que l'Égypte représente près d'un "
+            'tiers des remboursements de cette année, avec 27 milliards de '
+            "dollars dus au titre du principal, suivie par l'Angola, l'Afrique "
+            'du Sud et le Nigeria, qui pèsent eux aussi lourdement sur le '
+            'total des paiements.\n'
+            'Selon S&P, la note moyenne des souverains africains a atteint son '
+            "plus haut niveau depuis la fin de 2020. Mais il s'agit surtout "
+            "d'une stabilisation des principaux indicateurs de crédit plutôt "
+            "que d'une amélioration substantielle. Les analystes de l'agence "
+            'rappellent que les ajustements structurels visant à réduire le '
+            'fardeau de la dette demandent généralement des délais plus longs, '
+            'et que la vulnérabilité extérieure demeure.\n'
+            "Côté croissance, l'agence anticipe une stabilité économique "
+            'relative : la croissance réelle moyenne du PIB devrait se '
+            'maintenir à 4,5 % en 2026, tandis que les déficits budgétaires '
+            'devraient se réduire modérément à 3,5 % du PIB. En revanche, la '
+            'dette publique restera élevée, autour de 61 % du PIB en moyenne.\n'
+            'Face à ce poids croissant des remboursements, plusieurs '
+            'gouvernements africains adoptent désormais des stratégies actives '
+            'de gestion de leur passif : rachats de dette, échanges ou '
+            'allongement des échéances sont utilisés pour réduire les risques '
+            'de refinancement et lisser la charge de la dette sur le moyen '
+            'terme.\n'
+            'Publié le 04/02/26 12:29',
+ 'date': datetime.datetime(2016, 1, 1, 0, 0),
+ 'summary': '',
+ 'title': 'Le service de la dette extérieure des pays africains dépassera les '
+          '90 milliards de dollars en 2026',
+ 'url': 'https://www.ilboursa.com/marches/le-service-de-la-dette-exterieure-des-pays-africains-depassera-les-90-milliards-de-dollars-en-2026_59531'}
+2026-02-08 04:29:53 [scrapy.core.engine] DEBUG: Crawled (200) <GET https://www.ilboursa.com/marches/le-revenu-global-des-societes-cotees-depasse-les-26-milliards-de-dinars-en-2025_59533> (referer: https://www.ilboursa.com/marches/actualites_bourse_tunis?date=01/01/2016)
+2026-02-08 04:29:53 [ilboursa_historical] DEBUG: Duplicate url skipped: https://www.ilboursa.com/marches/le-revenu-global-des-societes-cotees-depasse-les-26-milliards-de-dinars-en-2025_59533
+2026-02-08 04:29:53 [scrapy.core.scraper] WARNING: Dropped: Duplicate item https://www.ilboursa.com/marches/le-revenu-global-des-societes-cotees-depasse-les-26-milliards-de-dinars-en-2025_59533
+{'content': "Les indicateurs d'activité des sociétés cotées, durant l'année "
+            '2025, font ressortir un revenu global en hausse de 5,3% par '
+            'rapport à 2024, pour atteindre 26,5 milliards de dinars, contre '
+            '25,2 milliards de dinars.\n'
+            'Environ 78% des sociétés qui ont publié leurs indicateurs, soit '
+            '56 sur 72, ont amélioré leurs revenus cumulés par rapport à '
+            "l'année précédente, tandis que la part dans le revenu global des "
+            "20 sociétés qui composent le Tunindex20 s'élève à 15,8 milliards "
+            'de dinars (ou 60% du revenu global), en hausse de 4,1% par '
+            "rapport à l'année écoulée.\n"
+            "Pour le secteur bancaire, durant l'année 2025, le Produit Net "
+            'Bancaire (PNB) cumulé des 12 banques cotées a atteint un total de '
+            "7 290 MD, contre 6 987 MD durant l'année 2024, soit une "
+            'progression de 4,3%.\n'
+            'De son côté, le revenu net de Leasing cumulé des 7 sociétés de '
+            "leasing cotées a progressé de 5% durant l'année 2025 par rapport "
+            "à l'année 2024, pour atteindre 594 MD contre 565 MD.\n"
+            "Concernant l'activité des 7 compagnies d'assurances, le montant "
+            'global des primes émises a atteint 1 845 MD contre 1 703 MD, soit '
+            'une évolution remarquable de 8,4%.\n'
+            'Le secteur financier qui regroupe 29 sociétés cotées, et qui '
+            "s'affiche comme principale capitalisation de la cote, a réalisé "
+            "un revenu global de 9 770 MD contre 9 294 MD durant l'année 2024, "
+            'soit une progression de 5,1%.\n'
+            'Concernant le secteur des Biens de Consommation, le revenu global '
+            "des trois grands groupes opérant dans l'agroalimentaire (Poulina "
+            'Group Holding, Délice Holding et SFBT) a progressé de 4,9% pour '
+            "atteindre 6 481 MD contre 6 178 MD durant l'année 2024.\n"
+            'De son côté, le secteur des Services aux Consommateurs, qui '
+            "englobe 11 sociétés cotées (dont UADH, qui n'a toujours pas "
+            "publié ses indicateurs), fait ressortir un chiffre d'affaires "
+            "global de 5 784 MD contre 5 351 MD durant l'année précédente soit "
+            'une progression de 8,1%.\n'
+            "En ce qui concerne le Chiffre d'Affaires des deux enseignes "
+            'cotées de la grande distribution, il a progressé de 12,4% durant '
+            "l'année 2025, pour atteindre 2 151 MD contre 1 914 MD en 2024.\n"
+            "De même, le chiffre d'affaires global des quatre concessionnaires "
+            'automobiles (hors UADH) a augmenté de 11,9% au 31 décembre 2025 '
+            "pour se situer à 1 481 MD contre 1 323 MD durant l'exercice "
+            '2024.\n'
+            'En général, les neufs secteurs représentés dans la cote ont '
+            'amélioré leurs revenus. A cet égard, les deux secteurs '
+            'Technologie et Télécommunication ont réalisé la plus forte '
+            'progression avec une hausse de 17%.\n'
+            'En outre, concernant les douze sous-secteurs, la bonne tenue est '
+            'généralisée pour huit sous secteurs qui ont marqué des '
+            'performances positives. Les meilleures reviennent au sous-secteur '
+            'Distribution avec 11,9%, suivi par le sous-secteur Assurances '
+            'avec 8,4% et Matières premières avec 5,3%.\n'
+            'La contreperformance a touché principalement quatre sous-secteur, '
+            'Automobiles et Equipement, Produits Ménagers et Soin Personnel, '
+            'Chimie et voyages et loisirs, respectivement de (-1,7%), (-1,4%), '
+            '(-1%) et (-0,5%).\n'
+            'Publié le 04/02/26 12:41',
+ 'date': datetime.datetime(2016, 1, 1, 0, 0),
+ 'summary': '',
+ 'title': 'Le revenu global des sociétés cotées dépasse les 26 milliards de '
+          'dinars en 2025',
+ 'url': 'https://www.ilboursa.com/marches/le-revenu-global-des-societes-cotees-depasse-les-26-milliards-de-dinars-en-2025_59533'}
+2026-02-08 04:29:54 [scrapy.core.engine] DEBUG: Crawled (200) <GET https://www.ilboursa.com/marches/lalgerie-reussit-une-emission-historique-de-sukuk-de-2-milliards-d-euros_59538> (referer: https://www.ilboursa.com/marches/actualites_bourse_tunis?date=01/01/2016)
+2026-02-08 04:29:55 [ilboursa_historical] DEBUG: Duplicate url skipped: https://www.ilboursa.com/marches/lalgerie-reussit-une-emission-historique-de-sukuk-de-2-milliards-d-euros_59538
+2026-02-08 04:29:55 [scrapy.core.scraper] WARNING: Dropped: Duplicate item https://www.ilboursa.com/marches/lalgerie-reussit-une-emission-historique-de-sukuk-de-2-milliards-d-euros_59538
+{'content': "'Algérie a procédé à sa première émission souveraine de Sukuk "
+            '(des titres de dette conformes à la finance islamique) pour un '
+            "montant d'environ 296,6 milliards de dinars algériens, soit près "
+            "de 2 milliards d'euros.\n"
+            'Cette opération intervient dans un contexte de contraintes '
+            'budgétaires et de recherche de nouvelles sources de financement '
+            "pour l'État. L'émission vise à diversifier les sources de "
+            'financement public, réduire la dépendance aux mécanismes '
+            "d'emprunt classique et aux recettes issues des hydrocarbures, et "
+            "de mobiliser l'épargne nationale, y compris celle qui reste hors "
+            'des circuits financiers formels.\n'
+            "Il s'agit donc des Sukuk de type Ijara (associé à la "
+            "location/usufruit d'actifs), conformes aux principes de la charia "
+            "qui interdisent le paiement d'intérêts classiques. Les titres ont "
+            'une maturité de sept ans et offrent un rendement annuel de 6 % '
+            "payé sous forme de loyers, un mécanisme alternatif à l'intérêt.\n"
+            "Les Sukuk sont adossés à un portefeuille d'actifs immobiliers "
+            'publics (bâtiments administratifs, équipements publics, '
+            'terrains). La souscription est ouverte aux particuliers algériens '
+            "(résidents et non-résidents) ainsi qu'aux entreprises "
+            'algériennes, avec possibilité de revente sur le marché '
+            'secondaire.\n'
+            'Cette opération marque une étape symbolique dans le développement '
+            "de la finance islamique en Algérie, un pays qui n'avait pas "
+            "encore utilisé ce type d'instrument souverain pour lever des "
+            'fonds publics.\n'
+            "Elle envoie aussi un signal aux marchés, en testant l'appétit des "
+            'investisseurs domestiques pour des produits nouveaux et en '
+            'alignant le pays sur des normes internationales de financement '
+            'islamique.\n'
+            "L'émission intervient alors que le gouvernement cherche à alléger "
+            'la pression sur les finances publiques et à structurer un segment '
+            'financier jugé à fort potentiel de croissance.\n'
+            'Publié le 04/02/26 13:30',
+ 'date': datetime.datetime(2016, 1, 1, 0, 0),
+ 'summary': '',
+ 'title': 'L’Algérie réussit une émission historique de Sukuk de 2 milliards '
+          "d'euros",
+ 'url': 'https://www.ilboursa.com/marches/lalgerie-reussit-une-emission-historique-de-sukuk-de-2-milliards-d-euros_59538'}
+2026-02-08 04:29:55 [scrapy.core.engine] DEBUG: Crawled (200) <GET https://www.ilboursa.com/marches/attijari-leasing-annonce-un-benefice-net-de-10-millions-de-dinars-en-2025_59559> (referer: https://www.ilboursa.com/marches/actualites_bourse_tunis?date=01/01/2016)
+2026-02-08 04:29:56 [ilboursa_historical] DEBUG: Duplicate url skipped: https://www.ilboursa.com/marches/attijari-leasing-annonce-un-benefice-net-de-10-millions-de-dinars-en-2025_59559
+2026-02-08 04:29:56 [scrapy.core.scraper] WARNING: Dropped: Duplicate item https://www.ilboursa.com/marches/attijari-leasing-annonce-un-benefice-net-de-10-millions-de-dinars-en-2025_59559
+{'content': 'La société\n'
+            "a annoncé que son Conseil d'Administration, lors de sa réunion du "
+            "03 février 2026, a passé en revue l'activité de la société au "
+            "cours de l'exercice 2025 et a arrêté les états financiers "
+            "individuels relatifs à l'exercice 2025 qui ont été soumis aux "
+            'commissaires aux Comptes.\n'
+            'Les états financiers individuels font apparaître un résultat net '
+            'de 10 millions de dinars, soit le même que celui enregistré en '
+            '2024.\n'
+            "Le Conseil d'Administration proposera à l'AGO la distribution "
+            "d'un dividende de 2,200 dinars par action, contre 2 dinars "
+            "l'exercice précédent, sous réserve de l'accord de la BCT.\n"
+            'Publié le 05/02/26 08:32',
+ 'date': datetime.datetime(2016, 1, 1, 0, 0),
+ 'summary': '',
+ 'title': 'Attijari Leasing annonce un bénéfice net de 10 millions de dinars '
+          'en 2025',
+ 'url': 'https://www.ilboursa.com/marches/attijari-leasing-annonce-un-benefice-net-de-10-millions-de-dinars-en-2025_59559'}
+2026-02-08 04:29:56 [scrapy.core.engine] DEBUG: Crawled (200) <GET https://www.ilboursa.com/marches/les-startups-de-la-region-mena-levent-plus-de-560-millions-de-dollars-en-janvier_59560> (referer: https://www.ilboursa.com/marches/actualites_bourse_tunis?date=01/01/2016)
+2026-02-08 04:29:56 [ilboursa_historical] DEBUG: Duplicate url skipped: https://www.ilboursa.com/marches/les-startups-de-la-region-mena-levent-plus-de-560-millions-de-dollars-en-janvier_59560
+2026-02-08 04:29:56 [scrapy.core.scraper] WARNING: Dropped: Duplicate item https://www.ilboursa.com/marches/les-startups-de-la-region-mena-levent-plus-de-560-millions-de-dollars-en-janvier_59560
+{'content': 'Les startups de la région Moyen-Orient et Afrique du Nord (MENA) '
+            'ont levé 563 millions de dollars en janvier 2026, selon les '
+            'données compilées par la plateforme spécialisée Wamda.\n'
+            'Ce montant marque un bond de 228 % par rapport au mois précédent, '
+            'et ce, avec des levées réalisées par 42 startups.\n'
+            'Cependant, les financements enregistrés demeurent inférieurs de '
+            '35 % à ceux de janvier 2025. Wamda souligne par ailleurs que le '
+            'financement par emprunt a joué un rôle limité, ne représentant '
+            'que 9 % des capitaux levés au cours du mois.\n'
+            'Au niveau des pays, les Émirats arabes unis ont largement dominé '
+            "l'écosystème MENA en janvier, totalisant 426,3 millions de "
+            'dollars levés à travers 12 opérations. Cette performance '
+            "s'explique en grande partie par deux transactions majeures : une "
+            'opération de 230 millions de dollars réalisée par Maal et une '
+            'levée de 170 millions de dollars par Property Finder, qui ont à '
+            'elles seules tiré les volumes vers le haut.\n'
+            ':\n'
+            "L'Arabie saoudite arrive deuxième, avec 18 startups ayant levé "
+            "collectivement 56 millions de dollars, confirmant l'activité "
+            "soutenue de son écosystème entrepreneurial. L'Égypte se classe "
+            'troisième, avec quatre startups ayant mobilisé 22,1 millions de '
+            'dollars. Le Maroc, pour sa part, a enregistré 17 millions de '
+            'dollars levés à travers deux opérations.\n'
+            'La Tunisie est absente du classement de Wamda pour ce mois de '
+            "janvier. Aucune opération significative n'a été recensée, ce qui "
+            "suggère qu'aucune startup tunisienne n'a réalisé de levée notable "
+            'durant la période.\n'
+            'Côté secteurs, la fintech a dominé les levées de fonds en '
+            'janvier, avec sept startups ayant attiré 319,7 millions de '
+            'dollars. La proptech arrive en deuxième position, avec trois '
+            'startups ayant levé 189 millions de dollars. Les startups SaaS se '
+            "classent troisièmes avec sept d'entre elles ont mobilisé un total "
+            'de 17 millions de dollars.\n'
+            'Parallèlement, la répartition des financements par stade de '
+            'développement continue de privilégier les entreprises en phase '
+            "d'amorçage. Au total, 31 startups early-stage ont levé 66 "
+            'millions de dollars au cours du mois.\n'
+            'Du point de vue du modèle économique, les startups orientées vers '
+            'le grand public (B2C) ont capté la majorité des capitaux, avec '
+            '470,8 millions de dollars levés à travers 17 opérations. Les '
+            'startups B2B ont enregistré 19 transactions pour un montant de 43 '
+            'millions de dollars, tandis que les modèles hybrides B2B2C ont '
+            'levé 9 millions de dollars via six opérations.\n'
+            'Enfin, il est à noter que les startups fondées par des hommes ont '
+            'représenté 36 opérations, totalisant 560 millions de dollars.\n'
+            'Publié le 05/02/26 09:40',
+ 'date': datetime.datetime(2016, 1, 1, 0, 0),
+ 'summary': '',
+ 'title': 'Les startups de la région MENA lèvent plus de 560 millions de '
+          'dollars en janvier',
+ 'url': 'https://www.ilboursa.com/marches/les-startups-de-la-region-mena-levent-plus-de-560-millions-de-dollars-en-janvier_59560'}
+2026-02-08 04:29:57 [scrapy.core.engine] DEBUG: Crawled (200) <GET https://www.ilboursa.com/marches/bourse-de-tunis-linsoluble-paradoxe-d-un-marche-assoiffe-dopportunites_59562> (referer: https://www.ilboursa.com/marches/actualites_bourse_tunis?date=01/01/2016)
+2026-02-08 04:29:58 [ilboursa_historical] DEBUG: Duplicate url skipped: https://www.ilboursa.com/marches/bourse-de-tunis-linsoluble-paradoxe-d-un-marche-assoiffe-dopportunites_59562
+2026-02-08 04:29:58 [scrapy.core.scraper] WARNING: Dropped: Duplicate item https://www.ilboursa.com/marches/bourse-de-tunis-linsoluble-paradoxe-d-un-marche-assoiffe-dopportunites_59562
+{'content': 'Le contraste est saisissant. Alors que le marché boursier célèbre '
+            'une année 2025 historique pour le Tunindex, les couloirs de la '
+            "Bourse de Tunis résonnent d'un silence inquiétant en matière de "
+            'nouvelles introductions.\n'
+            "En cinq ans, rappelons-le, la place financière de Tunis s'est "
+            'transformée en un club de plus en plus fermé : les portes de '
+            "sortie s'ouvrent à la volée, tandis que le verrou de l'entrée "
+            'semble rouillé.\n'
+            "L'année 2025 restera dans les annales. Avec une progression "
+            "spectaculaire de 35,12 %, l'indice de référence a franchi pour la "
+            'première fois le cap symbolique des 13 000 points, atteignant '
+            'même un record à près de 14.500 points en janvier 2026.\n'
+            "Cette envolée ne doit rien au hasard. Elle est le fruit d'un "
+            'excédent de liquidités massif dans le système financier. Face à '
+            'la baisse des rendements des placements alternatifs et à une '
+            'épargne nationale qui cherche désespérément un refuge contre '
+            "l'érosion monétaire, les capitaux ont massivement reflué vers la "
+            'cote. Le volume des échanges a bondi de plus de 46 %, témoignant '
+            "d'un appétit féroce des boursicoteurs.\n"
+            ':\n'
+            "C'est ici que le bât blesse. Alors que le marché déborde de "
+            '"cash", la machine à introduire de nouvelles entreprises est en '
+            'panne. Selon les analystes de la place, la profondeur actuelle du '
+            "marché et l'excédent de liquidité auraient pu permettre de lever "
+            'entre 3 et 4 milliards de dinars en nouvelles introductions (IPO) '
+            "au cours de l'année écoulée.\n"
+            '"Nous avons les capitaux, nous avons la demande, mais le rayon '
+            'est vide", se désole un intermédiaire en Bourse. "Le marché n\'a '
+            'pas pu transformer cet essai faute de papier frais."\n'
+            'Malheureusement pour les investisseurs, ce "désert" boursier '
+            "n'est pas prêt de prendre fin. Les prévisions pour l'exercice "
+            '2026 confirment la poursuite de cette tendance atone. À ce jour, '
+            'le "pipe" (le carnet de projets d\'introductions) est '
+            "désespérément vide : aucune entreprise n'a déposé de dossier de "
+            'candidature sérieux pour les mois à venir.\n'
+            'Ce manque de visibilité laisse présager une nouvelle année où le '
+            "marché tournera en vase clos, privant l'économie tunisienne d'un "
+            'relais de croissance crucial.\n'
+            'Le bilan des cinq dernières années est alarmant pour '
+            "l'attractivité de la place. Côté entrées, les IPO se comptent sur "
+            "les doigts d'une main. Les chefs d'entreprise, frileux face aux "
+            'contraintes de transparence et à une conjoncture économique '
+            'globale incertaine, préfèrent le financement bancaire classique '
+            'ou le capital-investissement privé.\n'
+            ':\n'
+            "A l'opposé, le phénomène de retrait s'est accéléré. Entre les "
+            'offres publiques de retrait (OPR) lancées par des actionnaires '
+            'majoritaires souhaitant reprendre le plein contrôle et les '
+            'radiations de sociétés en difficulté, la "cote" s\'amenuise. Huit '
+            'entreprises se sont retirées de la cote ces toutes dernières '
+            'années : ADWYA, Céréalis, AMS, SOPAT, SERVICOM, Electrostar, MIP '
+            'et GIF Filter.\n'
+            'La conjoncture économique en Tunisie ces dernières années, '
+            'notamment la pression inflationniste, la contrainte sur le dinar '
+            "et le climat d'investissement, a réduit l'appétit des entreprises "
+            'et des investisseurs pour de nouvelles introductions en Bourse. '
+            "C'est particulièrement visible sur 2023 et 2024, années presque "
+            "dépourvues d'IPO.\n"
+            "Le cadre réglementaire et l'attractivité relative du marché ont "
+            'également influencé la décision des dirigeants de sociétés. Les '
+            'entreprises de taille moyenne ou les holdings familiales '
+            'préfèrent souvent des canaux de financement alternatifs plutôt '
+            "qu'une introduction boursière qui nécessite transparence, coûts "
+            'de conformité et, surtout, attention publique.\n'
+            'Publié le 05/02/26 09:54',
+ 'date': datetime.datetime(2016, 1, 1, 0, 0),
+ 'summary': '',
+ 'title': "Bourse de Tunis : L’insoluble paradoxe d'un marché assoiffé "
+          'd’opportunités',
+ 'url': 'https://www.ilboursa.com/marches/bourse-de-tunis-linsoluble-paradoxe-d-un-marche-assoiffe-dopportunites_59562'}
+2026-02-08 04:29:59 [scrapy.core.engine] DEBUG: Crawled (200) <GET https://www.ilboursa.com/marches/lalgerie-va-exporter-des-matieres-premieres-pharmaceutiques-vers-la-tunisie_59568> (referer: https://www.ilboursa.com/marches/actualites_bourse_tunis?date=01/01/2016)
+2026-02-08 04:29:59 [ilboursa_historical] DEBUG: Duplicate url skipped: https://www.ilboursa.com/marches/lalgerie-va-exporter-des-matieres-premieres-pharmaceutiques-vers-la-tunisie_59568
+2026-02-08 04:29:59 [scrapy.core.scraper] WARNING: Dropped: Duplicate item https://www.ilboursa.com/marches/lalgerie-va-exporter-des-matieres-premieres-pharmaceutiques-vers-la-tunisie_59568
+{'content': "L'Algérie a annoncé qu'elle commencera prochainement à exporter "
+            'vers la Tunisie des matières premières destinées à la fabrication '
+            'de médicaments, notamment du paracétamol et des antibiotiques.\n'
+            "Lors d'une visite conjointe de plusieurs unités de production à "
+            "Alger, le 2 février 2026, le ministre algérien de l'Industrie "
+            'pharmaceutique, Ouacim Kouidri, accompagné du ministre tunisien '
+            'de la Santé, a précisé que la Tunisie serait le premier '
+            'partenaire à bénéficier de ces exportations.\n'
+            "Le ministre a ajouté que cette initiative s'inscrit dans le cadre "
+            "d'un mémorandum d'entente signé en décembre 2025 lors de la 23e "
+            'session de la Grande commission mixte algéro-tunisienne, tenue à '
+            'Tunis. Ce protocole vise à renforcer la coopération dans la '
+            "fabrication de médicaments, mais aussi à faciliter l'échange "
+            "d'expertises et de technologies entre les deux pays.\n"
+            ':\n'
+            'Il a précisé que cette ouverture vers le marché tunisien marque '
+            "une étape importante dans la stratégie de l'Algérie pour "
+            'valoriser sa production pharmaceutique et positionner le pays '
+            'comme un fournisseur important de matières premières dans la '
+            'région.\n'
+            'Dans le cadre de cette visite conjointe, les ministres ont '
+            "découvert l'Unité de production du groupe Saidal à El Harrach, où "
+            'les capacités industrielles et les perspectives de développement '
+            'des matières premières ont été mises en avant.\n'
+            'Ils se sont également rendus aux Laboratoires Frater-Razes, '
+            'spécialisés dans la fabrication de plus de 150 produits '
+            'pharmaceutiques, incluant insuline, médicaments anticancéreux et '
+            'produits de biotechnologie.\n'
+            'Selon un communiqué du groupe, la délégation tunisienne a '
+            "bénéficié d'une présentation détaillée des infrastructures et des "
+            'projets stratégiques du groupe, notamment ceux liés à la '
+            'production de matières premières pharmaceutiques.\n'
+            'Les ministres ont identifié plusieurs domaines de coopération '
+            "prioritaires, notamment la production de vaccins, d'insuline, de "
+            "médicaments anticancéreux et d'antibiotiques. Le ministre "
+            'algérien, Ouacim Kouidri, a précisé que ce partenariat pourrait '
+            "s'étendre à d'autres secteurs pharmaceutiques à l'avenir.\n"
+            'Publié le 05/02/26 10:57',
+ 'date': datetime.datetime(2016, 1, 1, 0, 0),
+ 'summary': '',
+ 'title': 'L’Algérie va exporter des matières premières pharmaceutiques vers '
+          'la Tunisie',
+ 'url': 'https://www.ilboursa.com/marches/lalgerie-va-exporter-des-matieres-premieres-pharmaceutiques-vers-la-tunisie_59568'}
+2026-02-08 04:30:00 [scrapy.core.engine] DEBUG: Crawled (200) <GET https://www.ilboursa.com/marches/zoom-sur-les-prix-des-appartements-au-m%C2%B2-en-2025_59572> (referer: https://www.ilboursa.com/marches/actualites_bourse_tunis?date=01/01/2016)
+2026-02-08 04:30:00 [ilboursa_historical] DEBUG: Duplicate url skipped: https://www.ilboursa.com/marches/zoom-sur-les-prix-des-appartements-au-m%C2%B2-en-2025_59572
+2026-02-08 04:30:00 [scrapy.core.scraper] WARNING: Dropped: Duplicate item https://www.ilboursa.com/marches/zoom-sur-les-prix-des-appartements-au-m%C2%B2-en-2025_59572
+{'content': 'Selon le bilan immobilier de Mubawab pour 2025, le marché '
+            'tunisien poursuit sa progression, mais à des rythmes différents '
+            'selon les segments et les régions.\n'
+            'En 2025, les données observées sur Mubawab.tn indiquent que la '
+            'demande immobilière reste fortement concentrée sur les quartiers '
+            'premium et les zones à fort potentiel de développement.\n'
+            "À l'échelle nationale, le prix moyen au m² des appartements a "
+            'enregistré une hausse de 5 % par rapport à 2024, mais certaines '
+            'zones du Grand Tunis se distinguent par des progressions bien '
+            'plus spectaculaires. La Soukra a ainsi vu ses prix grimper de 22 '
+            '%, suivie par Cité El Ghazela (+19 %), Chotrana 1 (+13 %), '
+            "Boumhel (+12 %) et Jardins d'El Menzah 2 (+10 %).\n"
+            "Boumhel et Jardins d'El Menzah 2 confirment leur statut de pôles "
+            "attractifs, déjà identifiés comme dynamiques lors de l'édition "
+            'précédente.\n'
+            "La demande à l'achat se concentre principalement sur les "
+            "appartements S+2, d'une superficie comprise entre 80 et 130 m², "
+            'considérés comme un compromis idéal entre confort, fonctionnalité '
+            'et budget.\n'
+            'Les appartements S+1 et S+3 arrivent ensuite, mais restent moins '
+            'prisés, soulignant la préférence des acquéreurs pour des '
+            'logements optimisés et adaptés aux besoins des familles '
+            'modernes.\n'
+            'En 2025, La Soukra se positionne en tête des quartiers les plus '
+            'recherchés du Grand Tunis, avec des prix moyens de 3.900 DT/m² '
+            "pour le neuf et 3 400 DT/m² pour l'ancien. L'Aouina, leader ces "
+            'deux dernières années, occupe désormais la deuxième place, avec '
+            "2.740 DT/m² pour l'ancien et 3.500 DT/m² pour le neuf.\n"
+            'Ain Zaghouan Nord maintient sa troisième position, affichant un '
+            'prix moyen de 4 600 DT/m² pour le neuf, suivi par Les Jardins de '
+            'Carthage, qui confirment leur positionnement premium avec un prix '
+            'moyen de\xa0 5.690 DT/m² pour le neuf.\n'
+            ':\n'
+            "Parallèlement, plusieurs quartiers du Grand Tunis s'imposent "
+            'comme des marchés comparables en termes de standing, de '
+            'localisation et de niveaux de prix, attirant une demande en quête '
+            "d'un équilibre entre qualité résidentielle et budget maîtrisé : "
+            'Cité Ennasr 2 (2.960 DT/m² ancien et 3.990 DT/m² neuf), Jardins '
+            "d'El Menzah 2 (2.884 DT/m² ancien et 3.843 DT/m² neuf) et El "
+            'Menzah 9C (2.923 DT/m² ancien et 3.948 DT/m² neuf).\n'
+            "À l'inverse, La Nouvelle Médina, El Mourouj 6 et La Manouba "
+            'demeurent les secteurs les plus accessibles du Grand Tunis, avec '
+            'des prix moyens du neuf inférieurs à 3.000 DT/m².\n'
+            "À l'échelle nationale, Hammamet s'impose comme la zone la plus "
+            "recherchée pour l'achat, avec Hammamet Nord affichant 3.400 DT/m² "
+            "pour l'ancien et 4.025 DT/m² pour le neuf, tandis que Hammamet "
+            "Sud se situe autour de 3.448 DT/m² pour l'ancien.\n"
+            'Dans le Sahel, El Kantaoui se distingue comme le marché le plus '
+            'onéreux, avec des prix moyens atteignant 4.800 DT/m² pour le '
+            "neuf. À l'opposé, Sahloul 4 (2.758 DT/m² ancien ; 3.304 DT/m² "
+            'neuf), Hergla (2.819 DT/m² ancien ; 3.465 DT/m² neuf) et Cité El '
+            'Agba – Monastir (2.413 DT/m²) proposent des niveaux de prix plus '
+            'modérés.\n'
+            'Du côté de la location longue durée, le marché enregistre en 2025 '
+            'une hausse du loyer moyen de +5,25 % par rapport à 2024, dans un '
+            'contexte de forte concentration de la demande sur les '
+            'appartements, en particulier les typologies S+1 et S+2, qui '
+            'constituent le cœur du marché locatif.\n'
+            'Le marché locatif du Grand Tunis demeure fortement différencié '
+            'selon les quartiers, avec des hausses particulièrement marquées '
+            'dans certaines zones, notamment Cité El Ghazela (+18 %), El '
+            'Menzah 9C (+14 %), La Nouvelle Médina (+14 %), Chotrana 1 (+11 %) '
+            'et La Manouba (+9 %).\n'
+            'Les quartiers les plus sollicités restent concentrés dans les '
+            'zones à fort standing. Les Jardins de Carthage occupent la '
+            'première place, avec un loyer moyen de 1 500 DT pour un S+1 et '
+            '1.950 DT pour un S+2, suivis par Cité Ennasr 2 (1.054 DT / 1.372 '
+            'DT) et Ain Zaghouan Nord (1.300 DT / 1.643 DT).\n'
+            'Parallèlement, plusieurs quartiers combinent loyers plus '
+            'accessibles et demande locative soutenue. Un S+2 se loue en '
+            'moyenne autour de 920 DT à La Manouba, 1.206 DT à Riadh Andalous, '
+            '1.270 DT à El Mourouj 6, 1.295 DT à Boumhel, 1.442 DT à Jardins '
+            "d'El Menzah 2 et 1.518 DT à La Soukra.\n"
+            'En dehors du Grand Tunis, le Cap Bon et le Sahel confirment leur '
+            'attractivité locative. À Hammamet Nord, les loyers mensuels '
+            'atteignent en moyenne 1.025 DT pour un S+1 et 1.320 DT pour un '
+            "S+2, tandis qu'à Cité El Wafa, ils s'établissent autour de 905 DT "
+            'pour un S+1 et 1.117 DT pour un S+2.\n'
+            'Dans le Sahel, Sahloul 4 affiche des loyers moyens de 1.069 DT '
+            "pour un S+1 et 1.235 DT pour un S+2, alors qu'à Hammam Sousse, "
+            "ils s'élèvent à 850 DT pour un S+1 et 1 197 DT pour un S+2.\n"
+            "En 2025, le segment de l'immobilier d'entreprise confirme sa "
+            'résilience, avec une hausse des prix aussi bien à la location '
+            "qu'à l'acquisition. Le prix moyen de location des bureaux "
+            'progresse de +4,5 %, tandis que celui de la vente enregistre une '
+            'hausse de +5,5 % par rapport à 2024. Les locaux commerciaux '
+            'suivent une trajectoire similaire, avec des augmentations de +5 % '
+            "à la location et de +4 % à l'achat, traduisant un maintien de la "
+            'demande sur les emplacements à fort potentiel économique.\n'
+            'Du côté de la location de bureaux, la demande se concentre '
+            'principalement sur les zones centrales et bien connectées. '
+            "Montplaisir s'impose comme le quartier le plus recherché, avec un "
+            'loyer annuel moyen de 195 DT/m², suivi par Les Berges du Lac 2, '
+            'où les loyers atteignent 300 DT/m² par an.\n'
+            'Le Lac 1 (280 DT/m²/an) et le Centre Urbain Nord (270 DT/m²/an) '
+            "complètent ce classement, confirmant l'attractivité des pôles "
+            'offrant visibilité, accessibilité et infrastructures adaptées aux '
+            'entreprises.\n'
+            'Concernant les locaux commerciaux à la vente, la demande se '
+            "polarise sur des quartiers à fort pouvoir d'attraction "
+            "commerciale. L'Aouina arrive en tête des recherches, avec un prix "
+            'moyen de 4.500 DT/m², suivie par Les Jardins de Carthage (5.700 '
+            'DT/m²), La Marsa (5.820 DT/m²) et Le Lac 1 (4 650 DT/m²).\n'
+            'Ces niveaux de prix reflètent la valeur stratégique accordée aux '
+            'zones à fort flux, à proximité des bassins de consommation et des '
+            'axes structurants.\n'
+            "Mubaweb précise qu'en 2025, le marché des terrains à usage "
+            'résidentiel affiche une hausse modérée du prix moyen de +1,64 % '
+            'par rapport à 2024.\n'
+            'Sur le Grand Tunis, la demande reste concentrée sur quelques '
+            'zones clés. La Soukra figure parmi les secteurs les plus '
+            'convoités, avec un prix moyen de 1.125 DT/m², suivie par Jardins '
+            "d'El Menzah 2, où le prix moyen atteint 1.313 DT/m².\n"
+            "À l'autre extrémité du marché, Les Jardins de Carthage se "
+            'distinguent nettement par les prix les plus élevés, culminant à '
+            '3.111 DT/m².\n'
+            'Parallèlement, plusieurs zones offrent des niveaux de prix plus '
+            'accessibles, attirant une demande orientée vers des opportunités '
+            'à moyen terme. La Manouba affiche un prix moyen de 850 DT/m², '
+            'Boumhel de 987 DT/m², tandis que Cité El Ghazela se situe autour '
+            'de 872 DT/m².\n'
+            'En 2025, le marché immobilier tunisien continue de susciter un '
+            'intérêt soutenu de la part de la clientèle étrangère, largement '
+            "dominée par les Tunisiens Résidents à l'Étranger (TRE).\n"
+            'La France demeure le premier pays contributeur, concentrant 51 % '
+            "de la demande étrangère, suivie par l'Allemagne (7 %) et le Qatar "
+            "(5 %), tandis que le Canada (4 %), l'Arabie saoudite (3,5 %) et "
+            'les Émirats Arabes Unis (3 %) complètent le classement.\n'
+            "L'analyse des zones les plus recherchées par les TRE met en "
+            'évidence une préférence marquée pour des territoires à fort '
+            "potentiel résidentiel et locatif. L'Aouina, Hammamet, La Soukra, "
+            'Ariana Ville et Nabeul figurent en tête des recherches.\n'
+            'Publié le 05/02/26 11:58',
+ 'date': datetime.datetime(2016, 1, 1, 0, 0),
+ 'summary': '',
+ 'title': 'Zoom sur les prix des appartements au m² en 2025',
+ 'url': 'https://www.ilboursa.com/marches/zoom-sur-les-prix-des-appartements-au-m%C2%B2-en-2025_59572'}
+2026-02-08 04:30:01 [scrapy.core.engine] DEBUG: Crawled (200) <GET https://www.ilboursa.com/marches/la-turquie-franchit-un-cap-historique-avec-64-millions-de-touristes-en-2025_59574> (referer: https://www.ilboursa.com/marches/actualites_bourse_tunis?date=01/01/2016)
+2026-02-08 04:30:01 [ilboursa_historical] DEBUG: Duplicate url skipped: https://www.ilboursa.com/marches/la-turquie-franchit-un-cap-historique-avec-64-millions-de-touristes-en-2025_59574
+2026-02-08 04:30:01 [scrapy.core.scraper] WARNING: Dropped: Duplicate item https://www.ilboursa.com/marches/la-turquie-franchit-un-cap-historique-avec-64-millions-de-touristes-en-2025_59574
+{'content': 'En 2025, la Turquie a atteint un record historique en matière de '
+            'tourisme international, accueillant 64 millions de visiteurs '
+            'étrangers, selon le ministre turc de la Culture et du Tourisme.\n'
+            "Ce chiffre représente une hausse d'environ 2,7 % par rapport à "
+            "l'année précédente. Le ministre a également précisé que plus de "
+            '11,1 millions de visiteurs étaient des citoyens turcs résidant à '
+            "l'étranger, soit 17,5 % du total des arrivées.\n"
+            'En détail, la Russie a été en 2025 le principal marché émetteur, '
+            'avec environ 6,9 millions de visiteurs, suivie de près par '
+            "l'Allemagne, qui a apporté environ 6,75 millions de touristes "
+            "internationaux. Le Royaume‑Uni s'est classé troisième avec plus "
+            'de 4,2 millions de visiteurs.\n'
+            ':\n'
+            'Le ministre a souligné que la Turquie avait élargi son offre '
+            'touristique au-delà du modèle classique " soleil-mer-plage ", en '
+            'développant des secteurs tels que la culture, le tourisme '
+            "religieux, l'écotourisme, la gastronomie, le tourisme de santé, "
+            'les croisières et le tourisme hivernal.\n'
+            'Les performances historiques du tourisme en 2025 se traduisent '
+            "aussi en recettes record pour l'économie turque. Selon les "
+            'chiffres du ministre turc de la Culture et du Tourisme, la '
+            "Turquie a généré 54,9 milliards d'euros de revenus touristiques "
+            "sur l'année, un niveau jamais atteint dans l'histoire du pays.\n"
+            'En termes de fréquentation, les autorités avaient fixé pour 2025 '
+            'un objectif de 65 millions de visiteurs internationaux, presque '
+            'atteint avec 64 millions de touristes accueillis. Ces chiffres '
+            "s'inscrivent dans la stratégie de la Turquie visant à diversifier "
+            'ses marchés sources et à élargir son offre touristique au-delà du '
+            'traditionnel modèle "\u202fsoleil-mer-plage\u202f".\n'
+            'Fort de ces résultats, le gouvernement turc a fixé de nouvelles '
+            "ambitions pour 2026. L'objectif est d'atteindre 57 milliards "
+            "d'euros de recettes touristiques.\n"
+            'Avec les chiffres déjà enregistrés, cet objectif est largement à '
+            "portée de main, soutenu par la diversification de l'offre, "
+            'incluant tourisme culturel, religieux, de santé, gastronomique, '
+            "hivernal et de croisières, et par l'augmentation continue des "
+            'flux de visiteurs internationaux.\n'
+            'Publié le 05/02/26 13:33',
+ 'date': datetime.datetime(2016, 1, 1, 0, 0),
+ 'summary': '',
+ 'title': 'La Turquie franchit un cap historique avec 64 millions de touristes '
+          'en 2025',
+ 'url': 'https://www.ilboursa.com/marches/la-turquie-franchit-un-cap-historique-avec-64-millions-de-touristes-en-2025_59574'}
+2026-02-08 04:30:03 [scrapy.core.engine] DEBUG: Crawled (200) <GET https://www.ilboursa.com/marches/l-inflation-recule-legerement-a-4-8-en-janvier_59576> (referer: https://www.ilboursa.com/marches/actualites_bourse_tunis?date=01/01/2016)
+2026-02-08 04:30:03 [ilboursa_historical] DEBUG: Duplicate url skipped: https://www.ilboursa.com/marches/l-inflation-recule-legerement-a-4-8-en-janvier_59576
+2026-02-08 04:30:03 [scrapy.core.scraper] WARNING: Dropped: Duplicate item https://www.ilboursa.com/marches/l-inflation-recule-legerement-a-4-8-en-janvier_59576
+{'content': "Après trois mois de stagnation, l'inflation amorce un léger repli "
+            "en Tunisie. Selon les dernières données publiées par l'Institut "
+            "national de la statistique (INS), le taux d'inflation s'est "
+            'établi à 4,8% en janvier 2026, contre 4,9% en décembre 2025. Une '
+            'baisse modérée, mais symbolique, qui confirme une stabilisation '
+            'progressive des pressions inflationnistes.\n'
+            "Cette évolution s'explique principalement par le ralentissement "
+            'du rythme de progression des prix des produits alimentaires, dont '
+            "l'inflation est passée de 6,1% à 5,9% sur un an. Les prix des "
+            'services de restaurants, cafés et hôtels ont également contribué '
+            'à cette détente, avec une hausse ramenée à 5,5% en janvier, '
+            'contre 6% le mois précédent.\n'
+            'Malgré ce ralentissement, les produits alimentaires demeurent '
+            "l'un des principaux moteurs de l'inflation. En glissement annuel, "
+            'plusieurs catégories enregistrent encore des hausses '
+            "significatives. Les prix de la viande d'agneau ont progressé de "
+            '16,1%, ceux des fruits frais de 17,8%, du poisson frais de 11,3% '
+            'et de la viande bovine de 10,4%.\n'
+            'Seule note positive dans ce tableau : la baisse marquée des prix '
+            'des huiles alimentaires, qui reculent de 12% sur un an, '
+            'contribuant à atténuer partiellement la facture alimentaire des '
+            'ménages.\n'
+            'Les produits manufacturés affichent, pour leur part, une hausse '
+            "annuelle de 5%, tirée essentiellement par l'augmentation des prix "
+            "de l'habillement et des chaussures (+10,1%) ainsi que des "
+            "produits d'entretien courant du foyer (+4,9%).\n"
+            "Du côté des services, l'inflation s'établit à 3,7% sur un an. "
+            'Cette évolution est principalement imputable à la forte '
+            "progression des services d'hébergement, dont les prix ont "
+            'augmenté de 11,4%, dans un contexte de reprise progressive de '
+            "l'activité touristique.\n"
+            "L'INS souligne par ailleurs que l'inflation sous-jacente, "
+            'calculée hors produits alimentaires et énergie, se stabilise à '
+            '4,9% en janvier. Ce niveau relativement élevé suggère que les '
+            "pressions inflationnistes restent bien ancrées dans l'économie, "
+            'au-delà des seules composantes volatiles.\n'
+            "L'écart entre produits libres et produits encadrés demeure "
+            'également significatif. Les prix des produits libres augmentent '
+            'de 6% sur un an, contre seulement 0,6% pour les produits à prix '
+            'encadrés. Cette divergence est encore plus marquée pour '
+            "l'alimentaire : +6,7% pour les produits libres, contre +0,2% pour "
+            'les produits encadrés.\n'
+            "Si la baisse de l'inflation en janvier constitue un signal "
+            'encourageant, elle reste fragile et largement dépendante de '
+            "l'évolution des prix alimentaires et des politiques de "
+            'régulation.\n'
+            "La persistance d'une inflation sous-jacente proche de 5% indique "
+            'que le retour à une trajectoire durablement maîtrisée nécessitera '
+            'encore du temps, dans un contexte économique marqué par des '
+            "contraintes budgétaires et des tensions sur le pouvoir d'achat.\n"
+            'Publié le 05/02/26 14:23',
+ 'date': datetime.datetime(2016, 1, 1, 0, 0),
+ 'summary': '',
+ 'title': "L'inflation recule légèrement à 4,8 % en janvier",
+ 'url': 'https://www.ilboursa.com/marches/l-inflation-recule-legerement-a-4-8-en-janvier_59576'}
+2026-02-08 04:30:04 [scrapy.core.engine] DEBUG: Crawled (200) <GET https://www.ilboursa.com/marches/nejia-gharbi-confirmee-pour-un-nouveau-mandat-a-la-tete-de-la-cdc_59584> (referer: https://www.ilboursa.com/marches/actualites_bourse_tunis?date=01/01/2016)
+2026-02-08 04:30:04 [ilboursa_historical] DEBUG: Duplicate url skipped: https://www.ilboursa.com/marches/nejia-gharbi-confirmee-pour-un-nouveau-mandat-a-la-tete-de-la-cdc_59584
+2026-02-08 04:30:04 [scrapy.core.scraper] WARNING: Dropped: Duplicate item https://www.ilboursa.com/marches/nejia-gharbi-confirmee-pour-un-nouveau-mandat-a-la-tete-de-la-cdc_59584
+{'content': 'Réunie ce jeudi 5 février 2026, la Commission de Surveillance de '
+            'la Caisse des Dépôts et Consignations (CDC) a officialisé la '
+            'poursuite de la mission de Madame Néjia Gharbi à la direction '
+            "générale de l'institution.\n"
+            "C'est une annonce qui place l'institution sous le signe de la "
+            'continuité et de la stabilité. Suite à la décision de son '
+            'maintien en activité pour une durée de trois ans à compter du 1er '
+            'février 2026, la Commission de Surveillance de la CDC a pris '
+            'acte, lors de sa réunion au siège de la Caisse, de la '
+            'reconduction de Madame Néjia Gharbi.\n'
+            'Cette décision témoigne de la confiance renouvelée des autorités '
+            'et des instances de contrôle envers une figure centrale de la '
+            'finance publique tunisienne, dont le leadership a permis à la CDC '
+            "de consolider son rôle de levier d'investissement stratégique.\n"
+            "Le maintien de Néjia Gharbi à la tête de la CDC n'est pas le "
+            "fruit du hasard. C'est le prolongement d'une carrière exemplaire "
+            'dédiée au développement économique et à la gestion des structures '
+            'étatiques de premier plan.\n'
+            'Sous sa direction, la CDC est passée du statut de simple '
+            "gestionnaire de fonds à celui d'acteur incontournable du "
+            "financement des PME, des startups et des projets d'infrastructure "
+            'via des partenariats public-privé (PPP).\n'
+            "Ce nouveau mandat de trois ans s'inscrit dans une phase cruciale "
+            'où la Caisse doit accélérer la transition énergétique et '
+            'numérique de la Tunisie.\n'
+            'Publié le 05/02/26 18:43',
+ 'date': datetime.datetime(2016, 1, 1, 0, 0),
+ 'summary': '',
+ 'title': 'Néjia Gharbi confirmée pour un nouveau mandat à la tête de la CDC',
+ 'url': 'https://www.ilboursa.com/marches/nejia-gharbi-confirmee-pour-un-nouveau-mandat-a-la-tete-de-la-cdc_59584'}
+2026-02-08 04:30:05 [scrapy.core.engine] DEBUG: Crawled (200) <GET https://www.ilboursa.com/marches/carte-assurances-et-coface-lancent-le-quality-label-en-tunisie_59587> (referer: https://www.ilboursa.com/marches/actualites_bourse_tunis?date=01/01/2016)
+2026-02-08 04:30:05 [ilboursa_historical] DEBUG: Duplicate url skipped: https://www.ilboursa.com/marches/carte-assurances-et-coface-lancent-le-quality-label-en-tunisie_59587
+2026-02-08 04:30:05 [scrapy.core.scraper] WARNING: Dropped: Duplicate item https://www.ilboursa.com/marches/carte-assurances-et-coface-lancent-le-quality-label-en-tunisie_59587
+{'content': 'Dans un contexte économique mondial et local sous haute tension, '
+            'le Groupe CARTE renforce son alliance historique avec Coface.\n'
+            'Ce nouveau palier, marqué par le lancement officiel de la '
+            'certification " Quality Label ", promet d\'offrir aux PME '
+            'tunisiennes un levier inédit pour sécuriser leurs '
+            'approvisionnements et valoriser leur santé financière.\n'
+            "Depuis plus de trente ans, CARTE Assurances s'impose comme le "
+            "partenaire privilégié des entreprises tunisiennes. Fort d'une "
+            'expertise de niche en assurance-crédit, le groupe collabore '
+            'étroitement avec Coface, leader mondial de la gestion des '
+            'risques, depuis maintenant deux décennies.\n'
+            "Aujourd'hui, cette synergie prend une dimension cruciale. Entre "
+            "l'instabilité des marchés internationaux et l'intensification des "
+            'risques de non-paiement sur le plan local, les entreprises '
+            'tunisiennes naviguent en eaux troubles.\n'
+            ':\n'
+            "C'est pour répondre à ces défis que les deux entités ont scellé "
+            'un nouvel accord faisant de CARTE Assurances le distributeur '
+            'officiel de la certification " Quality Label " en Tunisie.\n'
+            "Si l'assurance-crédit classique protège les ventes, le Quality "
+            "Label s'attaque à un autre pilier de la croissance : l'achat et "
+            'la chaîne d\'approvisionnement. "\n'
+            '", souligne Mehdi DOGHRI, Directeur Général de CARTE Assurances.\n'
+            'Ce label permet aux entreprises, et particulièrement aux PME, de '
+            'prouver officiellement leur bonne santé financière auprès des '
+            "fournisseurs, faciliter l'obtention de meilleures conditions de "
+            'paiement et fluidifier les relations commerciales dans un réseau '
+            'couvrant plus de 160 pays.\n'
+            'En combinant la connaissance profonde du terrain de CARTE '
+            'Assurances et le réseau international de Coface, cette alliance '
+            'offre un bouclier robuste aux acteurs économiques tunisiens.\n'
+            "L'objectif est clair : transformer la gestion des risques en un "
+            'avantage compétitif pour permettre aux entreprises de se '
+            "développer sereinement, tant sur le marché local qu'à l'export.\n"
+            'Avec ce lancement, le Groupe CARTE franchit une étape décisive '
+            "dans son rôle d'éclaireur économique, prouvant que la "
+            'transparence financière reste le meilleur moteur de la confiance '
+            'commerciale.\n'
+            'Publié le 05/02/26 19:57',
+ 'date': datetime.datetime(2016, 1, 1, 0, 0),
+ 'summary': '',
+ 'title': 'CARTE Assurances et Coface lancent le « Quality Label » en Tunisie',
+ 'url': 'https://www.ilboursa.com/marches/carte-assurances-et-coface-lancent-le-quality-label-en-tunisie_59587'}
+2026-02-08 04:30:06 [scrapy.core.engine] DEBUG: Crawled (200) <GET https://www.ilboursa.com/marches/entre-resilience-et-mutation-alkimia-prepare-l-apres-stpp_59588> (referer: https://www.ilboursa.com/marches/actualites_bourse_tunis?date=01/01/2016)
+2026-02-08 04:30:06 [ilboursa_historical] DEBUG: Duplicate url skipped: https://www.ilboursa.com/marches/entre-resilience-et-mutation-alkimia-prepare-l-apres-stpp_59588
+2026-02-08 04:30:06 [scrapy.core.scraper] WARNING: Dropped: Duplicate item https://www.ilboursa.com/marches/entre-resilience-et-mutation-alkimia-prepare-l-apres-stpp_59588
+{'content': "L'année 2025 s'est révélée être une période de transition "
+            'complexe pour la Société Chimique\n'
+            '. Entre une concurrence internationale accrue et une '
+            'restructuration stratégique de son modèle de production, '
+            "l'entreprise navigue en eaux troubles tout en posant les jalons "
+            'de sa future diversification.\n'
+            "Au 31 décembre 2025, la production globale de l'entreprise "
+            'affiche un repli significatif. Avec un volume total de 22 891 '
+            'tonnes, la société enregistre une baisse de 21 % par rapport aux '
+            '28 974 tonnes produites en 2024.\n'
+            "Cette contre-performance s'explique principalement par un déficit "
+            'de compétitivité face à des géants industriels bénéficiant de '
+            'productions intégrées. Dans un marché mondial '
+            "ultra-concurrentiel, l'accès direct aux matières premières reste "
+            "le facteur déterminant que la société doit continuer d'adresser.\n"
+            "Le repli industriel s'est naturellement répercuté sur les "
+            "résultats financiers. Le chiffre d'affaires au 31 décembre 2025 "
+            "s'établit à 100 millions de dinars, contre environ 107,2 millions "
+            "de dinars l'année précédente, soit une diminution de 6,7 %.\n"
+            "La trésorerie de l'entreprise subit une tension croissante. La "
+            'réduction du rythme de marche des unités de production, conjuguée '
+            'au maintien de charges fixes de sous-activité importantes, pèse '
+            'lourdement sur la liquidité de la société.\n'
+            'Malgré ce contexte morose, ALKIMIA prépare activement son rebond. '
+            'La stratégie de relance repose sur une transformation profonde de '
+            'son offre commerciale et technique.\n'
+            "L'augmentation de capital de 20 millions de dinars, libérée "
+            'partiellement, est désormais totalement allouée au grand projet '
+            'de production de NPK (Azote, Phosphore, Potassium). Ce complexe '
+            'ambitieux vise une capacité de 80 000 tonnes de produits '
+            'pulvérulents et granulés.\n'
+            "L'objectif est de diversifier le portefeuille client et réduire "
+            'la dépendance au marché du STPP en intégrant des solutions '
+            "d'engrais à plus forte valeur ajoutée.\n"
+            'Publié le 06/02/26 09:09',
+ 'date': datetime.datetime(2016, 1, 1, 0, 0),
+ 'summary': '',
+ 'title': "Entre résilience et mutation, ALKIMIA prépare l'après-STPP",
+ 'url': 'https://www.ilboursa.com/marches/entre-resilience-et-mutation-alkimia-prepare-l-apres-stpp_59588'}
+2026-02-08 04:30:08 [scrapy.core.engine] DEBUG: Crawled (200) <GET https://www.ilboursa.com/marches/la-banque-centrale-europeenne-maintient-ses-taux-d-interet-inchanges_59590> (referer: https://www.ilboursa.com/marches/actualites_bourse_tunis?date=01/01/2016)
+2026-02-08 04:30:08 [ilboursa_historical] DEBUG: Duplicate url skipped: https://www.ilboursa.com/marches/la-banque-centrale-europeenne-maintient-ses-taux-d-interet-inchanges_59590
+2026-02-08 04:30:08 [scrapy.core.scraper] WARNING: Dropped: Duplicate item https://www.ilboursa.com/marches/la-banque-centrale-europeenne-maintient-ses-taux-d-interet-inchanges_59590
+{'content': 'La Banque centrale européenne (BCE) a décidé de laisser ses taux '
+            "d'intérêt inchangés, pour la cinquième réunion consécutive depuis "
+            'juillet. Son principal taux directeur reste ainsi fixé à 2 %, '
+            'tout comme le taux de dépôt, maintenu à 2 %, son niveau atteint '
+            'en juin dernier.\n'
+            "Ce statu quo s'explique, selon la banque, par le fait que "
+            "l'économie de la zone euro fait preuve d'une résilience "
+            'supérieure aux attentes. La croissance, plus robuste que prévu '
+            'ces derniers mois, combinée à un net reflux des pressions '
+            "inflationnistes, a réduit l'urgence d'un nouvel assouplissement "
+            'monétaire.\n'
+            ':\n'
+            'Dans son communiqué, l\'institution souligne que " l\'économie '
+            'demeure résiliente dans un contexte mondial difficile ", tout en '
+            'reconnaissant que les perspectives restent entourées '
+            "d'incertitudes. Les tensions géopolitiques et les incertitudes "
+            'liées aux politiques commerciales internationales continuent en '
+            'effet de peser sur la visibilité des entreprises et des '
+            'investisseurs.\n'
+            "Surtout, la BCE estime désormais que l'inflation est en voie de "
+            'se stabiliser durablement autour de son objectif de 2 % à moyen '
+            'terme. Une situation jugée maîtrisée par la banque centrale, qui '
+            "conforte sa stratégie d'attentisme après une année de baisses de "
+            'taux achevée en juin.\n'
+            "Concernant les perspectives, la BCE précise qu'elles restent "
+            'incertaines, toujours fragilisées par un contexte mondial marqué '
+            'par des tensions commerciales et géopolitiques.\n'
+            'Alors que certains observateurs qualifient la situation '
+            'économique actuelle de " paradis pour les banquiers centraux ", '
+            "en raison de l'inflation proche de l'objectif et de la croissance "
+            "qui confirme sa résilience, la BCE a choisi d'éviter toute "
+            'indication claire sur la prochaine étape de sa politique '
+            "monétaire. Elle suggère qu'un ajustement des taux à court terme "
+            "est peu probable, privilégiant une approche d'attentisme fondée "
+            'sur les données économiques à venir.\n'
+            "Sur les marchés des changes, l'influence du dollar s'étant "
+            "récemment affaiblie, l'euro s'est légèrement redressé face aux "
+            'principales devises, un mouvement qui a été interprété comme '
+            "renforçant les anticipations d'un statu quo des taux d'intérêt "
+            'tout au long de 2026, avec des spéculations de resserrement '
+            'monétaire possibles plus tard, en 2027.\n'
+            "Parallèlement, les anticipations d'inflation à long terme ont "
+            'quelque peu progressé, soutenues par des indicateurs économiques '
+            "jugés solides et une légère hausse des prix de l'énergie.\n"
+            'Publié le 06/02/26 09:23',
+ 'date': datetime.datetime(2016, 1, 1, 0, 0),
+ 'summary': '',
+ 'title': "La Banque centrale européenne maintient ses taux d'intérêt "
+          'inchangés',
+ 'url': 'https://www.ilboursa.com/marches/la-banque-centrale-europeenne-maintient-ses-taux-d-interet-inchanges_59590'}
+2026-02-08 04:30:08 [scrapy.core.engine] DEBUG: Crawled (200) <GET https://www.ilboursa.com/marches/projet-puro-kairouan-l-uib-contribue-a-hauteur-de-40-millions-de-dinars_59591> (referer: https://www.ilboursa.com/marches/actualites_bourse_tunis?date=01/01/2016)
+2026-02-08 04:30:08 [ilboursa_historical] DEBUG: Duplicate url skipped: https://www.ilboursa.com/marches/projet-puro-kairouan-l-uib-contribue-a-hauteur-de-40-millions-de-dinars_59591
+2026-02-08 04:30:08 [scrapy.core.scraper] WARNING: Dropped: Duplicate item https://www.ilboursa.com/marches/projet-puro-kairouan-l-uib-contribue-a-hauteur-de-40-millions-de-dinars_59591
+{'content': 'Publié le 06/02/26 10:27',
+ 'date': datetime.datetime(2016, 1, 1, 0, 0),
+ 'summary': '',
+ 'title': "Projet PURO Kairouan : L'UIB contribue à hauteur de 40 millions de "
+          'dinars',
+ 'url': 'https://www.ilboursa.com/marches/projet-puro-kairouan-l-uib-contribue-a-hauteur-de-40-millions-de-dinars_59591'}
+2026-02-08 04:30:09 [scrapy.core.engine] DEBUG: Crawled (200) <GET https://www.ilboursa.com/marches/indice-de-developpement-humain-la-tunisie-classee-4eme-en-afrique_59592> (referer: https://www.ilboursa.com/marches/actualites_bourse_tunis?date=01/01/2016)
+2026-02-08 04:30:09 [ilboursa_historical] DEBUG: Duplicate url skipped: https://www.ilboursa.com/marches/indice-de-developpement-humain-la-tunisie-classee-4eme-en-afrique_59592
+2026-02-08 04:30:09 [scrapy.core.scraper] WARNING: Dropped: Duplicate item https://www.ilboursa.com/marches/indice-de-developpement-humain-la-tunisie-classee-4eme-en-afrique_59592
+{'content': 'La plateforme spécialisée The African Exponent a publié un '
+            'classement des dix pays africains les plus avancés en 2025 selon '
+            "l'Indice de Développement Humain (IDH).\n"
+            "Ce classement s'appuie sur l'IDH publié par le Rapport mondial "
+            'sur la population, un indicateur composite qui mesure la '
+            "longévité, le niveau d'éducation et le revenu par habitant, afin "
+            "d'évaluer dans quelle mesure les pays parviennent à transformer "
+            'leur croissance économique en bien-être concret pour leurs '
+            'citoyens.\n'
+            'La méthodologie employée par The African Exponent regroupe des '
+            "données quantitatives sur l'IDH et analyse qualitative du "
+            'contexte national, prenant en compte la gouvernance, la stabilité '
+            'des politiques publiques et le développement des infrastructures '
+            'sociales.\n'
+            "Dans ce classement de l'IDH 2025, la Tunisie est classée 4ème en "
+            'Afrique. Selon The African Exponent, le pays atteint un score de '
+            "0.746, résultat d'investissements soutenus dans le capital "
+            "humain, d'une gouvernance inclusive et de politiques "
+            "socio-économiques résolument tournées vers l'avenir.\n"
+            'La plateforme souligne que la Tunisie a placé la réforme de '
+            "l'éducation au cœur de ses priorités au cours de la dernière "
+            'décennie, en travaillant à accroître le taux de scolarisation, '
+            'réduire le décrochage scolaire et adapter les programmes aux '
+            'besoins du marché du travail.\n'
+            'Par ailleurs, des initiatives récentes telles que la Stratégie '
+            "pour l'éducation et la formation professionnelle 2023‑2027 "
+            "mettent l'accent sur les sciences, technologies, ingénierie et "
+            'mathématiques (STEM), sur le développement des compétences '
+            'techniques et sur la culture numérique.\n'
+            'Pour le reste du classement, les Seychelles occupent la première '
+            "place en Afrique, avec un score de 0,848 à l'IDH 2025. Selon The "
+            "African Exponent, cette performance résulte d'un engagement de "
+            "longue date en faveur du capital humain, de l'excellence de la "
+            "gouvernance et d'une gestion économique durable.\n"
+            "En deuxième position, l'île Maurice se distingue avec un score de "
+            "0,806, suivie par l'Algérie, qui atteint 0,763, grâce à ses "
+            'investissements soutenus dans le capital humain et ses réformes '
+            'sociales et éducatives.\n'
+            "Après la Tunisie, l'Égypte complète le top 5, avec un score de "
+            "0,754, reflétant ses efforts pour améliorer l'éducation et la "
+            "santé de sa population. La liste continue avec l'Afrique du Sud "
+            '(0,741), le Gabon (0,733) et le Botswana (0,731).\n'
+            'La Libye se hisse à la 9ᵉ place, avec un score de 0,721. La '
+            'plateforme souligne que ce classement traduit une reprise '
+            'progressive mais fragile, après des années de conflit, portée par '
+            'des efforts renouvelés en matière de capital humain, de '
+            'reconstruction institutionnelle et de stabilisation économique. '
+            'Enfin, le Maroc ferme le top 10 africain, avec un score de '
+            '0,710.\n'
+            'Publié le 06/02/26 10:42',
+ 'date': datetime.datetime(2016, 1, 1, 0, 0),
+ 'summary': '',
+ 'title': 'Indice de développement humain : La Tunisie classée 4ème en Afrique',
+ 'url': 'https://www.ilboursa.com/marches/indice-de-developpement-humain-la-tunisie-classee-4eme-en-afrique_59592'}
+2026-02-08 04:30:11 [scrapy.core.engine] DEBUG: Crawled (200) <GET https://www.ilboursa.com/marches/financement-de-leconomie-politique-dendettement-budgetaire-et-role-du-secteur-bancaire_59598> (referer: https://www.ilboursa.com/marches/actualites_bourse_tunis?date=01/01/2016)
+2026-02-08 04:30:11 [ilboursa_historical] DEBUG: Duplicate url skipped: https://www.ilboursa.com/marches/financement-de-leconomie-politique-dendettement-budgetaire-et-role-du-secteur-bancaire_59598
+2026-02-08 04:30:11 [scrapy.core.scraper] WARNING: Dropped: Duplicate item https://www.ilboursa.com/marches/financement-de-leconomie-politique-dendettement-budgetaire-et-role-du-secteur-bancaire_59598
+{'content': 'Dans un contexte marqué par un accès restreint aux ressources de '
+            'financement extérieur, la Tunisie a opté pour un recours massif '
+            "et inédit à l'endettement intérieur afin d'assurer le financement "
+            'du Budget.\n'
+            'Cette orientation pourrait être expliquée par la volonté '
+            "d'alléger le poids des échéances extérieures et limiter la fuite "
+            'des devises dans la mesure où le service de la dette intérieure '
+            "ne génère pas de sortie de capitaux vers l'étranger. Ce choix "
+            'permet ainsi de réduire la dépendance vis-à-vis des créanciers '
+            'internationaux tout en favorisant le développement du marché '
+            'financier domestique.\n'
+            'Si cette orientation traduit une adaptation aux contraintes '
+            'extérieures, elle soulève néanmoins plusieurs enjeux notamment en '
+            "matière de financement de l'investissement productif, de "
+            'soutenabilité de la dette intérieure, etc.\n'
+            "En effet, nonobstant l'intérêt qu'il présente à court terme, un "
+            "recours excessif à la dette publique intérieure risque d'exercer "
+            'des pressions sur les investisseurs et le système bancaire '
+            'compromettant ainsi la stabilité du système financier.\n'
+            'Le financement intérieur massif du Budget tend à réduire la '
+            'disponibilité des ressources financières pour le secteur privé, '
+            "un phénomène communément désigné sous le nom d'effet d'éviction "
+            'ou "\xa0crowding out effect\xa0".\n'
+            "Face à cette situation inédite, l'IACE propose d'analyser "
+            "l'endettement intérieur tunisien. Cette première partie sera "
+            "suivie d'une lecture de la situation des concours à l'économie "
+            "avant de s'intéresser à l'examen des indicateurs bancaires afin "
+            "de détecter la présence d'un éventuel effet d'éviction.\n"
+            "La notion d'effet d'éviction désigne une situation où "
+            "l'augmentation du financement ou des dépenses publiques, dans un "
+            'contexte de ressources financières limitées, exerce une pression '
+            'accrue sur les marchés de capitaux et réduit la disponibilité des '
+            'financements pour le secteur privé.\n'
+            "Cette situation se traduit par une insuffisance de l'offre de "
+            'crédit et une préférence des banques pour les opérations de '
+            "portefeuille notamment l'acquisition de titres publics au "
+            "détriment du financement de l'économie réelle. Cependant, une "
+            'dette publique intérieure excessive peut accentuer cette pression '
+            'sur les investisseurs et les banques compromettant ainsi la '
+            'stabilité du système financier.\n'
+            'En mobilisant une part importante des ressources disponibles, '
+            'elle limite la capacité de financement du secteur privé, un '
+            "phénomène communément désigné sous le terme d'effet d'éviction. "
+            "Afin de détecter la présence potentielle de cet l'effet dans "
+            "l'économie tunisienne, plusieurs sources de données ont été "
+            'mobilisées.\n'
+            'Celles-ci portent sur la répartition du produit net bancaire, les '
+            "créances sur la clientèle et les créances sur l'Etat, à partir "
+            'des états financiers des banques tunisiennes cotées en bourse sur '
+            'la période de 2020 à 2024.\n'
+            'Publié le 06/02/26 12:21',
+ 'date': datetime.datetime(2016, 1, 1, 0, 0),
+ 'summary': '',
+ 'title': 'Financement de l’économie : Politique d’endettement budgétaire et '
+          'rôle du secteur bancaire',
+ 'url': 'https://www.ilboursa.com/marches/financement-de-leconomie-politique-dendettement-budgetaire-et-role-du-secteur-bancaire_59598'}
+2026-02-08 04:30:12 [scrapy.core.engine] DEBUG: Crawled (200) <GET https://www.ilboursa.com/marches/un-groupe-emirati-investit-90-millions-de-dollars-dans-un-complexe-hotelier-en-egypte_59602> (referer: https://www.ilboursa.com/marches/actualites_bourse_tunis?date=01/01/2016)
+2026-02-08 04:30:12 [ilboursa_historical] DEBUG: Duplicate url skipped: https://www.ilboursa.com/marches/un-groupe-emirati-investit-90-millions-de-dollars-dans-un-complexe-hotelier-en-egypte_59602
+2026-02-08 04:30:12 [scrapy.core.scraper] WARNING: Dropped: Duplicate item https://www.ilboursa.com/marches/un-groupe-emirati-investit-90-millions-de-dollars-dans-un-complexe-hotelier-en-egypte_59602
+{'content': "Le groupe émirati Global Enterprise a lancé la mise en œuvre d'un "
+            'grand projet hôtelier de luxe en Égypte, avec un investissement '
+            'de 90 millions de dollars.\n'
+            "Le projet prévoit la construction d'un hôtel cinq étoiles à Marsa "
+            'Alam, sur la côte de la mer Rouge, dans le sud-est du pays. Pour '
+            'ce faire, la société émiratie collabore avec une agence de '
+            "voyages locale, afin d'assurer une intégration optimale avec le "
+            'marché touristique égyptien.\n'
+            "Le futur complexe disposera d'une capacité totale de 900 "
+            'chambres, réparties selon un programme en trois phases de 300 '
+            "chambres chacune. Situé à environ 6 kilomètres de l'aéroport "
+            "international de Marsa Alam, le chantier devrait s'étendre sur "
+            'trois ans, avec la première phase prévue pour une mise en service '
+            'à la mi-2027.\n'
+            'Une fois achevé, ce projet marquera un ajout significatif à '
+            "l'offre hôtelière de Marsa Alam, visant à renforcer "
+            "l'attractivité de cette destination balnéaire prisée sur la côte "
+            'de la mer Rouge.\n'
+            'Le groupe émirati Global Enterprise est une société basée aux '
+            'Émirats arabes unis active dans le commerce international, '
+            "l'import‑export et la représentation commerciale sur plusieurs "
+            'marchés, notamment en Afrique, au Moyen‑Orient et en Europe.\n'
+            ':\n'
+            'Démarré comme société familiale spécialisée dans le commerce et '
+            "l'approvisionnement industriel, il s'est progressivement imposée "
+            "comme un grand fournisseur d'équipements industriels et "
+            'électromécaniques pour une large gamme de secteurs au '
+            "Moyen‑Orient et en Afrique, notamment le marine, l'industrie "
+            "pétrolière et gazière, les métaux ou encore l'agroalimentaire.\n"
+            "Global Enterprise opère aujourd'hui depuis plusieurs bureaux aux "
+            "Émirats arabes unis (Abu Dhabi et Dubaï), en s'appuyant sur un "
+            'réseau de partenaires internationaux et sur des marques '
+            "européennes, américaines et japonaises renommées qu'elle "
+            'représente dans la région.\n'
+            'Bien que Global Enterprise ne soit pas traditionnellement un '
+            'opérateur hôtelier, son entrée dans le secteur du tourisme en '
+            "Égypte s'inscrit dans une stratégie d'extension de ses activités "
+            'vers des investissements tangibles liés aux infrastructures et '
+            'aux services.\n'
+            'Parallèlement, le gouvernement égyptien encourage massivement '
+            "l'investissement privé et étranger dans le secteur touristique. "
+            'Le pays arabe vise ainsi à attirer 35,4 milliards de dollars '
+            "d'investissements pour ajouter environ 340.000 nouvelles chambres "
+            "d'hôtel d'ici à 2031, portant la capacité totale du secteur à "
+            '568.000 chambres, selon les objectifs stratégiques révélés par '
+            'les autorités.\n'
+            'Publié le 06/02/26 14:26',
+ 'date': datetime.datetime(2016, 1, 1, 0, 0),
+ 'summary': '',
+ 'title': 'Un groupe émirati investit 90 millions de dollars dans un complexe '
+          'hôtelier en Égypte',
+ 'url': 'https://www.ilboursa.com/marches/un-groupe-emirati-investit-90-millions-de-dollars-dans-un-complexe-hotelier-en-egypte_59602'}
+2026-02-08 04:30:13 [scrapy.core.engine] DEBUG: Crawled (200) <GET https://www.ilboursa.com/marches/la-biat-et-la-bad-signent-une-convention-de-50-millions-de-dollars-en-faveur-des-entreprises-tunisiennes_59619> (referer: https://www.ilboursa.com/marches/actualites_bourse_tunis?date=01/01/2016)
+2026-02-08 04:30:13 [ilboursa_historical] DEBUG: Duplicate url skipped: https://www.ilboursa.com/marches/la-biat-et-la-bad-signent-une-convention-de-50-millions-de-dollars-en-faveur-des-entreprises-tunisiennes_59619
+2026-02-08 04:30:13 [scrapy.core.scraper] WARNING: Dropped: Duplicate item https://www.ilboursa.com/marches/la-biat-et-la-bad-signent-une-convention-de-50-millions-de-dollars-en-faveur-des-entreprises-tunisiennes_59619
+{'content': "La BIAT marque aujourd'hui une avancée majeure dans le "
+            'déploiement de sa stratégie de soutien au commerce extérieur, à '
+            "travers la signature d'un partenariat stratégique avec la Banque "
+            'africaine de développement (BAD).\n'
+            "Cet accord, portant sur une garantie de transaction d'un montant "
+            'de 50 millions de dollars, vient renforcer significativement les '
+            'capacités de la BIAT à accompagner les entreprises tunisiennes '
+            "dans leurs opérations à l'international, tout en réaffirmant son "
+            "engagement en faveur d'un développement économique inclusif et "
+            'durable.\n'
+            'Une convention de partenariat portant sur une garantie de '
+            'transaction de 50 millions de dollars a été signée entre la BIAT '
+            "et la BAD – lors d'une cérémonie tenue le 6 février 2026 à la "
+            "BIAT. Cette garantie s'inscrit pleinement dans la vision de la "
+            'BIAT de renforcer le commerce international et de soutenir '
+            "l'économie nationale. Elle s'accompagne d'une large couverture "
+            'géographique, en partenariat avec les banques correspondantes '
+            'co-contractantes de la BAD.\n'
+            "Grâce à cette facilité, la BIAT ambitionne d'accompagner plus "
+            'efficacement ses clients sur les marchés internationaux. '
+            "L'objectif est de favoriser l'importation de biens d'équipement "
+            'et de technologies stratégiques dans des secteurs essentiels '
+            "comme l'agro-industrie, l'industrie légère, les "
+            'télécommunications et les énergies renouvelables.\n'
+            'Le partenariat permet aux entreprises clientes de la BIAT, '
+            "quelles que soit leurs tailles, d'accéder à des solutions de "
+            'financement international compétitives, consolidant leur position '
+            'et leur intégration dans les chaînes de valeur mondiales à '
+            'travers\xa0:\n'
+            'À cette occasion, Elyes Jebir, Directeur Général de la BIAT, a '
+            'indiqué que "\n'
+            '".\n'
+            '"\n'
+            '" s\'est félicitée Malinne Blomberg, Directrice Générale Adjointe '
+            'de la région Afrique de Nord et responsable pays pour la Tunisie '
+            'à la BAD.\n'
+            "Ce partenariat avec la BAD illustre l'engagement de la BIAT à "
+            'soutenir durablement la croissance de ses clients, en leur '
+            'proposant des solutions financières sûres et parfaitement '
+            'alignées sur les standards du commerce international.\n'
+            'Publié le 06/02/26 18:39',
+ 'date': datetime.datetime(2016, 1, 1, 0, 0),
+ 'summary': '',
+ 'title': 'La BIAT et la BAD signent une convention de 50 millions de dollars '
+          'en faveur des entreprises tunisiennes',
+ 'url': 'https://www.ilboursa.com/marches/la-biat-et-la-bad-signent-une-convention-de-50-millions-de-dollars-en-faveur-des-entreprises-tunisiennes_59619'}
+2026-02-08 04:30:14 [scrapy.core.engine] DEBUG: Crawled (200) <GET https://www.ilboursa.com/marches/actualites_bourse_tunis?date=10/01/2016> (referer: None)
+2026-02-08 04:30:14 [ilboursa_historical] INFO: Found 22 articles on 2016-01-10
+2026-02-08 04:30:15 [scrapy.core.engine] DEBUG: Crawled (200) <GET https://www.ilboursa.com/marches/actualites_bourse_tunis?date=11/01/2016> (referer: None)
+2026-02-08 04:30:15 [ilboursa_historical] INFO: Found 22 articles on 2016-01-11
+2026-02-08 04:30:16 [scrapy.core.engine] DEBUG: Crawled (200) <GET https://www.ilboursa.com/marches/actualites_bourse_tunis?date=12/01/2016> (referer: None)
+2026-02-08 04:30:16 [ilboursa_historical] INFO: Found 22 articles on 2016-01-12
+2026-02-08 04:30:18 [scrapy.core.engine] DEBUG: Crawled (200) <GET https://www.ilboursa.com/marches/actualites_bourse_tunis?date=13/01/2016> (referer: None)
+2026-02-08 04:30:18 [ilboursa_historical] INFO: Found 22 articles on 2016-01-13
+2026-02-08 04:30:19 [scrapy.core.engine] DEBUG: Crawled (200) <GET https://www.ilboursa.com/marches/actualites_bourse_tunis?date=14/01/2016> (referer: None)
+2026-02-08 04:30:19 [ilboursa_historical] INFO: Found 22 articles on 2016-01-14
+2026-02-08 04:30:20 [scrapy.core.engine] DEBUG: Crawled (200) <GET https://www.ilboursa.com/marches/actualites_bourse_tunis?date=15/01/2016> (referer: None)
+2026-02-08 04:30:20 [ilboursa_historical] INFO: Found 22 articles on 2016-01-15
+2026-02-08 04:30:21 [scrapy.core.engine] DEBUG: Crawled (200) <GET https://www.ilboursa.com/marches/actualites_bourse_tunis?date=16/01/2016> (referer: None)
+2026-02-08 04:30:21 [ilboursa_historical] INFO: Found 22 articles on 2016-01-16
+2026-02-08 04:30:22 [scrapy.core.engine] DEBUG: Crawled (200) <GET https://www.ilboursa.com/marches/actualites_bourse_tunis?date=17/01/2016> (referer: None)
+2026-02-08 04:30:22 [ilboursa_historical] INFO: Found 22 articles on 2016-01-17
+2026-02-08 04:30:23 [scrapy.core.engine] DEBUG: Crawled (200) <GET https://www.ilboursa.com/marches/actualites_bourse_tunis?date=18/01/2016> (referer: None)
+2026-02-08 04:30:23 [ilboursa_historical] INFO: Found 22 articles on 2016-01-18
+2026-02-08 04:30:25 [scrapy.core.engine] DEBUG: Crawled (200) <GET https://www.ilboursa.com/marches/actualites_bourse_tunis?date=19/01/2016> (referer: None)
+2026-02-08 04:30:25 [ilboursa_historical] INFO: Found 22 articles on 2016-01-19
+2026-02-08 04:30:26 [scrapy.core.engine] DEBUG: Crawled (200) <GET https://www.ilboursa.com/marches/actualites_bourse_tunis?date=20/01/2016> (referer: None)
+2026-02-08 04:30:26 [ilboursa_historical] INFO: Found 22 articles on 2016-01-20
+2026-02-08 04:30:27 [scrapy.core.engine] DEBUG: Crawled (200) <GET https://www.ilboursa.com/marches/actualites_bourse_tunis?date=21/01/2016> (referer: None)
+2026-02-08 04:30:27 [ilboursa_historical] INFO: Found 22 articles on 2016-01-21
+2026-02-08 04:30:29 [scrapy.core.engine] DEBUG: Crawled (200) <GET https://www.ilboursa.com/marches/actualites_bourse_tunis?date=22/01/2016> (referer: None)
+2026-02-08 04:30:29 [ilboursa_historical] INFO: Found 22 articles on 2016-01-22
+2026-02-08 04:30:30 [scrapy.core.engine] DEBUG: Crawled (200) <GET https://www.ilboursa.com/marches/actualites_bourse_tunis?date=23/01/2016> (referer: None)
+2026-02-08 04:30:30 [ilboursa_historical] INFO: Found 22 articles on 2016-01-23
+2026-02-08 04:30:31 [scrapy.core.engine] DEBUG: Crawled (200) <GET https://www.ilboursa.com/marches/actualites_bourse_tunis?date=24/01/2016> (referer: None)
+2026-02-08 04:30:31 [ilboursa_historical] INFO: Found 22 articles on 2016-01-24
+2026-02-08 04:30:33 [scrapy.core.engine] DEBUG: Crawled (200) <GET https://www.ilboursa.com/marches/actualites_bourse_tunis?date=25/01/2016> (referer: None)
+2026-02-08 04:30:33 [ilboursa_historical] INFO: Found 22 articles on 2016-01-25
+2026-02-08 04:30:34 [scrapy.core.engine] DEBUG: Crawled (200) <GET https://www.ilboursa.com/marches/actualites_bourse_tunis?date=26/01/2016> (referer: None)
+2026-02-08 04:30:34 [ilboursa_historical] INFO: Found 22 articles on 2016-01-26
+2026-02-08 04:30:35 [scrapy.core.engine] DEBUG: Crawled (200) <GET https://www.ilboursa.com/marches/actualites_bourse_tunis?date=27/01/2016> (referer: None)
+2026-02-08 04:30:35 [scrapy.extensions.logstats] INFO: Crawled 50 pages (at 50 pages/min), scraped 0 items (at 0 items/min)
+2026-02-08 04:30:35 [ilboursa_historical] INFO: Found 22 articles on 2016-01-27
+2026-02-08 04:30:36 [scrapy.core.engine] DEBUG: Crawled (200) <GET https://www.ilboursa.com/marches/actualites_bourse_tunis?date=28/01/2016> (referer: None)
+2026-02-08 04:30:36 [ilboursa_historical] INFO: Found 22 articles on 2016-01-28
+2026-02-08 04:30:37 [scrapy.core.engine] DEBUG: Crawled (200) <GET https://www.ilboursa.com/marches/actualites_bourse_tunis?date=29/01/2016> (referer: None)
+2026-02-08 04:30:38 [ilboursa_historical] INFO: Found 22 articles on 2016-01-29
+2026-02-08 04:30:39 [scrapy.core.engine] DEBUG: Crawled (200) <GET https://www.ilboursa.com/marches/actualites_bourse_tunis?date=30/01/2016> (referer: None)
+2026-02-08 04:30:39 [ilboursa_historical] INFO: Found 22 articles on 2016-01-30
+2026-02-08 04:30:40 [scrapy.core.engine] DEBUG: Crawled (200) <GET https://www.ilboursa.com/marches/actualites_bourse_tunis?date=31/01/2016> (referer: None)
+2026-02-08 04:30:40 [ilboursa_historical] INFO: Found 22 articles on 2016-01-31
+2026-02-08 04:30:41 [scrapy.core.engine] DEBUG: Crawled (200) <GET https://www.ilboursa.com/marches/actualites_bourse_tunis?date=01/02/2016> (referer: None)
+2026-02-08 04:30:41 [ilboursa_historical] INFO: Found 22 articles on 2016-02-01
+2026-02-08 04:30:42 [scrapy.core.engine] DEBUG: Crawled (200) <GET https://www.ilboursa.com/marches/actualites_bourse_tunis?date=02/02/2016> (referer: None)
+2026-02-08 04:30:42 [ilboursa_historical] INFO: Found 22 articles on 2016-02-02
+2026-02-08 04:30:43 [scrapy.core.engine] DEBUG: Crawled (200) <GET https://www.ilboursa.com/marches/actualites_bourse_tunis?date=03/02/2016> (referer: None)
+2026-02-08 04:30:44 [ilboursa_historical] INFO: Found 22 articles on 2016-02-03
+2026-02-08 04:30:45 [scrapy.core.engine] DEBUG: Crawled (200) <GET https://www.ilboursa.com/marches/actualites_bourse_tunis?date=04/02/2016> (referer: None)
+2026-02-08 04:30:45 [ilboursa_historical] INFO: Found 22 articles on 2016-02-04
+2026-02-08 04:30:45 [scrapy.core.engine] DEBUG: Crawled (200) <GET https://www.ilboursa.com/marches/actualites_bourse_tunis?date=05/02/2016> (referer: None)
+2026-02-08 04:30:45 [ilboursa_historical] INFO: Found 22 articles on 2016-02-05
+2026-02-08 04:30:47 [scrapy.core.engine] DEBUG: Crawled (200) <GET https://www.ilboursa.com/marches/actualites_bourse_tunis?date=06/02/2016> (referer: None)
+2026-02-08 04:30:47 [ilboursa_historical] INFO: Found 22 articles on 2016-02-06
+2026-02-08 04:30:48 [scrapy.core.engine] DEBUG: Crawled (200) <GET https://www.ilboursa.com/marches/actualites_bourse_tunis?date=07/02/2016> (referer: None)
+2026-02-08 04:30:48 [ilboursa_historical] INFO: Found 22 articles on 2016-02-07
+2026-02-08 04:30:49 [scrapy.core.engine] DEBUG: Crawled (200) <GET https://www.ilboursa.com/marches/actualites_bourse_tunis?date=08/02/2016> (referer: None)
+2026-02-08 04:30:50 [ilboursa_historical] INFO: Found 22 articles on 2016-02-08
+2026-02-08 04:30:51 [scrapy.core.engine] DEBUG: Crawled (200) <GET https://www.ilboursa.com/marches/actualites_bourse_tunis?date=09/02/2016> (referer: None)
+2026-02-08 04:30:51 [ilboursa_historical] INFO: Found 22 articles on 2016-02-09
+2026-02-08 04:30:52 [scrapy.core.engine] DEBUG: Crawled (200) <GET https://www.ilboursa.com/marches/actualites_bourse_tunis?date=10/02/2016> (referer: None)
+2026-02-08 04:30:52 [ilboursa_historical] INFO: Found 22 articles on 2016-02-10
+2026-02-08 04:30:54 [scrapy.core.engine] DEBUG: Crawled (200) <GET https://www.ilboursa.com/marches/actualites_bourse_tunis?date=11/02/2016> (referer: None)
+2026-02-08 04:30:54 [ilboursa_historical] INFO: Found 22 articles on 2016-02-11
+2026-02-08 04:30:54 [scrapy.core.engine] DEBUG: Crawled (200) <GET https://www.ilboursa.com/marches/actualites_bourse_tunis?date=12/02/2016> (referer: None)
+2026-02-08 04:30:54 [ilboursa_historical] INFO: Found 22 articles on 2016-02-12
+2026-02-08 04:30:56 [scrapy.core.engine] DEBUG: Crawled (200) <GET https://www.ilboursa.com/marches/actualites_bourse_tunis?date=13/02/2016> (referer: None)
+2026-02-08 04:30:56 [ilboursa_historical] INFO: Found 22 articles on 2016-02-13
+2026-02-08 04:30:56 [scrapy.core.engine] DEBUG: Crawled (200) <GET https://www.ilboursa.com/marches/actualites_bourse_tunis?date=14/02/2016> (referer: None)
+2026-02-08 04:30:57 [ilboursa_historical] INFO: Found 22 articles on 2016-02-14
+2026-02-08 04:30:57 [scrapy.core.engine] DEBUG: Crawled (200) <GET https://www.ilboursa.com/marches/actualites_bourse_tunis?date=15/02/2016> (referer: None)
+2026-02-08 04:30:58 [ilboursa_historical] INFO: Found 22 articles on 2016-02-15
+2026-02-08 04:30:59 [scrapy.core.engine] DEBUG: Crawled (200) <GET https://www.ilboursa.com/marches/actualites_bourse_tunis?date=16/02/2016> (referer: None)
+2026-02-08 04:30:59 [ilboursa_historical] INFO: Found 22 articles on 2016-02-16
+2026-02-08 04:31:00 [scrapy.core.engine] DEBUG: Crawled (200) <GET https://www.ilboursa.com/marches/actualites_bourse_tunis?date=17/02/2016> (referer: None)
+2026-02-08 04:31:00 [ilboursa_historical] INFO: Found 22 articles on 2016-02-17
+2026-02-08 04:31:01 [scrapy.core.engine] DEBUG: Crawled (200) <GET https://www.ilboursa.com/marches/actualites_bourse_tunis?date=18/02/2016> (referer: None)
+2026-02-08 04:31:01 [ilboursa_historical] INFO: Found 22 articles on 2016-02-18
+2026-02-08 04:31:03 [scrapy.core.engine] DEBUG: Crawled (200) <GET https://www.ilboursa.com/marches/actualites_bourse_tunis?date=19/02/2016> (referer: None)
+2026-02-08 04:31:03 [ilboursa_historical] INFO: Found 22 articles on 2016-02-19
+2026-02-08 04:31:04 [scrapy.core.engine] DEBUG: Crawled (200) <GET https://www.ilboursa.com/marches/actualites_bourse_tunis?date=20/02/2016> (referer: None)
+2026-02-08 04:31:04 [ilboursa_historical] INFO: Found 22 articles on 2016-02-20
+2026-02-08 04:31:05 [scrapy.core.engine] DEBUG: Crawled (200) <GET https://www.ilboursa.com/marches/actualites_bourse_tunis?date=21/02/2016> (referer: None)
+2026-02-08 04:31:06 [ilboursa_historical] INFO: Found 22 articles on 2016-02-21
+2026-02-08 04:31:07 [scrapy.core.engine] DEBUG: Crawled (200) <GET https://www.ilboursa.com/marches/actualites_bourse_tunis?date=22/02/2016> (referer: None)
+2026-02-08 04:31:07 [ilboursa_historical] INFO: Found 22 articles on 2016-02-22
+2026-02-08 04:31:08 [scrapy.core.engine] DEBUG: Crawled (200) <GET https://www.ilboursa.com/marches/actualites_bourse_tunis?date=23/02/2016> (referer: None)
+2026-02-08 04:31:08 [ilboursa_historical] INFO: Found 22 articles on 2016-02-23
+2026-02-08 04:31:09 [scrapy.core.engine] DEBUG: Crawled (200) <GET https://www.ilboursa.com/marches/actualites_bourse_tunis?date=24/02/2016> (referer: None)
+2026-02-08 04:31:09 [ilboursa_historical] INFO: Found 22 articles on 2016-02-24
+2026-02-08 04:31:10 [scrapy.core.engine] DEBUG: Crawled (200) <GET https://www.ilboursa.com/marches/actualites_bourse_tunis?date=25/02/2016> (referer: None)
+2026-02-08 04:31:10 [ilboursa_historical] INFO: Found 22 articles on 2016-02-25
+2026-02-08 04:31:11 [scrapy.core.engine] DEBUG: Crawled (200) <GET https://www.ilboursa.com/marches/actualites_bourse_tunis?date=26/02/2016> (referer: None)
+2026-02-08 04:31:11 [ilboursa_historical] INFO: Found 22 articles on 2016-02-26
+2026-02-08 04:31:12 [scrapy.core.engine] DEBUG: Crawled (200) <GET https://www.ilboursa.com/marches/actualites_bourse_tunis?date=27/02/2016> (referer: None)
+2026-02-08 04:31:12 [ilboursa_historical] INFO: Found 22 articles on 2016-02-27
+2026-02-08 04:31:13 [scrapy.core.engine] DEBUG: Crawled (200) <GET https://www.ilboursa.com/marches/actualites_bourse_tunis?date=28/02/2016> (referer: None)
+2026-02-08 04:31:13 [ilboursa_historical] INFO: Found 22 articles on 2016-02-28
+2026-02-08 04:31:15 [scrapy.core.engine] DEBUG: Crawled (200) <GET https://www.ilboursa.com/marches/actualites_bourse_tunis?date=29/02/2016> (referer: None)
+2026-02-08 04:31:15 [ilboursa_historical] INFO: Found 22 articles on 2016-02-29
+2026-02-08 04:31:16 [scrapy.core.engine] DEBUG: Crawled (200) <GET https://www.ilboursa.com/marches/actualites_bourse_tunis?date=01/03/2016> (referer: None)
+2026-02-08 04:31:16 [ilboursa_historical] INFO: Found 22 articles on 2016-03-01
+2026-02-08 04:31:17 [scrapy.core.engine] DEBUG: Crawled (200) <GET https://www.ilboursa.com/marches/actualites_bourse_tunis?date=02/03/2016> (referer: None)
+2026-02-08 04:31:17 [ilboursa_historical] INFO: Found 22 articles on 2016-03-02
+2026-02-08 04:31:18 [scrapy.core.engine] DEBUG: Crawled (200) <GET https://www.ilboursa.com/marches/actualites_bourse_tunis?date=03/03/2016> (referer: None)
+2026-02-08 04:31:18 [ilboursa_historical] INFO: Found 22 articles on 2016-03-03
+2026-02-08 04:31:20 [scrapy.core.engine] DEBUG: Crawled (200) <GET https://www.ilboursa.com/marches/actualites_bourse_tunis?date=04/03/2016> (referer: None)
+2026-02-08 04:31:20 [ilboursa_historical] INFO: Found 22 articles on 2016-03-04
+2026-02-08 04:31:21 [scrapy.core.engine] DEBUG: Crawled (200) <GET https://www.ilboursa.com/marches/actualites_bourse_tunis?date=05/03/2016> (referer: None)
+2026-02-08 04:31:21 [ilboursa_historical] INFO: Found 22 articles on 2016-03-05
+2026-02-08 04:31:22 [scrapy.core.engine] DEBUG: Crawled (200) <GET https://www.ilboursa.com/marches/actualites_bourse_tunis?date=06/03/2016> (referer: None)
+2026-02-08 04:31:22 [ilboursa_historical] INFO: Found 22 articles on 2016-03-06
+2026-02-08 04:31:23 [scrapy.core.engine] DEBUG: Crawled (200) <GET https://www.ilboursa.com/marches/actualites_bourse_tunis?date=07/03/2016> (referer: None)
+2026-02-08 04:31:23 [ilboursa_historical] INFO: Found 22 articles on 2016-03-07
+2026-02-08 04:31:24 [scrapy.core.engine] DEBUG: Crawled (200) <GET https://www.ilboursa.com/marches/actualites_bourse_tunis?date=08/03/2016> (referer: None)
+2026-02-08 04:31:24 [ilboursa_historical] INFO: Found 22 articles on 2016-03-08
+2026-02-08 04:31:25 [scrapy.core.engine] DEBUG: Crawled (200) <GET https://www.ilboursa.com/marches/actualites_bourse_tunis?date=09/03/2016> (referer: None)
+2026-02-08 04:31:25 [ilboursa_historical] INFO: Found 22 articles on 2016-03-09
+2026-02-08 04:31:26 [scrapy.core.engine] DEBUG: Crawled (200) <GET https://www.ilboursa.com/marches/actualites_bourse_tunis?date=10/03/2016> (referer: None)
+2026-02-08 04:31:26 [ilboursa_historical] INFO: Found 22 articles on 2016-03-10
+2026-02-08 04:31:27 [scrapy.core.engine] DEBUG: Crawled (200) <GET https://www.ilboursa.com/marches/actualites_bourse_tunis?date=11/03/2016> (referer: None)
+2026-02-08 04:31:27 [ilboursa_historical] INFO: Found 22 articles on 2016-03-11
+2026-02-08 04:31:28 [scrapy.core.engine] DEBUG: Crawled (200) <GET https://www.ilboursa.com/marches/actualites_bourse_tunis?date=12/03/2016> (referer: None)
+2026-02-08 04:31:28 [ilboursa_historical] INFO: Found 22 articles on 2016-03-12
+2026-02-08 04:31:30 [scrapy.core.engine] DEBUG: Crawled (200) <GET https://www.ilboursa.com/marches/actualites_bourse_tunis?date=13/03/2016> (referer: None)
+2026-02-08 04:31:30 [ilboursa_historical] INFO: Found 22 articles on 2016-03-13
+2026-02-08 04:31:31 [scrapy.core.engine] DEBUG: Crawled (200) <GET https://www.ilboursa.com/marches/actualites_bourse_tunis?date=14/03/2016> (referer: None)
+2026-02-08 04:31:31 [ilboursa_historical] INFO: Found 22 articles on 2016-03-14
+2026-02-08 04:31:33 [scrapy.core.engine] DEBUG: Crawled (200) <GET https://www.ilboursa.com/marches/actualites_bourse_tunis?date=15/03/2016> (referer: None)
+2026-02-08 04:31:33 [ilboursa_historical] INFO: Found 22 articles on 2016-03-15
+2026-02-08 04:31:34 [scrapy.core.engine] DEBUG: Crawled (200) <GET https://www.ilboursa.com/marches/actualites_bourse_tunis?date=16/03/2016> (referer: None)
+2026-02-08 04:31:34 [ilboursa_historical] INFO: Found 22 articles on 2016-03-16
+2026-02-08 04:31:35 [scrapy.extensions.logstats] INFO: Crawled 99 pages (at 49 pages/min), scraped 0 items (at 0 items/min)
+2026-02-08 04:31:36 [scrapy.core.engine] DEBUG: Crawled (200) <GET https://www.ilboursa.com/marches/actualites_bourse_tunis?date=17/03/2016> (referer: None)
+2026-02-08 04:31:36 [ilboursa_historical] INFO: Found 22 articles on 2016-03-17
+2026-02-08 04:31:37 [scrapy.core.engine] DEBUG: Crawled (200) <GET https://www.ilboursa.com/marches/actualites_bourse_tunis?date=18/03/2016> (referer: None)
+2026-02-08 04:31:37 [ilboursa_historical] INFO: Found 22 articles on 2016-03-18
+2026-02-08 04:31:38 [scrapy.core.engine] DEBUG: Crawled (200) <GET https://www.ilboursa.com/marches/actualites_bourse_tunis?date=19/03/2016> (referer: None)
+2026-02-08 04:31:38 [ilboursa_historical] INFO: Found 22 articles on 2016-03-19
+2026-02-08 04:31:39 [scrapy.core.engine] DEBUG: Crawled (200) <GET https://www.ilboursa.com/marches/actualites_bourse_tunis?date=20/03/2016> (referer: None)
+2026-02-08 04:31:39 [ilboursa_historical] INFO: Found 22 articles on 2016-03-20
+2026-02-08 04:31:41 [scrapy.core.engine] DEBUG: Crawled (200) <GET https://www.ilboursa.com/marches/actualites_bourse_tunis?date=21/03/2016> (referer: None)
+2026-02-08 04:31:41 [ilboursa_historical] INFO: Found 22 articles on 2016-03-21
+2026-02-08 04:31:42 [scrapy.core.engine] DEBUG: Crawled (200) <GET https://www.ilboursa.com/marches/actualites_bourse_tunis?date=22/03/2016> (referer: None)
+2026-02-08 04:31:42 [ilboursa_historical] INFO: Found 22 articles on 2016-03-22
+2026-02-08 04:31:43 [scrapy.core.engine] DEBUG: Crawled (200) <GET https://www.ilboursa.com/marches/actualites_bourse_tunis?date=23/03/2016> (referer: None)
+2026-02-08 04:31:43 [ilboursa_historical] INFO: Found 22 articles on 2016-03-23
+2026-02-08 04:31:44 [scrapy.core.engine] DEBUG: Crawled (200) <GET https://www.ilboursa.com/marches/actualites_bourse_tunis?date=24/03/2016> (referer: None)
+2026-02-08 04:31:44 [ilboursa_historical] INFO: Found 22 articles on 2016-03-24
+2026-02-08 04:31:45 [scrapy.core.engine] DEBUG: Crawled (200) <GET https://www.ilboursa.com/marches/actualites_bourse_tunis?date=25/03/2016> (referer: None)
+2026-02-08 04:31:46 [ilboursa_historical] INFO: Found 22 articles on 2016-03-25
+2026-02-08 04:31:46 [scrapy.core.engine] DEBUG: Crawled (200) <GET https://www.ilboursa.com/marches/actualites_bourse_tunis?date=26/03/2016> (referer: None)
+2026-02-08 04:31:46 [ilboursa_historical] INFO: Found 22 articles on 2016-03-26
+2026-02-08 04:31:48 [scrapy.core.engine] DEBUG: Crawled (200) <GET https://www.ilboursa.com/marches/actualites_bourse_tunis?date=27/03/2016> (referer: None)
+2026-02-08 04:31:48 [ilboursa_historical] INFO: Found 22 articles on 2016-03-27
+2026-02-08 04:31:49 [scrapy.core.engine] DEBUG: Crawled (200) <GET https://www.ilboursa.com/marches/actualites_bourse_tunis?date=28/03/2016> (referer: None)
+2026-02-08 04:31:49 [ilboursa_historical] INFO: Found 22 articles on 2016-03-28
+2026-02-08 04:31:51 [scrapy.core.engine] DEBUG: Crawled (200) <GET https://www.ilboursa.com/marches/actualites_bourse_tunis?date=29/03/2016> (referer: None)
+2026-02-08 04:31:51 [ilboursa_historical] INFO: Found 22 articles on 2016-03-29
+2026-02-08 04:31:52 [scrapy.core.engine] DEBUG: Crawled (200) <GET https://www.ilboursa.com/marches/actualites_bourse_tunis?date=30/03/2016> (referer: None)
+2026-02-08 04:31:52 [ilboursa_historical] INFO: Found 22 articles on 2016-03-30
+2026-02-08 04:31:53 [scrapy.core.engine] DEBUG: Crawled (200) <GET https://www.ilboursa.com/marches/actualites_bourse_tunis?date=31/03/2016> (referer: None)
+2026-02-08 04:31:53 [ilboursa_historical] INFO: Found 22 articles on 2016-03-31
+2026-02-08 04:31:54 [scrapy.crawler] INFO: Received SIGTERM, shutting down gracefully. Send again to force 
+2026-02-08 04:31:54 [scrapy.core.engine] INFO: Closing spider (shutdown)
+2026-02-08 04:31:54 [scrapy.core.engine] DEBUG: Crawled (200) <GET https://www.ilboursa.com/marches/actualites_bourse_tunis?date=01/04/2016> (referer: None)
+2026-02-08 04:31:54 [ilboursa_historical] INFO: Found 22 articles on 2016-04-01
+2026-02-08 04:31:55 [scrapy.core.engine] DEBUG: Crawled (200) <GET https://www.ilboursa.com/marches/actualites_bourse_tunis?date=02/04/2016> (referer: None)
+2026-02-08 04:31:56 [ilboursa_historical] INFO: Found 22 articles on 2016-04-02
+2026-02-08 04:31:57 [scrapy.core.engine] DEBUG: Crawled (200) <GET https://www.ilboursa.com/marches/actualites_bourse_tunis?date=03/04/2016> (referer: None)
+2026-02-08 04:31:57 [ilboursa_historical] INFO: Found 22 articles on 2016-04-03
+2026-02-08 04:31:58 [scrapy.core.engine] DEBUG: Crawled (200) <GET https://www.ilboursa.com/marches/actualites_bourse_tunis?date=04/04/2016> (referer: None)
+2026-02-08 04:31:58 [ilboursa_historical] INFO: Found 22 articles on 2016-04-04
+2026-02-08 04:32:00 [scrapy.core.engine] DEBUG: Crawled (200) <GET https://www.ilboursa.com/marches/actualites_bourse_tunis?date=05/04/2016> (referer: None)
+2026-02-08 04:32:00 [ilboursa_historical] INFO: Found 22 articles on 2016-04-05
+2026-02-08 04:32:01 [scrapy.core.engine] DEBUG: Crawled (200) <GET https://www.ilboursa.com/marches/actualites_bourse_tunis?date=06/04/2016> (referer: None)
+2026-02-08 04:32:01 [ilboursa_historical] INFO: Found 22 articles on 2016-04-06
+2026-02-08 04:32:02 [scrapy.core.engine] DEBUG: Crawled (200) <GET https://www.ilboursa.com/marches/actualites_bourse_tunis?date=07/04/2016> (referer: None)
+2026-02-08 04:32:02 [ilboursa_historical] INFO: Found 22 articles on 2016-04-07
+2026-02-08 04:32:03 [scrapy.core.engine] DEBUG: Crawled (200) <GET https://www.ilboursa.com/marches/actualites_bourse_tunis?date=08/04/2016> (referer: None)
+2026-02-08 04:32:03 [ilboursa_historical] INFO: Found 22 articles on 2016-04-08
+2026-02-08 04:32:03 [scrapy.statscollectors] INFO: Dumping Scrapy stats:
+{'downloader/request_bytes': 58565,
+ 'downloader/request_count': 122,
+ 'downloader/request_method_count/GET': 122,
+ 'downloader/response_bytes': 950888,
+ 'downloader/response_count': 122,
+ 'downloader/response_status_count/200': 122,
+ 'dupefilter/filtered': 2156,
+ 'elapsed_time_seconds': 148.613896,
+ 'finish_reason': 'shutdown',
+ 'finish_time': datetime.datetime(2026, 2, 8, 3, 32, 3, 862394, tzinfo=datetime.timezone.utc),
+ 'httpcompression/response_bytes': 3342337,
+ 'httpcompression/response_count': 122,
+ 'item_dropped_count': 22,
+ 'item_dropped_reasons_count/DropItem': 22,
+ 'log_count/DEBUG': 146,
+ 'log_count/INFO': 115,
+ 'log_count/WARNING': 23,
+ 'memusage/max': 127401984,
+ 'memusage/startup': 109178880,
+ 'request_depth_max': 1,
+ 'response_received_count': 122,
+ 'robotstxt/request_count': 1,
+ 'robotstxt/response_count': 1,
+ 'robotstxt/response_status_count/200': 1,
+ 'scheduler/dequeued': 121,
+ 'scheduler/dequeued/memory': 121,
+ 'scheduler/enqueued': 121,
+ 'scheduler/enqueued/memory': 121,
+ 'start_time': datetime.datetime(2026, 2, 8, 3, 29, 35, 248498, tzinfo=datetime.timezone.utc)}
+2026-02-08 04:32:03 [scrapy.core.engine] INFO: Spider closed (shutdown)
