@@ -59,9 +59,9 @@ torch>=2.1.0
 # redis: Redis client for prediction cache and feature store
 redis>=5.0.0
 
-# --- Experiment Tracking (optional) ---
-# mlflow: Model registry and experiment tracking
-# mlflow>=2.10.0
+# --- Experiment Tracking ---
+# mlflow: Model registry, experiment tracking, metric comparison
+mlflow>=2.10.0
 
 # --- Testing ---
 # pytest: Test runner

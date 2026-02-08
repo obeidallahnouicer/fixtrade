@@ -6,16 +6,20 @@ venv/
 .env.*
 .data/
 
-# Parquet data files
-data/bronze/
-data/silver/
-data/gold/
+# Data files (raw CSVs, Medallion layers, Parquet)
+data/
 *.parquet
 
 # Cache
 .cache/
 *.cache
 
-# Results / model outputs
+# MLflow tracking
+mlruns/
+
+# Trained models / results
 models/
 results/
+
+# Pytest cache
+.pytest_cache/

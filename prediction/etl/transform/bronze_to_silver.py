@@ -25,7 +25,9 @@ VALIDATION_RULES = {
     "cloture_positive": lambda df: df["cloture"] > 0,
     "high_gte_low": lambda df: df["plus_haut"] >= df["plus_bas"],
     "volume_non_negative": lambda df: df["quantite_negociee"] >= 0,
-    "no_future_dates": lambda df: df["seance"].dt.date <= date.today(),
+    "no_future_dates": lambda df: pd.to_datetime(
+        df["seance"].astype(str).str.strip(), dayfirst=True, format="mixed"
+    ).dt.date <= date.today(),
 }
 
 
@@ -126,6 +128,10 @@ class BronzeToSilverTransformer:
         """Ensure correct dtypes for all columns."""
         df = df.copy()
 
+        # Strip whitespace from string values before parsing
+        if df["seance"].dtype == object:
+            df["seance"] = df["seance"].astype(str).str.strip()
+
         # Parse dates — dayfirst=True because BVMT uses DD/MM/YYYY.
         # errors="coerce" turns unparseable values (e.g. leaked headers) into NaT,
         # which are then dropped along with other nulls downstream.
@@ -137,8 +143,12 @@ class BronzeToSilverTransformer:
         numeric_cols = ["ouverture", "cloture", "plus_haut", "plus_bas"]
         for col in numeric_cols:
             if col in df.columns:
+                if df[col].dtype == object:
+                    df[col] = df[col].astype(str).str.strip()
                 df[col] = pd.to_numeric(df[col], errors="coerce")
         if "quantite_negociee" in df.columns:
+            if df["quantite_negociee"].dtype == object:
+                df["quantite_negociee"] = df["quantite_negociee"].astype(str).str.strip()
             df["quantite_negociee"] = pd.to_numeric(
                 df["quantite_negociee"], errors="coerce"
             ).fillna(0).astype(int)

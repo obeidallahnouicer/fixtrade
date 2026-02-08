@@ -27,6 +27,7 @@ BVMT_COLUMN_MAP = {
     "SEANCE": "seance",
     "CODE": "code",
     "LIBELLE": "libelle",
+    "VALEUR": "libelle",
     "OUVERTURE": "ouverture",
     "CLOTURE": "cloture",
     "PLUS_HAUT": "plus_haut",
@@ -36,9 +37,9 @@ BVMT_COLUMN_MAP = {
     "VARIATION": "variation",
     # TXT headers (2016-2017, 2020-2021)
     "VALEUR": "libelle",
-    "CAPITAUX": "volume",
-    "GROUPE": "_groupe",
-    "NB_TRANSACTION": "_nb_transaction",
+    "CAPITAUX": "capitaux",
+    "GROUPE": "groupe",
+    "NB_TRANSACTION": "nb_transaction",
     "IND_RES": "_ind_res",
     # TXT headers (2018-2019) — different column names
     "CODE_VAL": "code",
@@ -49,7 +50,7 @@ BVMT_COLUMN_MAP = {
     "DERNIER_COURS": "_dernier_cours",
     "NB_TRAN": "_nb_transaction",
     "I": "_ind_res",
-    # Alternative column names sometimes seen in English exports
+    # Alternative column names sometimes seen in exports
     "Date": "seance",
     "Open": "ouverture",
     "Close": "cloture",
@@ -274,6 +275,8 @@ class BVMTExtractor:
                         low_memory=False,
                     )
                     if len(df.columns) > 2:
+                        # Strip whitespace from column names (BVMT exports have trailing spaces)
+                        df.columns = df.columns.str.strip()
                         return df
                 except Exception:
                     continue

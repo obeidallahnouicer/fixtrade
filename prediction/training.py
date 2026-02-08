@@ -7,6 +7,7 @@ Implements walk-forward cross-validation for time series:
 - Ensemble weight optimization
 - Model persistence via registry
 - Anti-leakage enforcement
+- **MLflow experiment tracking** for all runs & metrics
 
 Usage:
     pipeline = TrainingPipeline(config)
@@ -14,7 +15,7 @@ Usage:
 """
 
 import logging
-from dataclasses import dataclass
+from dataclasses import dataclass, asdict
 from pathlib import Path
 
 import numpy as np
@@ -30,6 +31,14 @@ from prediction.models.xgboost_model import XGBoostPredictor
 from prediction.utils.metrics import ModelMonitor
 
 logger = logging.getLogger(__name__)
+
+try:
+    import mlflow
+    import mlflow.sklearn
+    HAS_MLFLOW = True
+except ImportError:
+    HAS_MLFLOW = False
+    logger.warning("MLflow not installed. Experiment tracking disabled.")
 
 
 @dataclass
@@ -50,16 +59,83 @@ DEFAULT_CV_SPLITS = [
 ]
 
 
+def _setup_mlflow(cfg: PredictionConfig) -> bool:
+    """Initialise MLflow tracking. Returns True if available."""
+    if not HAS_MLFLOW:
+        return False
+    try:
+        mlflow.set_tracking_uri(cfg.mlflow.tracking_uri)
+        mlflow.set_experiment(cfg.mlflow.experiment_name)
+        logger.info(
+            "MLflow tracking: uri=%s  experiment=%s",
+            cfg.mlflow.tracking_uri,
+            cfg.mlflow.experiment_name,
+        )
+        return True
+    except Exception:
+        logger.warning("MLflow setup failed. Tracking disabled.")
+        return False
+
+
+def _log_params_for_model(model: BasePredictionModel) -> None:
+    """Log hyperparameters of a model to the active MLflow run."""
+    if not HAS_MLFLOW:
+        return
+    if isinstance(model, LSTMPredictor):
+        mlflow.log_params({
+            "lstm_seq_len": model._seq_len,
+            "lstm_hidden": model._hidden_size,
+            "lstm_layers": model._num_layers,
+            "lstm_dropout": model._dropout,
+            "lstm_lr": model._lr,
+            "lstm_epochs": model._epochs,
+            "lstm_batch_size": model._batch_size,
+            "lstm_patience": model._patience,
+        })
+    elif isinstance(model, XGBoostPredictor):
+        mlflow.log_params({
+            "xgb_n_estimators": model._n_estimators,
+            "xgb_max_depth": model._max_depth,
+            "xgb_lr": model._learning_rate,
+            "xgb_subsample": model._subsample,
+            "xgb_colsample": model._colsample_bytree,
+        })
+    elif isinstance(model, ProphetPredictor):
+        mlflow.log_params({
+            "prophet_cp_prior": model._cp_prior,
+            "prophet_season_prior": model._season_prior,
+            "prophet_yearly": model._yearly,
+            "prophet_weekly": model._weekly,
+        })
+
+
+def _log_metrics_to_mlflow(
+    model_name: str, metrics: ModelMetrics, split_name: str
+) -> None:
+    """Log evaluation metrics to the active MLflow run."""
+    if not HAS_MLFLOW:
+        return
+    prefix = f"{split_name}/"
+    mlflow.log_metrics({
+        f"{prefix}mae": metrics.mae,
+        f"{prefix}rmse": metrics.rmse,
+        f"{prefix}mape": metrics.mape,
+        f"{prefix}directional_accuracy": metrics.directional_accuracy,
+        f"{prefix}r_squared": metrics.r_squared,
+    })
+
+
 class TrainingPipeline:
-    """End-to-end ML training pipeline.
+    """End-to-end ML training pipeline with MLflow tracking.
 
     Steps:
     1. Split data (walk-forward CV)
     2. Train each base model
     3. Evaluate on validation set
-    4. Optimize ensemble weights
-    5. Final evaluation on test set
-    6. Persist best models
+    4. Log all params + metrics to MLflow
+    5. Optimize ensemble weights
+    6. Final evaluation on test set
+    7. Persist best models + register in MLflow
     """
 
     def __init__(
@@ -71,6 +147,7 @@ class TrainingPipeline:
         self._cv_splits = cv_splits or DEFAULT_CV_SPLITS
         self._monitor = ModelMonitor()
         self._models_dir = self._cfg.paths.models_dir
+        self._mlflow_ok = _setup_mlflow(self._cfg)
 
     def run(
         self,
@@ -79,7 +156,10 @@ class TrainingPipeline:
         feature_cols: list[str] | None = None,
         symbol: str | None = None,
     ) -> dict[str, ModelMetrics]:
-        """Execute the full training pipeline.
+        """Execute the full training pipeline with MLflow tracking.
+
+        Each model × CV-split combination gets its own MLflow child run.
+        A parent run groups the entire training session.
 
         Args:
             features_df: Gold-layer DataFrame with features + targets.
@@ -93,7 +173,6 @@ class TrainingPipeline:
         if feature_cols is None:
             gold_transformer = SilverToGoldTransformer()
             feature_cols = gold_transformer.get_feature_columns(features_df)
-            # Remove target columns from features
             feature_cols = [
                 c for c in feature_cols
                 if not c.startswith("target_") and c != target_col
@@ -101,55 +180,109 @@ class TrainingPipeline:
 
         all_metrics: dict[str, list[ModelMetrics]] = {}
 
-        for split in self._cv_splits:
-            logger.info("=" * 60)
-            logger.info("Training CV split: %s", split.name)
-            logger.info("=" * 60)
+        # ── Parent MLflow run for the whole training session ──
+        parent_ctx = (
+            mlflow.start_run(run_name="walk-forward-cv", nested=False)
+            if self._mlflow_ok
+            else _nullcontext()
+        )
 
-            # Create split-specific data transformer
-            transformer = SilverToGoldTransformer(
-                train_end_year=split.train_end_year,
-                val_end_year=split.val_end_year,
-            )
-            train_df, val_df, test_df = transformer.create_training_view(features_df)
+        with parent_ctx:
+            if self._mlflow_ok:
+                mlflow.log_params({
+                    "target_col": target_col,
+                    "n_features": len(feature_cols),
+                    "n_cv_splits": len(self._cv_splits),
+                    "total_rows": len(features_df),
+                })
 
-            if train_df.empty or val_df.empty:
-                logger.warning("Skipping %s — insufficient data.", split.name)
-                continue
+            for split in self._cv_splits:
+                logger.info("=" * 60)
+                logger.info("Training CV split: %s", split.name)
+                logger.info("=" * 60)
 
-            X_train = train_df[feature_cols].copy()
-            y_train = train_df[target_col].copy()
-            X_val = val_df[feature_cols].copy()
-            y_val = val_df[target_col].copy()
+                transformer = SilverToGoldTransformer(
+                    train_end_year=split.train_end_year,
+                    val_end_year=split.val_end_year,
+                )
+                train_df, val_df, test_df = transformer.create_training_view(features_df)
 
-            # Handle NaN/Inf in features
-            X_train = X_train.replace([np.inf, -np.inf], np.nan).fillna(0)
-            X_val = X_val.replace([np.inf, -np.inf], np.nan).fillna(0)
+                if train_df.empty or val_df.empty:
+                    logger.warning("Skipping %s — insufficient data.", split.name)
+                    continue
 
-            # Build models
-            models = self._create_models()
+                X_train = train_df[feature_cols].copy()
+                y_train = train_df[target_col].copy()
+                X_val = val_df[feature_cols].copy()
+                y_val = val_df[target_col].copy()
 
-            # Train + evaluate each model
-            for model in models:
-                logger.info("Training %s on %s...", model.name, split.name)
-                try:
-                    model.fit(X_train, y_train, X_val, y_val)
-                    metrics = model.evaluate(X_val, y_val)
+                X_train = X_train.replace([np.inf, -np.inf], np.nan).fillna(0)
+                X_val = X_val.replace([np.inf, -np.inf], np.nan).fillna(0)
 
-                    if model.name not in all_metrics:
-                        all_metrics[model.name] = []
-                    all_metrics[model.name].append(metrics)
+                models = self._create_models()
 
-                except Exception:
-                    logger.exception(
-                        "Failed to train/evaluate %s on %s",
-                        model.name,
-                        split.name,
+                for model in models:
+                    logger.info("Training %s on %s...", model.name, split.name)
+
+                    # ── Child MLflow run per model×split ──
+                    child_ctx = (
+                        mlflow.start_run(
+                            run_name=f"{model.name}_{split.name}",
+                            nested=True,
+                        )
+                        if self._mlflow_ok
+                        else _nullcontext()
                     )
 
-        # Compute average metrics across splits
-        avg_metrics = self._average_metrics(all_metrics)
-        self._log_summary(avg_metrics)
+                    with child_ctx:
+                        try:
+                            if self._mlflow_ok:
+                                mlflow.log_params({
+                                    "model": model.name,
+                                    "split": split.name,
+                                    "train_end_year": split.train_end_year,
+                                    "val_end_year": split.val_end_year,
+                                    "train_rows": len(X_train),
+                                    "val_rows": len(X_val),
+                                })
+                                _log_params_for_model(model)
+
+                            model.fit(X_train, y_train, X_val, y_val)
+                            metrics = model.evaluate(X_val, y_val)
+
+                            if self._mlflow_ok:
+                                mlflow.log_metrics({
+                                    "mae": metrics.mae,
+                                    "rmse": metrics.rmse,
+                                    "mape": metrics.mape,
+                                    "directional_accuracy": metrics.directional_accuracy,
+                                    "r_squared": metrics.r_squared,
+                                })
+
+                            if model.name not in all_metrics:
+                                all_metrics[model.name] = []
+                            all_metrics[model.name].append(metrics)
+
+                        except Exception:
+                            logger.exception(
+                                "Failed to train/evaluate %s on %s",
+                                model.name,
+                                split.name,
+                            )
+
+            # ── Average metrics → parent run ──
+            avg_metrics = self._average_metrics(all_metrics)
+            self._log_summary(avg_metrics)
+
+            if self._mlflow_ok:
+                for name, m in avg_metrics.items():
+                    mlflow.log_metrics({
+                        f"avg_{name}_mae": m.mae,
+                        f"avg_{name}_rmse": m.rmse,
+                        f"avg_{name}_mape": m.mape,
+                        f"avg_{name}_dir_acc": m.directional_accuracy,
+                        f"avg_{name}_r2": m.r_squared,
+                    })
 
         return avg_metrics
 
@@ -162,8 +295,7 @@ class TrainingPipeline:
     ) -> EnsemblePredictor:
         """Train the final production model on all available data.
 
-        Uses all data up to the latest available date.
-        Saves the model to the models registry.
+        Logged as a dedicated MLflow run tagged 'production'.
 
         Args:
             features_df: Feature DataFrame (optionally pre-filtered to one symbol).
@@ -216,7 +348,6 @@ class TrainingPipeline:
         X_val = val_df[feature_cols].replace([np.inf, -np.inf], np.nan).fillna(0)
         y_val = val_df[target_col]
 
-        # Build and train ensemble
         models = self._create_models()
         ensemble = EnsemblePredictor(
             models={m.name: m for m in models},
@@ -226,12 +357,63 @@ class TrainingPipeline:
                 "Prophet": self._cfg.model.ensemble_prophet_weight,
             },
         )
-        ensemble.fit(X_train, y_train, X_val, y_val)
 
-        # Save to registry
-        self._save_models(ensemble, symbol=symbol)
+        run_ctx = (
+            mlflow.start_run(run_name="final-production-model")
+            if self._mlflow_ok
+            else _nullcontext()
+        )
+
+        with run_ctx:
+            if self._mlflow_ok:
+                mlflow.set_tag("stage", "production")
+                mlflow.log_params({
+                    "target_col": target_col,
+                    "n_features": len(feature_cols),
+                    "train_rows": len(X_train),
+                    "val_rows": len(X_val),
+                    "lstm_weight": self._cfg.model.ensemble_lstm_weight,
+                    "xgb_weight": self._cfg.model.ensemble_xgb_weight,
+                    "prophet_weight": self._cfg.model.ensemble_prophet_weight,
+                })
+
+            ensemble.fit(X_train, y_train, X_val, y_val)
+
+            # Evaluate each base model and log
+            for name, model in ensemble._models.items():
+                if model.is_fitted:
+                    metrics = model.evaluate(X_val, y_val)
+                    logger.info("[Final %s] %s", name, metrics)
+                    if self._mlflow_ok:
+                        mlflow.log_metrics({
+                            f"final_{name}_mae": metrics.mae,
+                            f"final_{name}_rmse": metrics.rmse,
+                            f"final_{name}_mape": metrics.mape,
+                            f"final_{name}_dir_acc": metrics.directional_accuracy,
+                            f"final_{name}_r2": metrics.r_squared,
+                        })
+
+            # Log ensemble weights after optimization
+            if self._mlflow_ok:
+                mlflow.log_metrics({
+                    f"opt_weight_{k}": v
+                    for k, v in ensemble._weights.items()
+                })
+
+            # Save to registry
+            self._save_models(ensemble, symbol=symbol)
+
+            # Log model artifacts to MLflow
+            if self._mlflow_ok:
+                mlflow.log_artifacts(
+                    str(self._models_dir / "ensemble"), artifact_path="ensemble"
+                )
 
         return ensemble
+
+    # ------------------------------------------------------------------
+    # Private helpers
+    # ------------------------------------------------------------------
 
     def _create_models(self) -> list[BasePredictionModel]:
         """Instantiate all base prediction models."""
@@ -306,3 +488,13 @@ class TrainingPipeline:
         logger.info("=" * 60)
         for name, metrics in avg_metrics.items():
             logger.info("[%s] %s", name, metrics)
+
+
+class _nullcontext:
+    """Minimal no-op context manager (for when MLflow is disabled)."""
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, *exc):
+        return False
