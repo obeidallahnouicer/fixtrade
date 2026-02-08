@@ -77,6 +77,7 @@ class TrainingPipeline:
         features_df: pd.DataFrame,
         target_col: str = "target_1d",
         feature_cols: list[str] | None = None,
+        symbol: str | None = None,
     ) -> dict[str, ModelMetrics]:
         """Execute the full training pipeline.
 
@@ -84,6 +85,7 @@ class TrainingPipeline:
             features_df: Gold-layer DataFrame with features + targets.
             target_col: Name of the target column.
             feature_cols: List of feature column names. Auto-detected if None.
+            symbol: If provided, models are saved under models/{symbol}/.
 
         Returns:
             Dict mapping model name → average metrics across CV splits.
@@ -156,11 +158,18 @@ class TrainingPipeline:
         features_df: pd.DataFrame,
         target_col: str = "target_1d",
         feature_cols: list[str] | None = None,
+        symbol: str | None = None,
     ) -> EnsemblePredictor:
         """Train the final production model on all available data.
 
         Uses all data up to the latest available date.
         Saves the model to the models registry.
+
+        Args:
+            features_df: Feature DataFrame (optionally pre-filtered to one symbol).
+            target_col: Target column name.
+            feature_cols: Feature column names. Auto-detected if None.
+            symbol: If provided, saves models under models/ensemble/{symbol}/.
 
         Returns:
             Trained EnsemblePredictor.
@@ -173,12 +182,34 @@ class TrainingPipeline:
                 if not c.startswith("target_") and c != target_col
             ]
 
-        # Final split: train on everything except most recent data
+        # Final split: train on everything except most recent year for validation
+        # Auto-detect split years from the actual data
+        max_year = pd.to_datetime(features_df["seance"]).dt.year.max()
+        val_year = max_year
+        train_year = max_year - 1
+
         transformer = SilverToGoldTransformer(
-            train_end_year=2025,
-            val_end_year=2025,
+            train_end_year=train_year,
+            val_end_year=val_year,
         )
         train_df, val_df, _ = transformer.create_training_view(features_df)
+
+        # If val is empty (e.g. data ends exactly at train_year), use last 20%
+        if val_df.empty:
+            logger.warning(
+                "Validation set empty with train_end=%d, val_end=%d. "
+                "Using last 20%% of data as validation.",
+                train_year, val_year,
+            )
+            all_df = train_df.sort_values("seance").reset_index(drop=True)
+            split_idx = int(len(all_df) * 0.8)
+            train_df = all_df.iloc[:split_idx]
+            val_df = all_df.iloc[split_idx:]
+
+        logger.info(
+            "Final model split — Train: %d rows, Val: %d rows",
+            len(train_df), len(val_df),
+        )
 
         X_train = train_df[feature_cols].replace([np.inf, -np.inf], np.nan).fillna(0)
         y_train = train_df[target_col]
@@ -198,7 +229,7 @@ class TrainingPipeline:
         ensemble.fit(X_train, y_train, X_val, y_val)
 
         # Save to registry
-        self._save_models(ensemble)
+        self._save_models(ensemble, symbol=symbol)
 
         return ensemble
 
@@ -232,11 +263,20 @@ class TrainingPipeline:
             ),
         ]
 
-    def _save_models(self, ensemble: EnsemblePredictor) -> None:
-        """Persist the trained ensemble to the model registry."""
+    def _save_models(self, ensemble: EnsemblePredictor, symbol: str | None = None) -> None:
+        """Persist the trained ensemble to the model registry.
+
+        Args:
+            ensemble: Trained ensemble predictor.
+            symbol: If provided, save under models/ensemble/{symbol}/.
+        """
         self._models_dir.mkdir(parents=True, exist_ok=True)
-        ensemble.save_model(self._models_dir / "ensemble")
-        logger.info("Models saved to %s", self._models_dir)
+        if symbol:
+            save_path = self._models_dir / "ensemble" / symbol.upper()
+        else:
+            save_path = self._models_dir / "ensemble"
+        ensemble.save_model(save_path)
+        logger.info("Models saved to %s", save_path)
 
     @staticmethod
     def _average_metrics(
