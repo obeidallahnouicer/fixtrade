@@ -84,7 +84,17 @@ class ParquetLoader:
         if not parquet_files:
             return pd.DataFrame()
 
-        frames = [pd.read_parquet(f) for f in parquet_files]
+        frames: list[pd.DataFrame] = []
+        for f in parquet_files:
+            part_df = pd.read_parquet(f)
+            # Reconstruct partition columns from directory path
+            # e.g. layer/code=100010/data.parquet → code = "100010"
+            rel_parts = f.relative_to(layer_path).parent.parts
+            for part in rel_parts:
+                if "=" in part:
+                    col, val = part.split("=", 1)
+                    part_df[col] = val
+            frames.append(part_df)
         return pd.concat(frames, ignore_index=True)
 
     def get_watermark(self, layer: str) -> date | None:
