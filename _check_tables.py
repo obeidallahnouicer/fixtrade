@@ -50,7 +50,9 @@ for table in ["price_predictions", "volume_predictions", "liquidity_predictions"
         count = cur.fetchone()[0]
         if count > 0:
             print(f"\n--- Sample from {table} (last 5) ---")
-            cur.execute(f"SELECT * FROM {table} ORDER BY created_at DESC LIMIT 5")
+            # model_registry uses trained_at, others use created_at
+            order_col = "trained_at" if table == "model_registry" else "created_at"
+            cur.execute(f"SELECT * FROM {table} ORDER BY {order_col} DESC LIMIT 5")
             cols = [desc[0] for desc in cur.description]
             print("  " + " | ".join(cols))
             for row in cur.fetchall():
