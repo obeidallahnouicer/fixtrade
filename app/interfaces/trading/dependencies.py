@@ -137,3 +137,17 @@ def get_evaluate_anomalies_use_case() -> EvaluateAnomaliesUseCase:
     return EvaluateAnomaliesUseCase(
         price_repo=StockPriceRepositoryAdapter(),
     )
+
+
+def get_detect_intraday_anomalies_use_case():
+    """Build DetectIntradayAnomaliesUseCase with its infrastructure dependencies."""
+    from app.application.trading.detect_intraday_anomalies import (
+        DetectIntradayAnomaliesUseCase,
+    )
+    from app.infrastructure.trading.intraday_tick_repository import (
+        IntradayTickRepositoryAdapter,
+    )
+
+    return DetectIntradayAnomaliesUseCase(
+        tick_repo=IntradayTickRepositoryAdapter(),
+    )

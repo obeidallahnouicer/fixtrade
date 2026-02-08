@@ -366,3 +366,36 @@ class EvaluateAnomaliesResponse(BaseModel):
     total_known: int
     overall: EvaluationMetricsItem
     per_type: list[PerTypeMetricsItem]
+
+
+# ------------------------------------------------------------------
+# Intraday Anomaly Detection schemas
+# ------------------------------------------------------------------
+
+
+class DetectIntradayAnomaliesRequest(BaseModel):
+    """Request schema for intraday anomaly detection endpoint.
+
+    Attributes:
+        symbol: BVMT stock ticker (2-10 uppercase chars).
+        days_back: Number of recent trading days to scan (1-30).
+    """
+
+    symbol: str = Field(
+        ...,
+        min_length=SYMBOL_MIN_LEN,
+        max_length=SYMBOL_MAX_LEN,
+        description=SYMBOL_DESCRIPTION,
+    )
+    days_back: int = Field(
+        default=5, ge=1, le=30,
+        description="Number of recent trading days to scan for intraday anomalies",
+    )
+
+
+class DetectIntradayAnomaliesResponse(BaseModel):
+    """Response schema for intraday anomaly detection endpoint."""
+
+    symbol: str
+    days_scanned: int
+    anomalies: list[AnomalyItem]

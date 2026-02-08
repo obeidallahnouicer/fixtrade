@@ -349,3 +349,21 @@ class EvaluateAnomaliesResult:
     total_known: int
     overall: EvaluationMetricsResult
     per_type: list[PerTypeMetricsResult]
+
+
+# ------------------------------------------------------------------
+# Intraday Anomaly Detection DTOs
+# ------------------------------------------------------------------
+
+
+@dataclass(frozen=True)
+class DetectIntradayAnomaliesCommand:
+    """Input DTO for intraday anomaly detection.
+
+    Attributes:
+        symbol: BVMT stock ticker symbol.
+        days_back: Number of recent trading days to scan (1-30).
+    """
+
+    symbol: str
+    days_back: int = 5

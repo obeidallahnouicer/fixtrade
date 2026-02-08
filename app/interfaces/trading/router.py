@@ -11,6 +11,7 @@ from fastapi import APIRouter, Depends
 from app.application.trading.dtos import (
     AnalyzeArticleSentimentCommand,
     DetectAnomaliesQuery,
+    DetectIntradayAnomaliesCommand,
     EvaluateAnomaliesCommand,
     GetRecentAnomaliesQuery,
     GetRecommendationQuery,
@@ -33,6 +34,7 @@ from app.application.trading.predict_volume import PredictVolumeUseCase
 from app.interfaces.trading.dependencies import (
     get_analyze_article_sentiment_use_case,
     get_detect_anomalies_use_case,
+    get_detect_intraday_anomalies_use_case,
     get_evaluate_anomalies_use_case,
     get_predict_liquidity_use_case,
     get_predict_price_use_case,
@@ -48,6 +50,8 @@ from app.interfaces.trading.schemas import (
     ArticleSentimentItem,
     DetectAnomaliesRequest,
     DetectAnomaliesResponse,
+    DetectIntradayAnomaliesRequest,
+    DetectIntradayAnomaliesResponse,
     ErrorResponse,
     EvaluateAnomaliesRequest,
     EvaluateAnomaliesResponse,
@@ -357,6 +361,44 @@ def evaluate_anomalies(
                 support=m.support,
             )
             for m in result.per_type
+        ],
+    )
+
+
+@router.post(
+    "/anomalies/intraday",
+    response_model=DetectIntradayAnomaliesResponse,
+    responses={422: {"model": ErrorResponse}},
+    summary="Detect intraday anomalies",
+    description=(
+        "Run anomaly detection on 1-minute intraday tick data. "
+        "Detects hourly price moves, volume bursts, flash crashes/rallies, "
+        "price oscillations, and opening auction anomalies."
+    ),
+)
+def detect_intraday_anomalies(
+    request: DetectIntradayAnomaliesRequest,
+    use_case=Depends(get_detect_intraday_anomalies_use_case),
+) -> DetectIntradayAnomaliesResponse:
+    """Detect anomalies in intraday 1-minute tick data."""
+    command = DetectIntradayAnomaliesCommand(
+        symbol=request.symbol,
+        days_back=request.days_back,
+    )
+    results = use_case.execute(command)
+    return DetectIntradayAnomaliesResponse(
+        symbol=request.symbol,
+        days_scanned=request.days_back,
+        anomalies=[
+            AnomalyItem(
+                id=r.id,
+                symbol=r.symbol,
+                detected_at=r.detected_at,
+                anomaly_type=r.anomaly_type,
+                severity=r.severity,
+                description=r.description,
+            )
+            for r in results
         ],
     )
 
