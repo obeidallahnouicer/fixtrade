@@ -46,7 +46,7 @@ def cmd_etl(args: argparse.Namespace) -> None:
 
 
 def cmd_train(args: argparse.Namespace) -> None:
-    """Train all ML models."""
+    """Train ML models, optionally for a single symbol."""
     from prediction.pipeline import ETLPipeline
     from prediction.training import TrainingPipeline
 
@@ -54,16 +54,30 @@ def cmd_train(args: argparse.Namespace) -> None:
     etl = ETLPipeline()
     features_df = etl._loader.load_layer("silver")
     if features_df.empty:
-        logger.error("No Silver-layer data. Run ETL first: python -m prediction.cli etl")
+        logger.error("No Silver-layer data. Run ETL first: python -m prediction etl")
         sys.exit(1)
+
+    # Filter to a single symbol if requested
+    symbol = getattr(args, "symbol", None)
+    if symbol:
+        if "libelle" in features_df.columns:
+            features_df = features_df[
+                features_df["libelle"].str.upper() == symbol.upper()
+            ]
+        elif "code" in features_df.columns:
+            features_df = features_df[features_df["code"] == symbol]
+        if features_df.empty:
+            logger.error("No data found for symbol '%s'.", symbol)
+            sys.exit(1)
+        logger.info("Training on symbol %s — %d rows.", symbol, len(features_df))
 
     trainer = TrainingPipeline()
 
     if args.final:
-        ensemble = trainer.train_final_model(features_df)
+        ensemble = trainer.train_final_model(features_df, symbol=symbol)
         logger.info("Final model trained and saved. Ensemble: %s", ensemble.name)
     else:
-        metrics = trainer.run(features_df)
+        metrics = trainer.run(features_df, symbol=symbol)
         for name, m in metrics.items():
             logger.info("[%s] %s", name, m)
 
@@ -127,6 +141,10 @@ def main() -> None:
 
     # Train
     train_parser = subparsers.add_parser("train", help="Train ML models")
+    train_parser.add_argument(
+        "--symbol", default=None,
+        help="Train only for this ticker symbol (e.g. BIAT)",
+    )
     train_parser.add_argument(
         "--final", action="store_true",
         help="Train the final production model (saves to registry)",
