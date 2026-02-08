@@ -205,3 +205,57 @@ class PredictLiquidityResult:
     prob_medium: Decimal
     prob_high: Decimal
     predicted_tier: str
+
+
+# ------------------------------------------------------------------
+# Article Sentiment Analysis DTOs
+# ------------------------------------------------------------------
+
+
+@dataclass(frozen=True)
+class AnalyzeArticleSentimentCommand:
+    """Input DTO for triggering sentiment analysis on unanalyzed articles.
+
+    Attributes:
+        batch_size: Maximum number of articles to process in one run.
+    """
+
+    batch_size: int = 50
+
+
+@dataclass(frozen=True)
+class ArticleSentimentResult:
+    """Output DTO for a single article's sentiment analysis.
+
+    Attributes:
+        article_id: Database ID of the scraped article.
+        sentiment_label: Classification label (positive/negative/neutral).
+        sentiment_score: Numeric score (-1, 0, 1).
+        confidence: Model confidence (0.0-1.0), if available.
+    """
+
+    article_id: int
+    sentiment_label: str
+    sentiment_score: int
+    confidence: Decimal | None
+
+
+@dataclass(frozen=True)
+class AnalyzeArticleSentimentResult:
+    """Output DTO summarizing a batch sentiment analysis run.
+
+    Attributes:
+        total_analyzed: Number of articles analyzed in this run.
+        positive_count: Number of articles classified as positive.
+        negative_count: Number of articles classified as negative.
+        neutral_count: Number of articles classified as neutral.
+        failed_count: Number of articles that failed analysis.
+        results: Per-article sentiment results.
+    """
+
+    total_analyzed: int
+    positive_count: int
+    negative_count: int
+    neutral_count: int
+    failed_count: int
+    results: list[ArticleSentimentResult]
