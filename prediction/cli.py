@@ -203,6 +203,111 @@ def cmd_mlflow_ui(args: argparse.Namespace) -> None:
     )
 
 
+def cmd_scheduler(args: argparse.Namespace) -> None:
+    """Start the real-time scheduler (runs in foreground)."""
+    from prediction.realtime.scheduler import RealtimeScheduler
+    from prediction.realtime.stream import PredictionStreamManager
+
+    stream = PredictionStreamManager()
+    scheduler = RealtimeScheduler(
+        stream_manager=stream,
+        top_n_tickers=args.top_n,
+    )
+    scheduler.start()
+    logger.info("Scheduler running. Press Ctrl+C to stop.")
+
+    if args.run:
+        # Execute a single task immediately and exit
+        result = scheduler.run_now(args.run)
+        logger.info(
+            "Task '%s' %s (%.1fs)",
+            result.task_name, result.status.value, result.duration_seconds,
+        )
+        if result.error:
+            logger.error("Error: %s", result.error)
+        scheduler.stop()
+        return
+
+    try:
+        import time
+        while True:
+            time.sleep(1)
+    except KeyboardInterrupt:
+        logger.info("Shutting down scheduler...")
+    finally:
+        scheduler.stop()
+
+
+def cmd_watch(args: argparse.Namespace) -> None:
+    """Watch data/raw/ for new CSV files and trigger pipeline."""
+    from prediction.realtime.scheduler import RealtimeScheduler
+    from prediction.realtime.stream import PredictionStreamManager
+    from prediction.realtime.watcher import DataWatcher
+
+    stream = PredictionStreamManager()
+    scheduler = RealtimeScheduler(
+        stream_manager=stream,
+        top_n_tickers=args.top_n,
+    )
+    watcher = DataWatcher(
+        poll_interval=args.interval,
+        auto_retrain=args.auto_retrain,
+        scheduler=scheduler,
+        stream_manager=stream,
+    )
+
+    scheduler.start()
+    watcher.start()
+    logger.info(
+        "Watching %s (every %.0fs, auto_retrain=%s). Press Ctrl+C to stop.",
+        watcher._watch_dir, args.interval, args.auto_retrain,
+    )
+
+    try:
+        import time
+        while True:
+            time.sleep(1)
+    except KeyboardInterrupt:
+        logger.info("Shutting down watcher...")
+    finally:
+        watcher.stop()
+        scheduler.stop()
+
+
+def cmd_stream(args: argparse.Namespace) -> None:
+    """Start the WebSocket/SSE prediction stream server.
+
+    Two modes:
+    - ``--standalone`` (default): lightweight server with only the
+      realtime endpoints. No dependency on app.core.config / slowapi.
+    - ``--full``: start the complete FastAPI application including
+      trading, health, and realtime routers.
+    """
+    import uvicorn
+
+    if args.full:
+        # Full app — requires all dependencies (slowapi, pydantic-settings, …)
+        logger.info("Starting FULL application at http://0.0.0.0:%d", args.port)
+        uvicorn.run("app.main:app", host="0.0.0.0", port=args.port, reload=False)
+    else:
+        # Standalone lightweight server — only realtime endpoints
+        logger.info(
+            "Starting standalone realtime server at http://0.0.0.0:%d", args.port
+        )
+        logger.info(
+            "WebSocket: ws://0.0.0.0:%d/ws/predictions", args.port
+        )
+        logger.info(
+            "SSE:       http://0.0.0.0:%d/stream/predictions", args.port
+        )
+        logger.info("Docs:      http://0.0.0.0:%d/docs", args.port)
+
+        from prediction.realtime.server import create_standalone_app
+
+        app = create_standalone_app(top_n=args.top_n)
+        uvicorn.run(app, host="0.0.0.0", port=args.port, reload=False)
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(
         description="FixTrade Prediction Module CLI"
@@ -268,6 +373,57 @@ def main() -> None:
     mlflow_parser = subparsers.add_parser("mlflow-ui", help="Launch MLflow tracking dashboard")
     mlflow_parser.add_argument("--port", type=int, default=5000, help="Port for MLflow UI (default 5000)")
     mlflow_parser.set_defaults(func=cmd_mlflow_ui)
+
+    # Scheduler
+    sched_parser = subparsers.add_parser(
+        "scheduler", help="Start the real-time scheduler"
+    )
+    sched_parser.add_argument(
+        "--top-n", type=int, default=10, dest="top_n",
+        help="Number of top tickers to manage (default 10)",
+    )
+    sched_parser.add_argument(
+        "--run", type=str, default=None,
+        help="Run a single task and exit: etl, retrain, warm_cache, "
+             "refresh_predictions, full_pipeline",
+    )
+    sched_parser.set_defaults(func=cmd_scheduler)
+
+    # Watch
+    watch_parser = subparsers.add_parser(
+        "watch", help="Watch data/raw/ for new CSVs → auto ETL"
+    )
+    watch_parser.add_argument(
+        "--interval", type=float, default=30.0,
+        help="Seconds between directory scans (default 30)",
+    )
+    watch_parser.add_argument(
+        "--auto-retrain", action="store_true", dest="auto_retrain",
+        help="Automatically retrain models when new data is detected",
+    )
+    watch_parser.add_argument(
+        "--top-n", type=int, default=10, dest="top_n",
+        help="Number of top tickers to manage (default 10)",
+    )
+    watch_parser.set_defaults(func=cmd_watch)
+
+    # Stream server
+    stream_parser = subparsers.add_parser(
+        "stream", help="Start the WebSocket/SSE prediction stream server"
+    )
+    stream_parser.add_argument(
+        "--port", type=int, default=8000,
+        help="Port for the stream server (default 8000)",
+    )
+    stream_parser.add_argument(
+        "--full", action="store_true",
+        help="Start the full FastAPI app (requires all deps like slowapi)",
+    )
+    stream_parser.add_argument(
+        "--top-n", type=int, default=10, dest="top_n",
+        help="Number of top tickers to manage (default 10)",
+    )
+    stream_parser.set_defaults(func=cmd_stream)
 
     args = parser.parse_args()
     args.func(args)
