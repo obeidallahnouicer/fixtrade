@@ -5,3 +5,17 @@ __pycache__/
 venv/
 .env.*
 .data/
+
+# Parquet data files
+data/bronze/
+data/silver/
+data/gold/
+*.parquet
+
+# Cache
+.cache/
+*.cache
+
+# Results / model outputs
+models/
+results/
