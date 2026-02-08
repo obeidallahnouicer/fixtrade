@@ -22,6 +22,7 @@ import numpy as np
 import pandas as pd
 
 from prediction.config import PredictionConfig, config
+from prediction.db_sink import DatabaseSink
 from prediction.etl.transform.silver_to_gold import SilverToGoldTransformer
 from prediction.models.base import BasePredictionModel, ModelMetrics
 from prediction.models.ensemble import EnsemblePredictor
@@ -150,6 +151,8 @@ class TrainingPipeline:
         self._monitor = ModelMonitor()
         self._models_dir = self._cfg.paths.models_dir
         self._mlflow_ok = _setup_mlflow(self._cfg)
+        self._db = DatabaseSink()
+        self._db.ensure_tables()
 
     def run(
         self,
@@ -673,6 +676,22 @@ class TrainingPipeline:
             save_dir = save_dir / symbol.upper()
         vol_model.save_model(save_dir)
         logger.info("[VolumeXGB] Final model saved to %s", save_dir)
+
+        # Register in database
+        vol_metrics = vol_model.evaluate(X_vl, y_vl)
+        self._db.persist_model_metrics(
+            model_name="VolumeXGB",
+            ticker=symbol,
+            metrics={
+                "mae": vol_metrics.mae,
+                "rmse": vol_metrics.rmse,
+                "mape": vol_metrics.mape,
+                "directional_accuracy": vol_metrics.directional_accuracy,
+                "r_squared": vol_metrics.r_squared,
+            },
+            artifact_path=str(save_dir),
+        )
+
         return vol_model
 
     def _train_and_save_liquidity_model(
@@ -723,6 +742,22 @@ class TrainingPipeline:
             save_dir = save_dir / symbol.upper()
         liq_model.save_model(save_dir)
         logger.info("[LiquidityXGB] Final model saved to %s", save_dir)
+
+        # Register in database
+        liq_metrics = liq_model.evaluate(X_vl, y_vl)
+        self._db.persist_model_metrics(
+            model_name="LiquidityXGB",
+            ticker=symbol,
+            metrics={
+                "mae": getattr(liq_metrics, "mae", 0),
+                "rmse": getattr(liq_metrics, "rmse", 0),
+                "mape": getattr(liq_metrics, "mape", 0),
+                "directional_accuracy": liq_metrics.directional_accuracy,
+                "r_squared": getattr(liq_metrics, "r_squared", 0),
+            },
+            artifact_path=str(save_dir),
+        )
+
         return liq_model
 
     # ------------------------------------------------------------------
@@ -773,6 +808,30 @@ class TrainingPipeline:
             save_path = self._models_dir / "ensemble"
         ensemble.save_model(save_path)
         logger.info("Models saved to %s", save_path)
+
+        # Register each base model in the database
+        for name, model in ensemble._models.items():
+            if model.is_fitted:
+                try:
+                    metrics = model.evaluate(
+                        ensemble._last_X_val, ensemble._last_y_val
+                    ) if hasattr(ensemble, "_last_X_val") else None
+                except Exception:
+                    metrics = None
+
+                metric_dict = {
+                    "mae": metrics.mae if metrics else 0,
+                    "rmse": metrics.rmse if metrics else 0,
+                    "mape": metrics.mape if metrics else 0,
+                    "directional_accuracy": metrics.directional_accuracy if metrics else 0,
+                    "r_squared": metrics.r_squared if metrics else 0,
+                }
+                self._db.persist_model_metrics(
+                    model_name=name,
+                    ticker=symbol,
+                    metrics=metric_dict,
+                    artifact_path=str(save_path / name),
+                )
 
     @staticmethod
     def _average_metrics(

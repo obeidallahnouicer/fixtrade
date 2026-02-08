@@ -20,7 +20,6 @@ data/
 mlruns/
 
 # Trained models / results
-models/
 results/
 
 # Pytest cache

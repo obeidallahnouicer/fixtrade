@@ -67,6 +67,12 @@ redis>=5.0.0
 # mlflow: Model registry, experiment tracking, metric comparison
 mlflow>=2.10.0
 
+# --- Real-Time Pipeline ---
+# APScheduler: Cron-like job scheduling for auto-retraining & cache warming
+APScheduler>=3.10.0
+# websockets: WebSocket protocol support (used by uvicorn/fastapi)
+websockets>=12.0
+
 # --- Testing ---
 # pytest: Test runner
 pytest==8.3.3
