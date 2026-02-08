@@ -389,11 +389,18 @@ class DatabaseSink:
             cur = conn.cursor()
 
             # Deactivate previous versions
-            cur.execute(
-                "UPDATE model_registry SET is_active = FALSE "
-                "WHERE model_name = %s AND (ticker = %s OR (ticker IS NULL AND %s IS NULL))",
-                (model_name, ticker, ticker),
-            )
+            if ticker is None:
+                cur.execute(
+                    "UPDATE model_registry SET is_active = FALSE "
+                    "WHERE model_name = %s AND ticker IS NULL",
+                    (model_name,),
+                )
+            else:
+                cur.execute(
+                    "UPDATE model_registry SET is_active = FALSE "
+                    "WHERE model_name = %s AND ticker = %s",
+                    (model_name, ticker),
+                )
 
             # Insert new version
             cur.execute("""

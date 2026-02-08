@@ -171,20 +171,15 @@ class TestPersistPricePredictions(unittest.TestCase):
 
     def test_handles_insert_failure_gracefully(self):
         sink, conn, cursor = _make_sink_with_mock_conn()
-        cursor.fetchone.side_effect = [(1,), (1,)]
-        # First execute is health-check, second is constraint-check,
-        # then INSERT fails
-        call_count = [0]
-        original_execute = cursor.execute
+        # Make _ensure constraint succeed, but INSERT raises
+        cursor.fetchone.return_value = (1,)
 
-        def side_effect(*args, **kwargs):
-            call_count[0] += 1
-            if call_count[0] > 2 and args and "INSERT" in str(args[0]):
+        def execute_side(sql, *args, **kwargs):
+            if isinstance(sql, str) and "INSERT INTO price_predictions" in sql:
                 raise Exception("duplicate key")
-            return original_execute(*args, **kwargs)
 
-        cursor.execute.side_effect = side_effect
-        # Should not raise
+        cursor.execute.side_effect = execute_side
+        # Should not raise — graceful degradation
         result = sink.persist_price_predictions(self._sample_predictions())
         self.assertEqual(result, 0)
 
@@ -330,10 +325,11 @@ class TestPersistModelMetrics(unittest.TestCase):
         execute_calls = cursor.execute.call_args_list
         # Health-check
         self.assertIn("SELECT 1", execute_calls[0].args[0])
-        # Deactivate old
+        # Deactivate old — ticker is not None so uses "ticker = %s"
         update_sql = execute_calls[1].args[0]
         self.assertIn("UPDATE model_registry SET is_active = FALSE", update_sql)
-        self.assertEqual(execute_calls[1].args[1], ("LSTM", "BIAT", "BIAT"))
+        self.assertIn("ticker = %s", update_sql)
+        self.assertEqual(execute_calls[1].args[1], ("LSTM", "BIAT"))
         # Insert new
         insert_sql = execute_calls[2].args[0]
         self.assertIn("INSERT INTO model_registry", insert_sql)
@@ -352,7 +348,9 @@ class TestPersistModelMetrics(unittest.TestCase):
         )
         self.assertTrue(result)
         deactivate_call = cursor.execute.call_args_list[1]
-        self.assertEqual(deactivate_call.args[1], ("ensemble", None, None))
+        # ticker is None → uses "ticker IS NULL" with only model_name param
+        self.assertIn("ticker IS NULL", deactivate_call.args[0])
+        self.assertEqual(deactivate_call.args[1], ("ensemble",))
 
     def test_returns_false_on_db_error(self):
         sink, conn, cursor = _make_sink_with_mock_conn()
@@ -572,9 +570,9 @@ class TestConstraintHelpers(unittest.TestCase):
 
     def test_adds_price_prediction_constraint_when_missing(self):
         sink, conn, cursor = _make_sink_with_mock_conn()
-        # First fetchone = health-check returns (1,)
-        # Second fetchone = constraint check returns None → missing
-        cursor.fetchone.side_effect = [(1,), None]
+        # These methods receive conn directly (no health-check).
+        # fetchone is called once for the constraint check → None means missing
+        cursor.fetchone.return_value = None
         sink._ensure_price_predictions_upsert_constraint(conn)
 
         alter_calls = [
@@ -586,7 +584,7 @@ class TestConstraintHelpers(unittest.TestCase):
 
     def test_skips_price_prediction_constraint_when_exists(self):
         sink, conn, cursor = _make_sink_with_mock_conn()
-        cursor.fetchone.side_effect = [(1,), (1,)]  # constraint exists
+        cursor.fetchone.return_value = (1,)  # constraint exists
         sink._ensure_price_predictions_upsert_constraint(conn)
 
         alter_calls = [
@@ -597,7 +595,7 @@ class TestConstraintHelpers(unittest.TestCase):
 
     def test_adds_watermark_constraint_when_missing(self):
         sink, conn, cursor = _make_sink_with_mock_conn()
-        cursor.fetchone.side_effect = [(1,), None]
+        cursor.fetchone.return_value = None
         sink._ensure_watermark_upsert_constraint(conn)
 
         alter_calls = [
@@ -609,7 +607,7 @@ class TestConstraintHelpers(unittest.TestCase):
 
     def test_adds_stock_prices_constraint_when_missing(self):
         sink, conn, cursor = _make_sink_with_mock_conn()
-        cursor.fetchone.side_effect = [(1,), None]
+        cursor.fetchone.return_value = None
         sink._ensure_stock_prices_upsert_constraint(conn)
 
         alter_calls = [
@@ -622,8 +620,8 @@ class TestConstraintHelpers(unittest.TestCase):
     def test_constraint_errors_are_silenced(self):
         """If ALTER TABLE fails (e.g. already exists under different name), no crash."""
         sink, conn, cursor = _make_sink_with_mock_conn()
-        cursor.fetchone.side_effect = [(1,), None]
-        cursor.execute.side_effect = [None, None, Exception("already exists")]
+        cursor.fetchone.return_value = None
+        cursor.execute.side_effect = [None, Exception("already exists")]
         # Should not raise
         sink._ensure_price_predictions_upsert_constraint(conn)
 
