@@ -35,7 +35,7 @@ logger = logging.getLogger(__name__)
 class StreamEvent:
     """A single event pushed to connected clients."""
 
-    event_type: str          # "prediction", "volume", "liquidity", "retrain", "etl"
+    event_type: str          # "prediction", "volume", "liquidity", "anomaly_alert", "retrain", "etl"
     symbol: str | None
     data: dict
     timestamp: str = field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
@@ -241,6 +241,23 @@ class PredictionStreamManager:
             event_type="liquidity",
             symbol=symbol,
             data=liquidity_data,
+        )
+        return await self.broadcast(event)
+
+    async def broadcast_anomaly(self, symbol: str, anomaly_data: dict) -> int:
+        """Broadcast an anomaly alert to subscribed clients.
+
+        Args:
+            symbol: Stock ticker the anomaly relates to.
+            anomaly_data: Serialized anomaly alert dictionary.
+
+        Returns:
+            Number of clients that received the message.
+        """
+        event = StreamEvent(
+            event_type="anomaly_alert",
+            symbol=symbol,
+            data=anomaly_data,
         )
         return await self.broadcast(event)
 

@@ -11,6 +11,8 @@ from fastapi import APIRouter, Depends
 from app.application.trading.dtos import (
     AnalyzeArticleSentimentCommand,
     DetectAnomaliesQuery,
+    DetectIntradayAnomaliesCommand,
+    EvaluateAnomaliesCommand,
     GetRecentAnomaliesQuery,
     GetRecommendationQuery,
     GetSentimentQuery,
@@ -22,6 +24,7 @@ from app.application.trading.analyze_article_sentiment import (
     AnalyzeArticleSentimentUseCase,
 )
 from app.application.trading.detect_anomalies import DetectAnomaliesUseCase
+from app.application.trading.evaluate_anomalies import EvaluateAnomaliesUseCase
 from app.application.trading.get_recent_anomalies import GetRecentAnomaliesUseCase
 from app.application.trading.get_recommendation import GetRecommendationUseCase
 from app.application.trading.get_sentiment import GetSentimentUseCase
@@ -29,8 +32,12 @@ from app.application.trading.predict_liquidity import PredictLiquidityUseCase
 from app.application.trading.predict_price import PredictPriceUseCase
 from app.application.trading.predict_volume import PredictVolumeUseCase
 from app.interfaces.trading.dependencies import (
+    get_aggregate_daily_sentiment_use_case,
     get_analyze_article_sentiment_use_case,
     get_detect_anomalies_use_case,
+    get_detect_intraday_anomalies_use_case,
+    get_evaluate_anomalies_use_case,
+    get_link_article_symbols_use_case,
     get_predict_liquidity_use_case,
     get_predict_price_use_case,
     get_predict_volume_use_case,
@@ -39,16 +46,27 @@ from app.interfaces.trading.dependencies import (
     get_sentiment_use_case,
 )
 from app.interfaces.trading.schemas import (
+    AggregateDailySentimentRequest,
+    AggregateDailySentimentResponse,
     AnalyzeArticleSentimentRequest,
     AnalyzeArticleSentimentResponse,
     AnomalyItem,
     ArticleSentimentItem,
+    DailyScoreItemSchema,
     DetectAnomaliesRequest,
     DetectAnomaliesResponse,
+    DetectIntradayAnomaliesRequest,
+    DetectIntradayAnomaliesResponse,
     ErrorResponse,
+    EvaluateAnomaliesRequest,
+    EvaluateAnomaliesResponse,
+    EvaluationMetricsItem,
     GetRecentAnomaliesRequest,
     GetRecommendationRequest,
     GetSentimentRequest,
+    LinkArticleSymbolsRequest,
+    LinkArticleSymbolsResponse,
+    PerTypeMetricsItem,
     PredictLiquidityItem,
     PredictLiquidityRequest,
     PredictLiquidityResponse,
@@ -305,3 +323,159 @@ def analyze_article_sentiment(
         ],
     )
 
+
+@router.post(
+    "/anomalies/evaluate",
+    response_model=EvaluateAnomaliesResponse,
+    responses={422: {"model": ErrorResponse}},
+    summary="Evaluate anomaly detection performance",
+    description=(
+        "Backtest anomaly detection on historical data. "
+        "Computes Precision, Recall, and F1-Score against "
+        "statistically-generated ground-truth labels."
+    ),
+)
+def evaluate_anomalies(
+    request: EvaluateAnomaliesRequest,
+    use_case: EvaluateAnomaliesUseCase = Depends(get_evaluate_anomalies_use_case),
+) -> EvaluateAnomaliesResponse:
+    """Evaluate anomaly detection Precision/Recall/F1 on historical data."""
+    command = EvaluateAnomaliesCommand(
+        symbol=request.symbol,
+        days_back=request.days_back,
+        date_tolerance_days=request.date_tolerance_days,
+    )
+    result = use_case.execute(command)
+    return EvaluateAnomaliesResponse(
+        symbol=result.symbol,
+        total_detected=result.total_detected,
+        total_known=result.total_known,
+        overall=EvaluationMetricsItem(
+            precision=result.overall.precision,
+            recall=result.overall.recall,
+            f1_score=result.overall.f1_score,
+            true_positives=result.overall.true_positives,
+            false_positives=result.overall.false_positives,
+            false_negatives=result.overall.false_negatives,
+            support=result.overall.support,
+        ),
+        per_type=[
+            PerTypeMetricsItem(
+                anomaly_type=m.anomaly_type,
+                precision=m.precision,
+                recall=m.recall,
+                f1_score=m.f1_score,
+                support=m.support,
+            )
+            for m in result.per_type
+        ],
+    )
+
+
+@router.post(
+    "/anomalies/intraday",
+    response_model=DetectIntradayAnomaliesResponse,
+    responses={422: {"model": ErrorResponse}},
+    summary="Detect intraday anomalies",
+    description=(
+        "Run anomaly detection on 1-minute intraday tick data. "
+        "Detects hourly price moves, volume bursts, flash crashes/rallies, "
+        "price oscillations, and opening auction anomalies."
+    ),
+)
+def detect_intraday_anomalies(
+    request: DetectIntradayAnomaliesRequest,
+    use_case=Depends(get_detect_intraday_anomalies_use_case),
+) -> DetectIntradayAnomaliesResponse:
+    """Detect anomalies in intraday 1-minute tick data."""
+    command = DetectIntradayAnomaliesCommand(
+        symbol=request.symbol,
+        days_back=request.days_back,
+    )
+    results = use_case.execute(command)
+    return DetectIntradayAnomaliesResponse(
+        symbol=request.symbol,
+        days_scanned=request.days_back,
+        anomalies=[
+            AnomalyItem(
+                id=r.id,
+                symbol=r.symbol,
+                detected_at=r.detected_at,
+                anomaly_type=r.anomaly_type,
+                severity=r.severity,
+                description=r.description,
+            )
+            for r in results
+        ],
+    )
+
+
+@router.post(
+    "/sentiment/link-symbols",
+    response_model=LinkArticleSymbolsResponse,
+    responses={422: {"model": ErrorResponse}},
+    summary="Link articles to BVMT symbols",
+    description=(
+        "Scan unlinked scraped articles and match them to BVMT stock "
+        "symbols using keyword/alias matching. This must run before "
+        "daily sentiment aggregation for per-company scores."
+    ),
+)
+def link_article_symbols(
+    request: LinkArticleSymbolsRequest,
+    use_case=Depends(get_link_article_symbols_use_case),
+) -> LinkArticleSymbolsResponse:
+    """Link scraped articles to BVMT symbols via keyword matching."""
+    from app.application.trading.link_article_symbols import (
+        LinkArticleSymbolsCommand,
+    )
+
+    command = LinkArticleSymbolsCommand(batch_size=request.batch_size)
+    result = use_case.execute(command)
+    return LinkArticleSymbolsResponse(
+        articles_scanned=result.articles_scanned,
+        links_created=result.links_created,
+        articles_with_no_match=result.articles_with_no_match,
+    )
+
+
+@router.post(
+    "/sentiment/aggregate",
+    response_model=AggregateDailySentimentResponse,
+    responses={422: {"model": ErrorResponse}},
+    summary="Aggregate daily sentiment scores",
+    description=(
+        "Compute and persist the 'Score de Sentiment Quotidien' for each "
+        "BVMT symbol. Reads per-article sentiments linked via article_symbols "
+        "and writes aggregated daily scores to the sentiment_scores table."
+    ),
+)
+def aggregate_daily_sentiment(
+    request: AggregateDailySentimentRequest,
+    use_case=Depends(get_aggregate_daily_sentiment_use_case),
+) -> AggregateDailySentimentResponse:
+    """Compute daily aggregated sentiment scores per symbol."""
+    from app.application.trading.aggregate_daily_sentiment import (
+        AggregateDailySentimentCommand,
+    )
+
+    command = AggregateDailySentimentCommand(
+        symbol=request.symbol,
+        days_back=request.days_back,
+    )
+    result = use_case.execute(command)
+    return AggregateDailySentimentResponse(
+        symbols_processed=result.symbols_processed,
+        dates_processed=result.dates_processed,
+        scores_upserted=result.scores_upserted,
+        scores=[
+            DailyScoreItemSchema(
+                symbol=s.symbol,
+                score_date=s.score_date,
+                score=s.score,
+                sentiment=s.sentiment,
+                article_count=s.article_count,
+            )
+            for s in result.scores
+        ],
+    )

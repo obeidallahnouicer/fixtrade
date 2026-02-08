@@ -51,6 +51,28 @@ class StockPrice:
 
 
 @dataclass(frozen=True)
+class IntradayTick:
+    """A single intraday price tick (1-minute or tick-by-tick).
+
+    Used for high-frequency anomaly detection and real "1-hour
+    price variation" checks instead of the daily high/low proxy.
+
+    Attributes:
+        symbol: BVMT stock ticker.
+        timestamp: Exact date+time of this tick.
+        price: Trade price at this point.
+        volume: Volume traded in this interval (0 for quote ticks).
+        tick_type: Either "1min" (1-minute OHLC bar) or "tick" (raw trade).
+    """
+
+    symbol: str
+    timestamp: datetime
+    price: Decimal
+    volume: int = 0
+    tick_type: str = "1min"  # "1min" | "tick"
+
+
+@dataclass(frozen=True)
 class PricePrediction:
     """Predicted closing price for a future trading day."""
 

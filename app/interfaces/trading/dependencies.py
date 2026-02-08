@@ -12,6 +12,7 @@ from app.application.trading.analyze_article_sentiment import (
     AnalyzeArticleSentimentUseCase,
 )
 from app.application.trading.detect_anomalies import DetectAnomaliesUseCase
+from app.application.trading.evaluate_anomalies import EvaluateAnomaliesUseCase
 from app.application.trading.get_recent_anomalies import GetRecentAnomaliesUseCase
 from app.application.trading.get_recommendation import GetRecommendationUseCase
 from app.application.trading.get_sentiment import GetSentimentUseCase
@@ -128,4 +129,57 @@ def get_analyze_article_sentiment_use_case() -> AnalyzeArticleSentimentUseCase:
         article_repo=ScrapedArticleRepositoryAdapter(engine=engine),
         sentiment_repo=ArticleSentimentRepositoryAdapter(engine=engine),
         sentiment_port=SentimentAnalysisAdapter(engine=engine),
+    )
+
+
+def get_evaluate_anomalies_use_case() -> EvaluateAnomaliesUseCase:
+    """Build EvaluateAnomaliesUseCase with its infrastructure dependencies."""
+    return EvaluateAnomaliesUseCase(
+        price_repo=StockPriceRepositoryAdapter(),
+    )
+
+
+def get_detect_intraday_anomalies_use_case():
+    """Build DetectIntradayAnomaliesUseCase with its infrastructure dependencies."""
+    from app.application.trading.detect_intraday_anomalies import (
+        DetectIntradayAnomaliesUseCase,
+    )
+    from app.infrastructure.trading.intraday_tick_repository import (
+        IntradayTickRepositoryAdapter,
+    )
+
+    return DetectIntradayAnomaliesUseCase(
+        tick_repo=IntradayTickRepositoryAdapter(),
+    )
+
+
+def get_link_article_symbols_use_case():
+    """Build LinkArticleSymbolsUseCase with its infrastructure dependencies."""
+    from app.application.trading.link_article_symbols import (
+        LinkArticleSymbolsUseCase,
+    )
+    from app.infrastructure.trading.article_symbol_repository import (
+        ArticleSymbolRepositoryAdapter,
+    )
+
+    engine = _get_db_engine()
+    return LinkArticleSymbolsUseCase(
+        article_repo=ScrapedArticleRepositoryAdapter(engine=engine),
+        symbol_repo=ArticleSymbolRepositoryAdapter(engine=engine),
+    )
+
+
+def get_aggregate_daily_sentiment_use_case():
+    """Build AggregateDailySentimentUseCase with its infrastructure dependencies."""
+    from app.application.trading.aggregate_daily_sentiment import (
+        AggregateDailySentimentUseCase,
+    )
+    from app.infrastructure.trading.sentiment_score_repository import (
+        SentimentScoreRepositoryAdapter,
+    )
+
+    engine = _get_db_engine()
+    return AggregateDailySentimentUseCase(
+        score_repo=SentimentScoreRepositoryAdapter(engine=engine),
+        db_engine=engine,
     )

@@ -276,3 +276,158 @@ class AnalyzeArticleSentimentResult:
     neutral_count: int
     failed_count: int
     results: list[ArticleSentimentResult]
+
+
+# ------------------------------------------------------------------
+# Anomaly Evaluation DTOs
+# ------------------------------------------------------------------
+
+
+@dataclass(frozen=True)
+class EvaluateAnomaliesCommand:
+    """Input DTO for running anomaly detection evaluation.
+
+    Attributes:
+        symbol: BVMT stock ticker symbol to evaluate.
+        days_back: Number of historical days to use for backtesting.
+        date_tolerance_days: Date tolerance for matching (±N days).
+    """
+
+    symbol: str
+    days_back: int = 90
+    date_tolerance_days: int = 1
+
+
+@dataclass(frozen=True)
+class EvaluationMetricsResult:
+    """Output DTO for anomaly evaluation metrics.
+
+    Attributes:
+        precision: Precision score (0.0–1.0).
+        recall: Recall score (0.0–1.0).
+        f1_score: F1-Score (0.0–1.0).
+        true_positives: Count of correctly detected anomalies.
+        false_positives: Count of false alarms.
+        false_negatives: Count of missed anomalies.
+        support: Total ground-truth positives.
+    """
+
+    precision: float
+    recall: float
+    f1_score: float
+    true_positives: int
+    false_positives: int
+    false_negatives: int
+    support: int
+
+
+@dataclass(frozen=True)
+class PerTypeMetricsResult:
+    """Per anomaly-type metrics in the evaluation output."""
+
+    anomaly_type: str
+    precision: float
+    recall: float
+    f1_score: float
+    support: int
+
+
+@dataclass(frozen=True)
+class EvaluateAnomaliesResult:
+    """Output DTO for the full evaluation report.
+
+    Attributes:
+        symbol: Stock ticker evaluated.
+        total_detected: Number of anomalies detected.
+        total_known: Number of known/labeled anomalies.
+        overall: Overall Precision/Recall/F1 metrics.
+        per_type: Per anomaly-type breakdown.
+    """
+
+    symbol: str
+    total_detected: int
+    total_known: int
+    overall: EvaluationMetricsResult
+    per_type: list[PerTypeMetricsResult]
+
+
+# ------------------------------------------------------------------
+# Intraday Anomaly Detection DTOs
+# ------------------------------------------------------------------
+
+
+@dataclass(frozen=True)
+class DetectIntradayAnomaliesCommand:
+    """Input DTO for intraday anomaly detection.
+
+    Attributes:
+        symbol: BVMT stock ticker symbol.
+        days_back: Number of recent trading days to scan (1-30).
+    """
+
+    symbol: str
+    days_back: int = 5
+
+
+# ------------------------------------------------------------------
+# Article-Symbol Linking DTOs
+# ------------------------------------------------------------------
+
+
+@dataclass(frozen=True)
+class LinkArticleSymbolsCommand:
+    """Input DTO for article-symbol linking.
+
+    Attributes:
+        batch_size: Maximum number of unlinked articles to process.
+    """
+
+    batch_size: int = 200
+
+
+@dataclass(frozen=True)
+class LinkArticleSymbolsResult:
+    """Output DTO for article-symbol linking."""
+
+    articles_scanned: int
+    links_created: int
+    articles_with_no_match: int
+
+
+# ------------------------------------------------------------------
+# Daily Sentiment Aggregation DTOs
+# ------------------------------------------------------------------
+
+
+@dataclass(frozen=True)
+class AggregateDailySentimentCommand:
+    """Input DTO for daily sentiment aggregation.
+
+    Attributes:
+        symbol: Optional filter — if set, only aggregate for this symbol.
+        days_back: Number of past days to aggregate.
+    """
+
+    symbol: str | None = None
+    days_back: int = 30
+
+
+@dataclass(frozen=True)
+class DailyScoreItem:
+    """A single aggregated daily score in the output."""
+
+    symbol: str
+    score_date: date
+    score: Decimal
+    sentiment: str
+    article_count: int
+
+
+@dataclass(frozen=True)
+class AggregateDailySentimentResult:
+    """Output DTO for daily sentiment aggregation."""
+
+    symbols_processed: int
+    dates_processed: int
+    scores_upserted: int
+    scores: list[DailyScoreItem]

@@ -78,6 +78,33 @@ class SentimentAnalysisAdapter(SentimentAnalysisPort):
 
         query_date = target_date or date.today()
 
+        # First try: read from pre-aggregated sentiment_scores table
+        # (populated by AggregateDailySentimentUseCase)
+        pre_agg_query = sql_text(
+            """
+            SELECT score, sentiment, article_count
+            FROM sentiment_scores
+            WHERE symbol = :symbol AND score_date = :target_date
+            """
+        )
+
+        with self._engine.connect() as conn:
+            pre_row = conn.execute(
+                pre_agg_query,
+                {"symbol": symbol, "target_date": query_date},
+            ).fetchone()
+
+        if pre_row and pre_row[2] and pre_row[2] > 0:
+            return SentimentScore(
+                symbol=symbol,
+                date=query_date,
+                score=Decimal(str(round(float(pre_row[0]), 4))),
+                sentiment=Sentiment(pre_row[1]),
+                article_count=pre_row[2],
+            )
+
+        # Fallback: compute on-the-fly from article_sentiments
+        # joined through article_symbols so we filter BY SYMBOL
         query = sql_text(
             """
             SELECT
@@ -85,13 +112,15 @@ class SentimentAnalysisAdapter(SentimentAnalysisPort):
                 COUNT(*) AS article_count
             FROM article_sentiments ase
             JOIN scraped_articles sa ON sa.id = ase.article_id
-            WHERE sa.published_at::date = :target_date
+            JOIN article_symbols asym ON asym.article_id = sa.id
+            WHERE asym.symbol = :symbol
+              AND sa.published_at::date = :target_date
             """
         )
 
         with self._engine.connect() as conn:
             row = conn.execute(
-                query, {"target_date": query_date}
+                query, {"symbol": symbol, "target_date": query_date}
             ).fetchone()
 
         avg_score = row[0] if row and row[0] is not None else 0

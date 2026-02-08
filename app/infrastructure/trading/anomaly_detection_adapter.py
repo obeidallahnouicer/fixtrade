@@ -4,10 +4,14 @@ Adapter: Anomaly detection engine.
 Implements AnomalyDetectionPort.
 Responsible for running anomaly detection algorithms on market data.
 Integrates with prediction models and sentiment analysis for cross-validation.
+Optionally dispatches alerts through the notification system.
 """
 
+import asyncio
+import logging
 from datetime import date, timedelta
 
+from app.domain.trading.anomaly_notifier import AnomalyNotifier
 from app.domain.trading.anomaly_service import AnomalyDetectionService
 from app.domain.trading.entities import AnomalyAlert
 from app.domain.trading.ports import (
@@ -18,13 +22,15 @@ from app.domain.trading.ports import (
     StockPriceRepository,
 )
 
+logger = logging.getLogger(__name__)
+
 
 class AnomalyDetectionAdapter(AnomalyDetectionPort):
     """Concrete adapter for market anomaly detection.
 
     Implements the AnomalyDetectionPort defined in the domain layer.
     Fetches market data, predictions, sentiment scores, runs anomaly detection
-    with cross-validation, and persists results.
+    with cross-validation, persists results, and optionally pushes notifications.
     """
 
     def __init__(
@@ -33,6 +39,7 @@ class AnomalyDetectionAdapter(AnomalyDetectionPort):
         alert_repo: AnomalyAlertRepository,
         prediction_port: PricePredictionPort | None = None,
         sentiment_port: SentimentAnalysisPort | None = None,
+        notifier: AnomalyNotifier | None = None,
         lookback_days: int = 30,
         enable_prediction_check: bool = True,
         enable_sentiment_check: bool = True,
@@ -44,6 +51,7 @@ class AnomalyDetectionAdapter(AnomalyDetectionPort):
             alert_repo: Repository for persisting detected anomalies.
             prediction_port: Optional port for fetching price predictions.
             sentiment_port: Optional port for fetching sentiment scores.
+            notifier: Optional AnomalyNotifier for alert dispatch.
             lookback_days: Number of days of historical data to analyze.
             enable_prediction_check: Whether to cross-validate with predictions.
             enable_sentiment_check: Whether to cross-validate with sentiment.
@@ -52,6 +60,7 @@ class AnomalyDetectionAdapter(AnomalyDetectionPort):
         self._alert_repo = alert_repo
         self._prediction_port = prediction_port
         self._sentiment_port = sentiment_port
+        self._notifier = notifier
         self._lookback_days = lookback_days
         self._enable_prediction_check = enable_prediction_check
         self._enable_sentiment_check = enable_sentiment_check
@@ -123,5 +132,28 @@ class AnomalyDetectionAdapter(AnomalyDetectionPort):
         if alerts:
             self._alert_repo.save_batch(alerts)
 
+            # Dispatch notifications (fire-and-forget)
+            if self._notifier is not None:
+                self._dispatch_notifications(alerts)
+
         return alerts
+
+    def _dispatch_notifications(self, alerts: list[AnomalyAlert]) -> None:
+        """Send notifications for detected anomalies.
+
+        Tries to use the running event loop; if none exists,
+        creates a new one (e.g. when called from sync context).
+        """
+        try:
+            loop = asyncio.get_running_loop()
+            loop.create_task(self._notifier.notify(alerts))
+        except RuntimeError:
+            # No running loop — run synchronously
+            try:
+                asyncio.run(self._notifier.notify(alerts))
+            except Exception:
+                logger.warning(
+                    "Could not dispatch anomaly notifications",
+                    exc_info=True,
+                )
 

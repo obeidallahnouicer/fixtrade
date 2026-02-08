@@ -14,6 +14,7 @@ from uuid import UUID
 from app.domain.trading.entities import (
     AnomalyAlert,
     ArticleSentiment,
+    IntradayTick,
     LiquidityForecast,
     Portfolio,
     PricePrediction,
@@ -34,6 +35,52 @@ class StockPriceRepository(ABC):
     ) -> list[StockPrice]:
         """Return OHLCV history for a symbol within the date range."""
         # TODO: implement in infrastructure adapter
+        raise NotImplementedError
+
+
+class IntradayTickRepository(ABC):
+    """Port for retrieving and persisting intraday tick data.
+
+    Supports 1-minute bars and raw tick-by-tick records for
+    high-frequency anomaly detection.
+    """
+
+    @abstractmethod
+    def get_ticks(
+        self,
+        symbol: str,
+        start: datetime,
+        end: datetime,
+        tick_type: str = "1min",
+    ) -> list[IntradayTick]:
+        """Return intraday ticks for a symbol within the datetime range.
+
+        Args:
+            symbol: BVMT stock ticker.
+            start: Start datetime (inclusive).
+            end: End datetime (inclusive).
+            tick_type: Filter by tick type ("1min" or "tick").
+
+        Returns:
+            List of IntradayTick ordered by timestamp ascending.
+        """
+        raise NotImplementedError
+
+    @abstractmethod
+    def save_batch(self, ticks: list[IntradayTick]) -> int:
+        """Persist a batch of intraday ticks.
+
+        Args:
+            ticks: List of IntradayTick entities.
+
+        Returns:
+            Number of rows inserted (duplicates ignored).
+        """
+        raise NotImplementedError
+
+    @abstractmethod
+    def get_symbols_with_data(self, since: datetime) -> list[str]:
+        """Return symbols that have intraday data since a given datetime."""
         raise NotImplementedError
 
 
@@ -176,4 +223,61 @@ class ArticleSentimentRepository(ABC):
     @abstractmethod
     def save_batch(self, results: list[ArticleSentiment]) -> None:
         """Persist multiple article sentiment results."""
+        raise NotImplementedError
+
+
+class ArticleSymbolRepository(ABC):
+    """Port for persisting and querying article ↔ symbol linkages."""
+
+    @abstractmethod
+    def save(self, article_id: int, symbol: str, match_method: str = "keyword", confidence: float = 1.0) -> None:
+        """Persist a single article-symbol link."""
+        raise NotImplementedError
+
+    @abstractmethod
+    def save_batch(self, links: list[tuple[int, str, str, float]]) -> int:
+        """Persist multiple article-symbol links.
+
+        Args:
+            links: List of (article_id, symbol, match_method, confidence) tuples.
+
+        Returns:
+            Number of rows inserted (duplicates ignored).
+        """
+        raise NotImplementedError
+
+    @abstractmethod
+    def get_symbols_for_article(self, article_id: int) -> list[str]:
+        """Return all symbols linked to a specific article."""
+        raise NotImplementedError
+
+    @abstractmethod
+    def get_articles_for_symbol(
+        self, symbol: str, start_date: Optional[date] = None, end_date: Optional[date] = None
+    ) -> list[int]:
+        """Return article IDs linked to a symbol, optionally filtered by date range."""
+        raise NotImplementedError
+
+    @abstractmethod
+    def get_unlinked_article_ids(self, limit: int = 500) -> list[int]:
+        """Return article IDs that have no symbol linkage yet."""
+        raise NotImplementedError
+
+
+class SentimentScoreRepository(ABC):
+    """Port for persisting and reading aggregated daily sentiment scores."""
+
+    @abstractmethod
+    def save(self, score: SentimentScore) -> None:
+        """Persist (upsert) an aggregated daily sentiment score."""
+        raise NotImplementedError
+
+    @abstractmethod
+    def get(self, symbol: str, score_date: date) -> Optional[SentimentScore]:
+        """Return the aggregated score for a symbol on a specific date, or None."""
+        raise NotImplementedError
+
+    @abstractmethod
+    def get_range(self, symbol: str, start: date, end: date) -> list[SentimentScore]:
+        """Return aggregated scores for a symbol within a date range."""
         raise NotImplementedError

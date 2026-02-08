@@ -1,0 +1,53 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-[#0f1117] text-[#e1e3e7];
+    @apply font-sans antialiased;
+    margin: 0;
+    padding: 0;
+    min-height: 100vh;
+    font-feature-settings: 'tnum' 1;
+  }
+
+  * {
+    box-sizing: border-box;
+  }
+}
+
+@layer components {
+  .finance-card {
+    @apply bg-[#1a1d28] border border-[#2a2e39] rounded-lg;
+    @apply shadow-sm;
+  }
+
+  .finance-card-hover {
+    @apply finance-card;
+    @apply transition-all duration-200;
+    @apply hover:border-[#3a3e49] hover:shadow-md;
+    @apply cursor-pointer;
+  }
+
+  .metric-up {
+    @apply text-[#10b981];
+  }
+
+  .metric-down {
+    @apply text-[#ef4444];
+  }
+
+  .metric-neutral {
+    @apply text-gray-400;
+  }
+}
+
+@layer utilities {
+  .tab-num {
+    font-variant-numeric: tabular-nums;
+  }
+}
+
