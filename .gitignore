@@ -32,3 +32,6 @@ pgdata/
 # IDE / editor
 .vscode/
 .idea/
+
+.github/
+docs/
