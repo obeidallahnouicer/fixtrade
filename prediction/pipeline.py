@@ -83,8 +83,7 @@ class ETLPipeline:
         logger.info("Phase 4: FEATURE ENGINEERING")
         enriched_df = self._feature_pipeline.run(silver_df)
 
-        # 5. Gold
-        logger.info("Phase 5: GOLD (ML-ready views)")
+        # Save enriched features to Silver layer
         self._loader.save_partitioned(
             enriched_df, layer="silver", partition_cols=["code"]
         )
@@ -93,6 +92,17 @@ class ETLPipeline:
         if "seance" in enriched_df.columns:
             max_date = pd.to_datetime(enriched_df["seance"]).max().date()
             self._loader.set_watermark("silver", max_date)
+
+        # 5. Gold
+        logger.info("Phase 5: GOLD (ML-ready views)")
+        train_df, val_df, test_df = self._gold_transformer.create_training_view(
+            enriched_df
+        )
+        self._save_gold_splits(train_df, val_df, test_df)
+        logger.info(
+            "Gold splits — Train: %d, Val: %d, Test: %d",
+            len(train_df), len(val_df), len(test_df),
+        )
 
         logger.info("ETL pipeline complete. %d rows ready.", len(enriched_df))
         return enriched_df
@@ -145,6 +155,12 @@ class ETLPipeline:
             max_date = pd.to_datetime(silver_new["seance"]).max().date()
             self._loader.set_watermark("silver", max_date)
 
+        # Save Gold splits
+        train_df, val_df, test_df = self._gold_transformer.create_training_view(
+            enriched
+        )
+        self._save_gold_splits(train_df, val_df, test_df)
+
         logger.info(
             "Incremental ETL: %d new rows processed.", len(silver_new)
         )
@@ -168,3 +184,19 @@ class ETLPipeline:
             return pd.DataFrame(), pd.DataFrame(), pd.DataFrame()
 
         return self._gold_transformer.create_training_view(features_df)
+
+    def _save_gold_splits(
+        self,
+        train_df: pd.DataFrame,
+        val_df: pd.DataFrame,
+        test_df: pd.DataFrame,
+    ) -> None:
+        """Persist Gold train/val/test splits as separate Parquet files."""
+        gold_path = self._cfg.paths.gold
+        gold_path.mkdir(parents=True, exist_ok=True)
+
+        for name, split_df in [("train", train_df), ("val", val_df), ("test", test_df)]:
+            if not split_df.empty:
+                out_path = gold_path / f"{name}.parquet"
+                split_df.to_parquet(out_path, index=False, engine="pyarrow")
+                logger.info("Saved %d rows to %s", len(split_df), out_path)
