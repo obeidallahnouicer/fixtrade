@@ -73,6 +73,10 @@ APScheduler>=3.10.0
 # websockets: WebSocket protocol support (used by uvicorn/fastapi)
 websockets>=12.0
 
+# --- AI / LLM ---
+# groq: Fast LLM inference API for explainability
+groq>=0.4.0
+
 # --- Testing ---
 # pytest: Test runner
 pytest==8.3.3
