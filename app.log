@@ -1,0 +1,5 @@
+nohup: ignoring input
+INFO:     Will watch for changes in these directories: ['/home/obeid/Desktop/projects/fixtrade']
+ERROR:    [Errno 98] Address already in use
+✓ Loading environment from /home/obeid/Desktop/projects/fixtrade/.env
+✓ DATABASE_URL is set: postgresql://fixtrade:fixtrade@localhost:5432/fixt...

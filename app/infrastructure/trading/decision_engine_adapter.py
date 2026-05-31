@@ -7,9 +7,9 @@ Responsible for combining signals to generate buy/sell/hold recommendations.
 
 from uuid import UUID
 
-from app.domain.trading.entities import TradeRecommendation
+from decimal import Decimal
+from app.domain.trading.entities import TradeRecommendation, Recommendation
 from app.domain.trading.ports import DecisionEnginePort
-
 
 class DecisionEngineAdapter(DecisionEnginePort):
     """Concrete adapter for the trading decision engine.
@@ -33,5 +33,10 @@ class DecisionEngineAdapter(DecisionEnginePort):
         Returns:
             TradeRecommendation entity.
         """
-        # TODO: implement decision logic combining ML signals
-        raise NotImplementedError("DecisionEngineAdapter.recommend")
+        # MVP Mock implementation
+        return TradeRecommendation(
+            symbol=symbol,
+            action=Recommendation.BUY,
+            confidence=Decimal("0.85"),
+            reasoning="Strong technical breakdown and positive news context"
+        )

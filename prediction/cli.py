@@ -21,6 +21,29 @@ Usage:
 import argparse
 import logging
 import sys
+import os
+from pathlib import Path
+
+# Load .env FIRST, before any other imports
+# This ensures DATABASE_URL is available for all modules
+try:
+    from dotenv import load_dotenv
+    
+    # Find .env in the project root (parent of prediction/)
+    project_root = Path(__file__).parent.parent.absolute()
+    env_file = project_root / ".env"
+    
+    if env_file.exists():
+        load_dotenv(env_file, override=True)
+        # Verify DATABASE_URL is loaded
+        if os.getenv("DATABASE_URL"):
+            print(f"✓ Loaded environment from {env_file}")
+        else:
+            print(f"⚠ Warning: .env found but DATABASE_URL not set")
+    else:
+        print(f"⚠ Warning: .env file not found at {env_file}")
+except ImportError:
+    print("⚠ Warning: python-dotenv not installed. Skipping .env loading.")
 
 logging.basicConfig(
     level=logging.INFO,

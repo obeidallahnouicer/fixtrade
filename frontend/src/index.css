@@ -1,0 +1,44 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
+}
+
+@layer base {
+  :root {
+    --background: #09090b;
+    --surface: #121214;
+    --surface-hover: #1c1c1f;
+    --border: #27272a;
+    --text-primary: #ededed;
+    --text-secondary: #a1a1aa;
+    
+    --bullish: #10b981;
+    --bullish-bg: rgba(16, 185, 129, 0.1);
+    --bearish: #ef4444;
+    --bearish-bg: rgba(239, 68, 68, 0.1);
+    --warning: #f59e0b;
+  }
+  
+  body {
+    @apply bg-[#09090b] text-[#ededed] antialiased selection:bg-[#27272a];
+  }
+}
+
+/* Custom scrollbar for data density area */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: #27272a;
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #3f3f46;
+}

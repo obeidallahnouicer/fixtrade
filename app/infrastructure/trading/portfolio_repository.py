@@ -32,8 +32,8 @@ class PortfolioRepositoryAdapter(PortfolioRepository):
         Returns:
             Portfolio entity or None.
         """
-        # TODO: query database for portfolio
-        raise NotImplementedError("PortfolioRepositoryAdapter.get_by_id")
+        # MVP Mock implementation
+        return Portfolio(id=portfolio_id)
 
     def save(self, portfolio: Portfolio) -> None:
         """Persist a portfolio.

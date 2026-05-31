@@ -38,17 +38,16 @@ services:
       dockerfile: docker/Dockerfile
     ports:
       - "8000:8000"
+    env_file:
+      - .env
     environment:
       - POSTGRES_HOST=postgres
-      - POSTGRES_PORT=5432
-      - POSTGRES_DB=fixtrade
-      - POSTGRES_USER=fixtrade
-      - POSTGRES_PASSWORD=fixtrade
       - REDIS_HOST=redis
-      - REDIS_PORT=6379
       - FIXTRADE_DATA_DIR=/app/data
-      - LOG_LEVEL=INFO
+      - DATABASE_URL=postgresql://fixtrade:fixtrade@postgres:5432/fixtrade
+      - REDIS_URL=redis://redis:6379/0
     volumes:
+      - .:/app:rw
       - ./data:/app/data
       - ./models:/app/models
     depends_on:
