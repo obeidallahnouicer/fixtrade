@@ -9,6 +9,9 @@ volume forecasting, and liquidity probability classification.
 
 import logging
 from decimal import Decimal
+from datetime import date
+
+import httpx
 
 from app.domain.trading.entities import (
     LiquidityForecast,
@@ -29,6 +32,7 @@ class PricePredictionAdapter(PricePredictionPort):
     """
 
     def __init__(self) -> None:
+        self._remote_url = None
         try:
             from prediction.inference import PredictionService
             self._service = PredictionService()
@@ -38,6 +42,26 @@ class PricePredictionAdapter(PricePredictionPort):
                 "Install ML dependencies (numpy, pandas, torch, xgboost, prophet)."
             )
             self._service = None
+
+        try:
+            from app.core.config import settings
+
+            if settings.ml_service_url:
+                self._remote_url = settings.ml_service_url.rstrip("/")
+        except Exception:
+            self._remote_url = None
+
+    def _remote_post(self, path: str, payload: dict, key: str) -> list[dict]:
+        if not self._remote_url:
+            return []
+
+        with httpx.Client(timeout=30.0) as client:
+            response = client.post(f"{self._remote_url}{path}", json=payload)
+            response.raise_for_status()
+            data = response.json()
+            if isinstance(data, list):
+                return data
+            return data.get(key, [])
 
     def predict(
         self, symbol: str, horizon_days: int
@@ -60,6 +84,26 @@ class PricePredictionAdapter(PricePredictionPort):
                 "Ensure ML dependencies are installed."
             )
             return []
+
+        if self._remote_url:
+            try:
+                results = self._remote_post(
+                    "/api/v1/predictions",
+                    {"symbol": symbol, "horizon_days": horizon_days},
+                    "predictions",
+                )
+                return [
+                    PricePrediction(
+                        symbol=item["symbol"],
+                        target_date=date.fromisoformat(item["target_date"]),
+                        predicted_close=Decimal(str(item["predicted_close"])),
+                        confidence_lower=Decimal(str(item["confidence_lower"])),
+                        confidence_upper=Decimal(str(item["confidence_upper"])),
+                    )
+                    for item in results
+                ]
+            except Exception:
+                logger.exception("Remote ML service unavailable, falling back to local prediction")
 
         results = self._service.predict(
             symbol=symbol,
@@ -95,6 +139,24 @@ class PricePredictionAdapter(PricePredictionPort):
             logger.error("Prediction service unavailable for volume forecast.")
             return []
 
+        if self._remote_url:
+            try:
+                results = self._remote_post(
+                    "/api/v1/predictions/volume",
+                    {"symbol": symbol, "horizon_days": horizon_days},
+                    "predictions",
+                )
+                return [
+                    VolumePrediction(
+                        symbol=item["symbol"],
+                        target_date=date.fromisoformat(item["target_date"]),
+                        predicted_volume=int(item["predicted_volume"]),
+                    )
+                    for item in results
+                ]
+            except Exception:
+                logger.exception("Remote ML service unavailable for volume forecast; falling back local")
+
         results = self._service.predict_volume(
             symbol=symbol,
             horizon_days=horizon_days,
@@ -124,6 +186,26 @@ class PricePredictionAdapter(PricePredictionPort):
         if self._service is None:
             logger.error("Prediction service unavailable for liquidity forecast.")
             return []
+
+        if self._remote_url:
+            try:
+                results = self._remote_post(
+                    "/api/v1/predictions/liquidity",
+                    {"symbol": symbol, "horizon_days": horizon_days},
+                    "predictions",
+                )
+                return [
+                    LiquidityForecast(
+                        symbol=item["symbol"],
+                        target_date=date.fromisoformat(item["target_date"]),
+                        prob_low=Decimal(str(item["prob_low"])),
+                        prob_medium=Decimal(str(item["prob_medium"])),
+                        prob_high=Decimal(str(item["prob_high"])),
+                    )
+                    for item in results
+                ]
+            except Exception:
+                logger.exception("Remote ML service unavailable for liquidity forecast; falling back local")
 
         results = self._service.predict_liquidity(
             symbol=symbol,
