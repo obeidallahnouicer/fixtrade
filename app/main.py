@@ -19,6 +19,9 @@ from slowapi.errors import RateLimitExceeded
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.core.config import settings
+from app.core.db import create_tables
+from app.interfaces.auth.router import router as auth_router
+from app.interfaces.dashboard.router import router as dashboard_router
 from app.interfaces.health import router as health_router
 from app.interfaces.trading.router import router as trading_router
 from app.ai.router import router as ai_router
@@ -39,6 +42,8 @@ _watcher = None
 async def lifespan(app: FastAPI):
     """Application lifespan: start/stop real-time pipeline components."""
     global _stream_manager, _scheduler, _watcher
+
+    create_tables()
 
     # DISABLED: Real-time components cause startup hangs and API errors
     # Re-enable only when needed for production with proper error handling
@@ -109,7 +114,12 @@ def create_app() -> FastAPI:
 
     app.add_middleware(
         CORSMiddleware,
-        allow_origins=["*"],
+        allow_origins=[
+            "http://localhost:3000",
+            "http://127.0.0.1:3000",
+            "http://localhost:8501",
+            "http://127.0.0.1:8501",
+        ],
         allow_credentials=True,
         allow_methods=["*"],
         allow_headers=["*"],
@@ -127,6 +137,8 @@ def create_app() -> FastAPI:
 
     # --- Routers ---
     app.include_router(health_router, prefix="/api/v1")
+    app.include_router(auth_router, prefix="/api/v1")
+    app.include_router(dashboard_router, prefix="/api/v1")
     app.include_router(trading_router, prefix="/api/v1")
     app.include_router(ai_router, prefix="/api/v1")
     app.include_router(portfolio_router, prefix="/api/v1")
