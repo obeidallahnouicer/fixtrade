@@ -31,8 +31,19 @@ streamlit run streamlit_app.py
 **Access Points:**
 - API: http://localhost:8000
 - API Docs: http://localhost:8000/docs
+- ML Service: http://localhost:8001/api/v1/health
 - Dashboard: http://localhost:8501
 - MLflow: http://localhost:5000
+
+### Microservices Demo
+
+Run the split backend locally with Docker:
+
+```bash
+docker compose up -d postgres redis api ml-service
+```
+
+The API talks to the ML service through `ML_SERVICE_URL`, while the ML service exposes prediction endpoints independently on port `8001`.
 
 ---
 
@@ -221,133 +232,90 @@ Raw CSV/TXT ──▶ Bronze (immutable) ──▶ Silver (clean) ──▶ Gold
 
 ---
 
-## Project Structure
+## Project Structure & Codebase Index
+
+Below is the complete, indexed structure of the FixTrade codebase, mapping out all directories, services, and modules along with their roles and implementation patterns.
+
+### Directory Tree
 
 ```
 fixtrade/
-│
-├── app/                           # FastAPI application (Hexagonal Architecture)
+├── app/                           # Core FastAPI application (Hexagonal Architecture)
 │   ├── main.py                    # Application entry point & composition root
 │   ├── wsgi.py                    # WSGI compatibility layer (Gunicorn/Waitress)
-│   ├── core/
-│   │   ├── config.py              # Centralized settings (Pydantic, .env)
-│   │   └── db.py                  # Database connection management
-│   │
-│   ├── domain/trading/            # Pure business logic (no framework imports)
-│   │   ├── entities.py            # StockPrice, PricePrediction, Portfolio, etc.
-│   │   ├── errors.py              # Domain-specific exceptions
-│   │   ├── ports.py               # Abstract port interfaces (ABCs)
-│   │   ├── anomaly_service.py     # Statistical anomaly detection service
-│   │   └── intraday_anomaly_service.py # Intraday anomaly detection
-│   │
-│   ├── application/trading/       # Use case orchestration
-│   │   ├── predict_price.py       # PredictPriceUseCase
-│   │   ├── get_sentiment.py       # GetSentimentUseCase
-│   │   ├── detect_anomalies.py    # DetectAnomaliesUseCase
-│   │   ├── get_recommendation.py  # GetRecommendationUseCase
-│   │   └── dtos.py                # Input/Output data transfer objects
-│   │
-│   ├── infrastructure/trading/    # Concrete adapter implementations
-│   │   ├── price_prediction_adapter.py
-│   │   ├── sentiment_analysis_adapter.py
-│   │   ├── anomaly_detection_adapter.py
-│   │   ├── decision_engine_adapter.py
-│   │   ├── stock_price_repository.py
-│   │   └── portfolio_repository.py
-│   │
-│   ├── interfaces/trading/        # FastAPI routes & schemas
-│   │   ├── router.py              # REST endpoints
-│   │   ├── schemas.py             # Pydantic request/response models
-│   │   └── dependencies.py        # Dependency injection wiring
-│   │
-│   ├── interfaces/health.py       # Health check endpoint
-│   │
-│   ├── ai/                        # AI Decision Agent & Portfolio Management
-│   │   ├── agent.py               # Main decision agent orchestrator
-│   │   ├── aggregator.py          # Multi-source data aggregation
-│   │   ├── config.py              # AI-specific configuration (Groq, thresholds)
-│   │   ├── data_service.py        # Portfolio data service
+│   ├── core/                      # Core configuration and database engines
+│   │   ├── config.py              # Central settings using Pydantic Settings
+│   │   └── db.py                  # Database connection, engines, and table schemas
+│   ├── domain/                    # PURE business logic layer (no framework imports)
+│   │   ├── auth/                  # Authentication domain logic (entities, ports, errors)
+│   │   │   ├── entities.py        # User and Session entities
+│   │   │   ├── errors.py          # Auth domain-specific exceptions
+│   │   │   └── ports.py           # UserRepository and TokenProvider interfaces
+│   │   └── trading/               # Trading domain logic (entities, ports, services)
+│   │       ├── entities.py        # StockPrice, PricePrediction, Portfolio, Position, etc.
+│   │       ├── errors.py          # Trading domain-specific exceptions
+│   │       ├── ports.py           # Repositories and external service port interfaces
+│   │       ├── anomaly_service.py # Statistical anomaly detection logic
+│   │       ├── intraday_anomaly_service.py # Intraday ticking anomaly rules
+│   │       ├── anomaly_evaluator.py # Quality assessment for anomalies
+│   │       ├── anomaly_notifier.py # Alerts log and notification trigger
+│   │       └── article_symbol_matcher.py # Link scraped news to BVMT tickers
+│   ├── application/               # Use Case orchestration layer
+│   │   ├── auth/                  # Authentication use cases (login, register)
+│   │   │   ├── dtos.py            # Login/Register request/response DTOs
+│   │   │   ├── login_user.py      # LoginUserUseCase orchestration
+│   │   │   └── register_user.py   # RegisterUserUseCase orchestration
+│   │   └── trading/               # Trading use cases coordinating domain & infrastructure
+│   │       ├── dtos.py            # Trading request/response DTOs
+│   │       ├── predict_price.py   # PredictPriceUseCase
+│   │       ├── predict_volume.py  # PredictVolumeUseCase
+│   │       ├── predict_liquidity.py # PredictLiquidityUseCase
+│   │       ├── detect_anomalies.py # DetectAnomaliesUseCase
+│   │       ├── detect_intraday_anomalies.py # DetectIntradayAnomaliesUseCase
+│   │       ├── evaluate_anomalies.py # EvaluateAnomaliesUseCase
+│   │       ├── get_recent_anomalies.py # GetRecentAnomaliesUseCase
+│   │       ├── get_sentiment.py   # GetSentimentUseCase
+│   │       ├── analyze_article_sentiment.py # AnalyzeArticleSentimentUseCase
+│   │       ├── aggregate_daily_sentiment.py # AggregateDailySentimentUseCase
+│   │       ├── link_article_symbols.py # LinkArticleSymbolsUseCase
+│   │       └── get_recommendation.py # GetRecommendationUseCase
+│   ├── infrastructure/            # Concrete adapters (Postgres, Redis, LLM, etc.)
+│   │   ├── auth/                  # Auth persistence & security adapters
+│   │   │   ├── models.py          # SQLAlchemy User models
+│   │   │   ├── repository.py      # PostgreSQL User repository adapter
+│   │   │   └── security.py        # Password hashing and JWT generation
+│   │   └── trading/               # Trading persistence & external adapters
+│   │       ├── price_prediction_adapter.py # Integrates with the prediction module
+│   │       ├── sentiment_analysis_adapter.py # Interfaces with XLM-RoBERTa NLP model
+│   │       ├── anomaly_detection_adapter.py # Interconnects anomaly engines
+│   │       ├── decision_engine_adapter.py # Combines predictions & sentiment for signals
+│   │       ├── stock_price_repository.py # PostgreSQL stock prices repository adapter
+│   │       ├── portfolio_repository.py # PostgreSQL portfolio repository adapter
+│   │       ├── scraped_article_repository.py # PostgreSQL scraped articles adapter
+│   │       ├── article_sentiment_repository.py # PostgreSQL article sentiment adapter
+│   │       ├── sentiment_score_repository.py # PostgreSQL sentiment scores adapter
+│   │       ├── anomaly_alert_repository.py # PostgreSQL anomaly alerts adapter
+│   │       ├── known_anomaly_repository.py # PostgreSQL database anomalies adapter
+│   │       └── intraday_tick_repository.py # PostgreSQL intraday tick adapter
+│   ├── interfaces/                # HTTP API routers, request/response models
+│   │   ├── auth/                  # User registration and login REST routes
+│   │   ├── dashboard/             # Aggregated stats for the web frontend
+│   │   ├── trading/               # Predictions, sentiment, anomalies, recommendations REST routes
+│   │   └── health.py              # Health check REST endpoint
+│   ├── ai/                        # AI Decision Agent & Portfolio Optimizer
+│   │   ├── agent.py               # Main agent orchestrator
 │   │   ├── decision_engine.py     # Decision-making logic
-│   │   ├── examples.py            # Usage examples
-│   │   ├── explainability.py      # AI-powered explanation generator (Groq)
-│   │   ├── llm_explainer.py       # LLM-based explainability
-│   │   ├── metrics.py             # Portfolio performance metrics (ROI, Sharpe, etc.)
-│   │   ├── optimization.py        # Portfolio optimization algorithms
-│   │   ├── portfolio.py           # Virtual portfolio simulation engine
-│   │   ├── profile.py             # Risk profile management (Conservative/Moderate/Aggressive)
-│   │   ├── prompt_loader.py       # YAML prompt template loader
-│   │   ├── prompts.yaml           # LLM prompt templates
-│   │   ├── recommendations.py     # Recommendation engine
-│   │   ├── router.py              # AI endpoints (FastAPI)
-│   │   ├── router_extended.py     # Extended AI endpoints
-│   │   ├── rules.py               # Rule-based decision system
-│   │   ├── simulator.py           # Trading simulator
-│   │   ├── QUICKSTART.md          # AI module quick start guide
-│   │   ├── README.md              # AI module documentation
-│   │   └── SUMMARY.md             # AI module integration summary
-│   │
-│   ├── nlp/                       # NLP sentiment analysis service
-│   │   ├── sentiment.py           # SentimentAnalyzer (XLM-RoBERTa)
-│   │   ├── lowconfidenceerror.py   # Low confidence threshold error
-│   │   └── unknownlabelserror.py   # Unknown label mapping error
-│   │
+│   │   ├── explainability.py      # LLM response (Groq API) explainability engine
+│   │   ├── metrics.py             # Performance metrics (Sharpe Ratio, ROI, Win Rate)
+│   │   ├── optimization.py        # SciPy portfolio efficient frontier optimization
+│   │   ├── portfolio.py           # Virtual portfolio simulator
+│   │   └── profile.py             # Risk profiles (Conservative, Moderate, Aggressive)
+│   ├── ml_service/                # Isolated FastAPI model server (port 8001)
+│   │   ├── main.py                # ML service entry point
+│   │   └── schemas.py             # Prediction endpoint request/response models
+│   ├── nlp/                       # XLM-RoBERTa sentiment classification module
+│   │   └── sentiment.py           # News sentiment analyzer implementation
 │   └── shared/                    # Cross-cutting concerns
-│       ├── logging.py             # Structured logging configuration
-│       ├── errors/handlers.py     # Centralized domain→HTTP error mapping
-│       └── security/
-│           ├── headers.py         # Security headers middleware
-│           └── rate_limiting.py   # slowapi rate limiter
-│
-├── prediction/                    # ML prediction module
-│   ├── __main__.py                # python -m prediction entrypoint
-│   ├── cli.py                     # CLI: etl, train, predict, warm-cache, mlflow-ui, scheduler, watch, stream
-│   ├── config.py                  # ML configuration (6 sub-configs)
-│   ├── pipeline.py                # ETL pipeline orchestrator
-│   ├── training.py                # Walk-forward CV training with MLflow
-│   ├── inference.py               # Prediction service (cache → model → result)
-│   ├── db_sink.py                 # Database sink for predictions
-│   ├── etl/
-│   │   ├── extract/bvmt_extractor.py      # CSV/TXT ingestion
-│   │   ├── transform/bronze_to_silver.py  # Validation & cleaning
-│   │   ├── transform/silver_to_gold.py    # Targets & train/val/test splits
-│   │   └── load/parquet_loader.py         # Partitioned Parquet I/O
-│   ├── features/
-│   │   ├── pipeline.py            # Feature orchestrator
-│   │   ├── technical.py           # SMA, EMA, RSI, MACD, Bollinger, ATR (27 features)
-│   │   ├── temporal.py            # Calendar, cyclical encoding, holidays (16 features)
-│   │   ├── volume.py              # VWAP, MFI, A/D line, ratios (8 features)
-│   │   └── lag.py                 # Price/return lags, momentum, drawdown (15+ features)
-│   ├── models/
-│   │   ├── base.py                # BasePredictionModel ABC (Strategy Pattern)
-│   │   ├── lstm.py                # PyTorch stacked LSTM
-│   │   ├── xgboost_model.py       # XGBoost gradient-boosted trees
-│   │   ├── prophet_model.py       # Facebook Prophet (trend + seasonality)
-│   │   └── ensemble.py            # Weighted ensemble + liquidity tiers
-│   ├── realtime/
-│   │   ├── scheduler.py           # APScheduler for automated retraining
-│   │   ├── stream.py              # WebSocket/SSE streaming server
-│   │   └── watcher.py             # File watcher for new data ingestion
-│   └── utils/
-│       ├── cache.py               # Redis cache client + in-memory fallback
-│       └── metrics.py             # ModelMonitor, drift detection, alerts
-│
-├── scraping/                      # Scrapy news article collection
-│   ├── items.py                   # ArticleItem definition
-│   ├── pipelines.py               # PostgresPipeline (DB + JSONL fallback)
-│   ├── settings.py                # Scrapy configuration
-│   ├── utils.py                   # Multi-locale date parsing
-│   └── spiders/
-│       ├── millim_spider.py       # Millim.tn financial news spider
-│       ├── ilboursa_spider.py     # IlBoursa.com market news spider
-│       └── example_spider.py      # Template spider
-│
-├── data/                          # Medallion data architecture
-│   ├── raw/                       # Source CSV/TXT files
-│   ├── bronze/                    # Immutable partitioned Parquet
-│   ├── silver/                    # Validated & cleaned
-│   └── gold/                      # ML-ready train/val/test
-│
-├── db/
 │   ├── 001_init_schema.sql        # Full PostgreSQL schema (10 tables + 3 views)
 │   └── load_data.py               # Bulk CSV → PostgreSQL loader
 │
