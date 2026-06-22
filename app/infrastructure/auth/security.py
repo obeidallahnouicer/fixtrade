@@ -11,10 +11,22 @@ from app.domain.auth.ports import PasswordHasher, TokenService
 
 
 class BcryptPasswordHasher(PasswordHasher):
-    """Hash passwords with bcrypt."""
+    """Hash passwords using bcrypt_sha256 to avoid bcrypt's 72-byte limit.
+
+    `bcrypt` has a 72-byte input limit which raises a ValueError for longer
+    secrets. `bcrypt_sha256` pre-hashes the password with SHA-256 before
+    applying bcrypt which safely supports arbitrary-length passwords.
+    """
 
     def __init__(self) -> None:
-        self._context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+        # Prefer a pure-Python scheme to avoid C-extension mismatch issues
+        # and bcrypt's 72-byte limit. `pbkdf2_sha256` supports arbitrary
+        # password lengths and is widely available. Keep bcrypt variants
+        # as fallbacks for existing hashes.
+        self._context = CryptContext(
+            schemes=["pbkdf2_sha256", "bcrypt_sha256", "bcrypt"],
+            deprecated="auto",
+        )
 
     def hash(self, password: str) -> str:
         return self._context.hash(password)

@@ -1,6 +1,6 @@
 import { create } from "zustand";
 import { StockSnapshot, PricePoint, AnomalyAlert, AIRecommendation } from "@/types/trading";
-import { fetchPricePredictions, fetchSentiment, fetchAnomalies, fetchRecommendation } from "@/services/api";
+import { fetchDashboardBootstrap } from "@/services/api";
 
 const STATIC_STOCKS: StockSnapshot[] = [
   { symbol: "BIAT", name: "Banque Internationale Arabe de Tunisie", price: 0, change: 0, changePercent: 0, volume: 0, avgVolume: 0, sentimentScore: 0 },
@@ -38,59 +38,72 @@ export const useStore = create<TradingStore>((set, get) => ({
   fetchStockData: async (symbol: string) => {
     set({ loading: true, error: null });
     try {
-      const [predsRes, sentimentRes, anomaliesRes, recRes] = await Promise.allSettled([
-        fetchPricePredictions(symbol),
-        fetchSentiment(symbol),
-        fetchAnomalies(symbol),
-        fetchRecommendation(symbol)
-      ]);
-      
-      let newChartData: PricePoint[] = [];
-      if (predsRes.status === "fulfilled" && predsRes.value.predictions) {
-        newChartData = predsRes.value.predictions.map((p: any) => ({
-             date: p.target_date, 
-             predictedPrice: p.predicted_close, 
-             confLower: p.confidence_lower, 
-             confUpper: p.confidence_upper 
+      const data = await fetchDashboardBootstrap(symbol);
+
+      const historicalSeries = (data.historical_prices || []).map((p) => ({
+        date: p.date,
+        historicalPrice: Number(p.close),
+      }));
+
+      const forecastByDate = new Map<string, PricePoint>();
+      (data.price_predictions || []).forEach((p) => {
+        forecastByDate.set(p.target_date, {
+          date: p.target_date,
+          predictedPrice: Number(p.predicted_close),
+          confLower: Number(p.confidence_lower),
+          confUpper: Number(p.confidence_upper),
+        });
+      });
+
+      const historicalByDate = new Map<string, PricePoint>();
+      historicalSeries.forEach((point) => {
+        historicalByDate.set(point.date, point);
+      });
+
+      const newChartData: PricePoint[] = [
+        ...historicalByDate.values(),
+        ...[...forecastByDate.entries()]
+          .filter(([dateKey]) => !historicalByDate.has(dateKey))
+          .map(([, point]) => point),
+      ].sort((left, right) => left.date.localeCompare(right.date));
+
+      const newAnomalies: AnomalyAlert[] = data.anomalies.map((a) => ({
+        id: a.id,
+        symbol: a.symbol,
+        type: a.anomaly_type,
+        severity: Number(a.severity),
+        description: a.description,
+        detectedAt: a.detected_at,
+      }));
+
+      const newRecommendation = data.recommendation
+        ? ({
+            symbol: data.recommendation.symbol,
+            action: data.recommendation.action,
+            confidence: Number(data.recommendation.confidence),
+            reasoning: data.recommendation.reasoning,
+            predictedReturn: 0,
+            horizonDays: 5,
+          } as AIRecommendation)
+        : null;
+
+      if (data.sentiment?.score !== undefined) {
+        set((state) => ({
+          stocks: state.stocks.map((s) =>
+            s.symbol === symbol
+              ? {
+                  ...s,
+                  sentimentScore: Number(data.sentiment?.score ?? s.sentimentScore),
+                }
+              : s,
+          ),
         }));
       }
 
-      let newAnomalies: AnomalyAlert[] = [];
-      if (anomaliesRes.status === "fulfilled" && anomaliesRes.value.anomalies) {
-         newAnomalies = anomaliesRes.value.anomalies.map((a: any) => ({
-             id: a.id,
-             symbol: a.symbol,
-             type: a.anomaly_type,
-             severity: a.severity,
-             description: a.description,
-             detectedAt: a.detected_at
-         }));
-      }
-
-      let newRecommendation = null;
-      if (recRes.status === "fulfilled") {
-         newRecommendation = recRes.value as AIRecommendation;
-      }
-
-      // Update static list with sentiment score if we got it
-      if (sentimentRes.status === "fulfilled" && sentimentRes.value.score !== undefined) {
-         set((state) => ({
-           stocks: state.stocks.map(s => s.symbol === symbol ? {
-             ...s,
-             sentimentScore: sentimentRes.value.score
-           } : s)
-         }));
-      }
-
-      let recommendationValue = null;
-      if (newRecommendation?.action) {
-        recommendationValue = newRecommendation;
-      }
-      
       set({ 
         chartData: newChartData, 
         anomalies: newAnomalies, 
-        recommendation: recommendationValue,
+        recommendation: newRecommendation,
         loading: false 
       });
       

@@ -1,0 +1,298 @@
+Starting services: postgres redis auth-service ml-service api genai-service scraper etl-worker
+ Image fixtrade-genai-service Building 
+ Image fixtrade-auth-service Building 
+ Image fixtrade-scraper Building 
+ Image fixtrade-ml-service Building 
+ Image fixtrade-etl-worker Building 
+ Image fixtrade-api Building 
+#1 [internal] load local bake definitions
+#1 reading from stdin 2.98kB 0.0s done
+#1 DONE 0.0s
+
+#2 [api internal] load build definition from Dockerfile
+#2 DONE 0.0s
+
+#3 [auth-service internal] load build definition from auth.Dockerfile
+#3 transferring dockerfile: 430B done
+#3 DONE 0.0s
+
+#4 [ml-service internal] load build definition from ml_service.Dockerfile
+#4 transferring dockerfile: 452B done
+#4 DONE 0.0s
+
+#2 [api internal] load build definition from Dockerfile
+#2 transferring dockerfile: 952B 0.0s done
+#2 WARN: FromAsCasing: 'as' and 'FROM' keywords' casing do not match (line 2)
+#2 DONE 0.1s
+
+#5 [scraper internal] load build definition from scraper.Dockerfile
+#5 transferring dockerfile: 374B done
+#5 DONE 0.1s
+
+#6 [etl-worker internal] load build definition from worker.Dockerfile
+#6 transferring dockerfile: 361B done
+#6 DONE 0.1s
+
+#7 [genai-service internal] load build definition from genai.Dockerfile
+#7 transferring dockerfile: 430B done
+#7 DONE 0.1s
+
+#8 [etl-worker internal] load metadata for docker.io/library/python:3.11-slim
+#8 DONE 1.1s
+
+#9 [scraper internal] load .dockerignore
+#9 transferring context: 170B done
+#9 DONE 0.0s
+
+#10 [ml-service 1/6] FROM docker.io/library/python:3.11-slim@sha256:a3ab0b966bc4e91546a033e22093cb840908979487a9fc0e6e38295747e49ac0
+#10 resolve docker.io/library/python:3.11-slim@sha256:a3ab0b966bc4e91546a033e22093cb840908979487a9fc0e6e38295747e49ac0 0.0s done
+#10 DONE 0.0s
+
+#11 [ml-service internal] load build context
+#11 transferring context: 356.25kB 0.1s done
+#11 DONE 0.1s
+
+#12 [api internal] load build context
+#12 transferring context: 18.94kB 0.0s done
+#12 DONE 0.1s
+
+#13 [api builder 3/4] COPY requirements.txt .
+#13 CACHED
+
+#14 [api builder 2/4] WORKDIR /build
+#14 CACHED
+
+#15 [api builder 4/4] RUN pip install --no-cache-dir --prefix=/install -r requirements.txt
+#15 CACHED
+
+#16 [api stage-1 3/9] COPY --from=builder /install /usr/local
+#16 CACHED
+
+#17 [genai-service 3/6] COPY requirements-genai.txt ./
+#17 CACHED
+
+#18 [genai-service 4/6] RUN pip install --no-cache-dir -r requirements-genai.txt
+#18 CACHED
+
+#19 [ml-service 3/6] COPY requirements-ml-service.txt ./
+#19 CACHED
+
+#20 [scraper 3/6] COPY requirements-scraper.txt ./
+#20 CACHED
+
+#21 [ml-service 4/6] RUN pip install --no-cache-dir -r requirements-ml-service.txt
+#21 CACHED
+
+#22 [scraper 4/6] RUN pip install --no-cache-dir -r requirements-scraper.txt
+#22 CACHED
+
+#23 [auth-service 2/6] WORKDIR /app
+#23 CACHED
+
+#24 [auth-service 3/6] COPY requirements-auth.txt ./
+#24 CACHED
+
+#25 [auth-service 4/6] RUN pip install --no-cache-dir -r requirements-auth.txt
+#25 CACHED
+
+#26 [api stage-1 4/9] COPY app/ app/
+#26 DONE 0.1s
+
+#27 [scraper 5/6] COPY . /app
+#27 ...
+
+#28 [ml-service 5/6] COPY . /app
+#28 DONE 1.2s
+
+#29 [api stage-1 5/9] COPY prediction/ prediction/
+#29 DONE 1.2s
+
+#30 [genai-service 5/6] COPY . /app
+#30 DONE 1.2s
+
+#27 [etl-worker 5/6] COPY . /app
+#27 DONE 1.2s
+
+#31 [auth-service 5/6] COPY . /app
+#31 DONE 1.3s
+
+#32 [auth-service 6/6] RUN useradd -m authuser && chown -R authuser:authuser /app
+#32 ...
+
+#33 [api stage-1 6/9] COPY data/ data/
+#33 DONE 0.8s
+
+#34 [api stage-1 7/9] COPY scrapy.cfg .
+#34 DONE 0.1s
+
+#35 [etl-worker 6/6] RUN useradd -m worker && chown -R worker:worker /app
+#35 ...
+
+#36 [api stage-1 8/9] RUN mkdir -p data/bronze data/silver data/gold models
+#36 DONE 0.3s
+
+#37 [api stage-1 9/9] RUN useradd -m appuser && chown -R appuser:appuser /app
+#37 DONE 2.6s
+
+#38 [scraper 6/6] RUN useradd -m scrapuser && chown -R scrapuser:scrapuser /app
+#38 ...
+
+#39 [genai-service 6/6] RUN useradd -m gaiuser && chown -R gaiuser:gaiuser /app
+#39 DONE 4.0s
+
+#40 [ml-service 6/6] RUN useradd -m mluser && chown -R mluser:mluser /app
+#40 DONE 4.0s
+
+#38 [scraper 6/6] RUN useradd -m scrapuser && chown -R scrapuser:scrapuser /app
+#38 DONE 4.0s
+
+#35 [etl-worker 6/6] RUN useradd -m worker && chown -R worker:worker /app
+#35 DONE 4.0s
+
+#32 [auth-service 6/6] RUN useradd -m authuser && chown -R authuser:authuser /app
+#32 DONE 4.0s
+
+#41 [auth-service] exporting to image
+#41 exporting layers
+#41 exporting layers 4.7s done
+#41 exporting manifest sha256:91aa7935908243cdf8acc8a5c8b3ffd1b2becd3444783b94d0a51f62dc339493 0.0s done
+#41 exporting config sha256:7d92aef9271c904f508fa8ed12a5565fa403769735c4ca50254c23fce4bd2614 0.0s done
+#41 exporting attestation manifest sha256:971e0abc9494d2867d9696f2598d3f605e631862fa8ce3c2c5cacf71551bcc2a 0.1s done
+#41 exporting manifest list sha256:e46973e8bc585d94647d6e229a59a3a9de872cebf47f5c4cc5fc4f75157e4cc1
+#41 exporting manifest list sha256:e46973e8bc585d94647d6e229a59a3a9de872cebf47f5c4cc5fc4f75157e4cc1 0.0s done
+#41 naming to docker.io/library/fixtrade-auth-service:latest done
+#41 unpacking to docker.io/library/fixtrade-auth-service:latest
+#41 ...
+
+#42 [api] exporting to image
+#42 exporting layers 4.0s done
+#42 exporting manifest sha256:be021c4d5b6136436b6a757d24ccec093badaf42a6720f30c9440716c1803782 0.0s done
+#42 exporting config sha256:b06d27c8fa676557371d9d556b08953c0ee0d35184f61b46316beee56ccde85c 0.0s done
+#42 exporting attestation manifest sha256:8519c85c729a8a10c91820a3b2c5d900660690aacd76eee33e04c3a9b0e39057 0.0s done
+#42 exporting manifest list sha256:86ca5dbb99da9710fe14ff4c804c82ad42629c79891e15859b92f73f975e7050 0.0s done
+#42 naming to docker.io/library/fixtrade-api:latest done
+#42 unpacking to docker.io/library/fixtrade-api:latest 1.9s done
+#42 DONE 6.1s
+
+#43 [etl-worker] exporting to image
+#43 exporting layers 4.7s done
+#43 exporting manifest sha256:c3f79e62b4cb2bd545018a4fd28403504d4b553d3fd296f92d4bc83a74bcd3e4 0.0s done
+#43 exporting config sha256:f229678fbe6aba76faabcd15f480d640d47e0c7c3cc8a9d3e4f994ca2558fc72 0.0s done
+#43 exporting attestation manifest sha256:c6d98adc74f481d3e8d775e0a84ec1c40f17d6d6dda5fd238b03acdc7567c7e8 0.1s done
+#43 exporting manifest list sha256:895e85801761efad4edbb6537c2bb48060df9edfa39b0cb2df00c46b6e125706 0.0s done
+#43 naming to docker.io/library/fixtrade-etl-worker:latest 0.0s done
+#43 unpacking to docker.io/library/fixtrade-etl-worker:latest
+#43 ...
+
+#44 [api] resolving provenance for metadata file
+#44 DONE 0.0s
+
+#45 [scraper] exporting to image
+#45 exporting layers 4.7s done
+#45 exporting manifest sha256:eb8a9767f2ee45d66a3dd42700ef59bfc139d0831afb8eb9c5276523a804fb11 0.0s done
+#45 exporting config sha256:d5bdb7f473b0264b8c990941641d14582e8b7bba4901745abe9e2a1d3e8ed62a 0.0s done
+#45 exporting attestation manifest sha256:dc5375539ea681bf67e8ec1190c98605242a34b319eca3bb240af552eb84a9b4 0.1s done
+#45 exporting manifest list sha256:733893e4614f7d44121c2150a071334ce3a97c998698a4165216e6cf0c09de58 0.0s done
+#45 naming to docker.io/library/fixtrade-scraper:latest 0.0s done
+#45 unpacking to docker.io/library/fixtrade-scraper:latest
+#45 ...
+
+#43 [etl-worker] exporting to image
+#43 unpacking to docker.io/library/fixtrade-etl-worker:latest 1.9s done
+#43 DONE 6.9s
+
+#45 [scraper] exporting to image
+#45 unpacking to docker.io/library/fixtrade-scraper:latest 2.0s done
+#45 DONE 6.9s
+
+#46 [genai-service] exporting to image
+#46 exporting layers 4.7s done
+#46 exporting manifest sha256:e67ff7ab05914c694d4a62cb0c515740ae4165b20132c991b6bfaf2140b7435d 0.0s done
+#46 exporting config sha256:eb3f26e9a79296176fee20b33dbc5b87ce780aa991f66c27af52889768a8523e 0.0s done
+#46 exporting attestation manifest sha256:dba9db94a3d91d890e6cb803fa6fe44983a9d2839b9eea1ab122c1b6b477064a 0.1s done
+#46 exporting manifest list sha256:1c6bd2eedfa18957d754089b9e71eb1a09ac9df8fac4f14ba8bfa8d79d81aba3 0.0s done
+#46 naming to docker.io/library/fixtrade-genai-service:latest 0.0s done
+#46 unpacking to docker.io/library/fixtrade-genai-service:latest 2.0s done
+#46 DONE 7.0s
+
+#47 [ml-service] exporting to image
+#47 exporting layers 4.7s done
+#47 exporting manifest sha256:5a1d732d30eea509f36a1c54f559c929a7e46e7625ec1a1214b2f6804694ed60 0.0s done
+#47 exporting config sha256:3110e861df782d72afd5108dfeb3ffcce7596a043fb99804ef31458115c93918 0.0s done
+#47 exporting attestation manifest sha256:e993bc87a209787739f52c45f557bf8441f6fef5c81f5b3c110c207bd917a8e3 0.1s done
+#47 exporting manifest list sha256:72f7617539bc1fb53909f8704994ec320b8b7d0ed75e1c9467ea928db1fe60ae 0.0s done
+#47 naming to docker.io/library/fixtrade-ml-service:latest 0.0s done
+#47 unpacking to docker.io/library/fixtrade-ml-service:latest 2.0s done
+#47 DONE 7.0s
+
+#41 [auth-service] exporting to image
+#41 unpacking to docker.io/library/fixtrade-auth-service:latest 2.0s done
+#41 DONE 6.9s
+
+#48 [scraper] resolving provenance for metadata file
+#48 ...
+
+#49 [etl-worker] resolving provenance for metadata file
+#49 DONE 0.1s
+
+#50 [ml-service] resolving provenance for metadata file
+#50 DONE 0.1s
+
+#51 [auth-service] resolving provenance for metadata file
+#51 DONE 0.0s
+
+#48 [scraper] resolving provenance for metadata file
+#48 DONE 0.1s
+
+#52 [genai-service] resolving provenance for metadata file
+#52 DONE 0.0s
+ Image fixtrade-etl-worker Built 
+ Image fixtrade-scraper Built 
+ Image fixtrade-auth-service Built 
+ Image fixtrade-genai-service Built 
+ Image fixtrade-ml-service Built 
+ Image fixtrade-api Built 
+ Container fixtrade-postgres-1 Running 
+ Container fixtrade-redis-1 Running 
+ Container fixtrade-scraper-1 Recreate 
+ Container fixtrade-genai-service-1 Recreate 
+ Container fixtrade-auth-service-1 Recreate 
+ Container fixtrade-etl-worker-1 Recreate 
+ Container fixtrade-ml-service-1 Recreate 
+ Container fixtrade-etl-worker-1 Recreated 
+ Container fixtrade-genai-service-1 Recreated 
+ Container fixtrade-ml-service-1 Recreated 
+ Container fixtrade-auth-service-1 Recreated 
+ Container fixtrade-api-1 Recreate 
+ Container fixtrade-scraper-1 Recreated 
+ Container fixtrade-api-1 Recreated 
+ Container fixtrade-auth-service-1 Starting 
+ Container fixtrade-scraper-1 Starting 
+ Container fixtrade-ml-service-1 Starting 
+ Container fixtrade-genai-service-1 Starting 
+ Container fixtrade-etl-worker-1 Starting 
+ Container fixtrade-scraper-1 Started 
+ Container fixtrade-auth-service-1 Started 
+ Container fixtrade-ml-service-1 Started 
+ Container fixtrade-genai-service-1 Started 
+ Container fixtrade-api-1 Starting 
+ Container fixtrade-etl-worker-1 Started 
+ Container fixtrade-api-1 Started 
+Waiting for postgres at http://127.0.0.1:5432
+Timeout waiting for postgres
+Waiting for redis at http://127.0.0.1:6379
+Timeout waiting for redis
+Waiting for api at http://127.0.0.1:8000/api/v1/health
+api is available
+Waiting for ml-service at http://127.0.0.1:8001/api/v1/health
+ml-service is available
+Waiting for auth-service at http://127.0.0.1:8002/api/v1/health
+auth-service is available
+Waiting for genai-service at http://127.0.0.1:8003/api/v1/health
+genai-service is available
+Running ETL loader inside etl-worker (if available)
+Copying scraped_fallback.jsonl to data/ for persistence if present
+copied
+Running smoke tests
+scripts/start_services.sh: line 47: python3: command not found
+Done. Logs in /c/Users/user/Desktop/projects/fixtrade/logs

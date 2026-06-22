@@ -10,9 +10,8 @@ interface PredictionChartProps {
 
 export function PredictionChart({ data }: PredictionChartProps) {
   const splitPoint = useMemo(() => {
-    // We expect predictedPrice to be defined from "today" onward
-    const splitIndex = data.findIndex(d => d.historicalPrice !== undefined && d.predictedPrice !== undefined);
-    return splitIndex >= 0 ? data[splitIndex].date : undefined;
+    const firstForecast = data.find((d) => d.predictedPrice !== undefined);
+    return firstForecast?.date;
   }, [data]);
 
   return (

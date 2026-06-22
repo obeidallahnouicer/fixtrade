@@ -294,7 +294,7 @@ GET /api/v1/ai/portfolio/{id}/snapshot
 GET /api/v1/ai/portfolio/{id}/performance
 ```
 
-See `front_fixtrade/PREDICTION_INTEGRATION.md` for frontend examples.
+See `frontend/README.md` for frontend examples.
 
 ---
 

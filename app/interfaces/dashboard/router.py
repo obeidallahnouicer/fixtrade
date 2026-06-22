@@ -1,5 +1,6 @@
 """Dashboard backend-for-frontend router."""
 
+from datetime import date, timedelta
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, Query
@@ -15,11 +16,13 @@ from app.interfaces.dashboard.schemas import DashboardBootstrapResponse
 from app.interfaces.trading.dependencies import (
     get_detect_anomalies_use_case,
     get_predict_price_use_case,
+    get_stock_price_repository,
     get_recommendation_use_case,
     get_sentiment_use_case,
 )
 from app.interfaces.trading.schemas import (
     AnomalyItem,
+    HistoricalPriceItem,
     PredictPriceItem,
     RecommendationResponse,
     SentimentResponse,
@@ -32,6 +35,7 @@ DEFAULT_PORTFOLIO_ID = UUID("00000000-0000-0000-0000-000000000000")
 @router.get("/bootstrap", response_model=DashboardBootstrapResponse, summary="Bootstrap the dashboard")
 def bootstrap_dashboard(
     symbol: str = Query(..., min_length=2, max_length=10, pattern=r"^[A-Z0-9]+$"),
+    price_repo=Depends(get_stock_price_repository),
     predict_use_case=Depends(get_predict_price_use_case),
     sentiment_use_case=Depends(get_sentiment_use_case),
     anomaly_use_case=Depends(get_detect_anomalies_use_case),
@@ -40,6 +44,19 @@ def bootstrap_dashboard(
     """Aggregate the core dashboard data into one response."""
 
     warnings: list[str] = []
+
+    end_date = date.today()
+    start_date = end_date - timedelta(days=30)
+
+    historical_prices = []
+    try:
+        historical_prices = price_repo.get_history(
+            symbol=symbol,
+            start=start_date,
+            end=end_date,
+        )
+    except Exception:
+        warnings.append("Historical price data temporarily unavailable")
 
     predictions = []
     try:
@@ -75,6 +92,13 @@ def bootstrap_dashboard(
 
     return DashboardBootstrapResponse(
         symbol=symbol,
+        historical_prices=[
+            HistoricalPriceItem(
+                date=item.date,
+                close=item.close,
+            )
+            for item in historical_prices
+        ],
         price_predictions=[
             PredictPriceItem(
                 symbol=item.symbol,

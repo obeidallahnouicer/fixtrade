@@ -1,5 +1,6 @@
 import React, { useMemo } from "react";
 import { useStore } from "@/store/useStore";
+import { useAuthStore } from "@/store/useAuthStore";
 import { StockList } from "@/components/trading/StockList";
 import { PredictionChart } from "@/components/trading/PredictionChart";
 import { AnomalyList } from "@/components/trading/AnomalyList";
@@ -12,6 +13,7 @@ import { Activity, Bell, Cpu, Menu, Search, Settings } from "lucide-react";
 
 export function Dashboard() {
   const { stocks, selectedStockId, chartData, recommendation } = useStore();
+  const { user, signOut } = useAuthStore();
   
   const selectedStock = useMemo(() => 
     stocks.find(s => s.symbol === selectedStockId) || stocks[0], 
@@ -19,7 +21,7 @@ export function Dashboard() {
 
   React.useEffect(() => {
     useStore.getState().fetchStockData(selectedStockId);
-  }, []);
+  }, [selectedStockId]);
 
   return (
     <div className="min-h-screen bg-[#09090b] text-[#ededed] flex flex-col font-sans">
@@ -42,8 +44,19 @@ export function Dashboard() {
           <Search size={18} className="cursor-pointer hover:text-zinc-100 transition-colors" />
           <Bell size={18} className="cursor-pointer hover:text-zinc-100 transition-colors" />
           <Settings size={18} className="cursor-pointer hover:text-zinc-100 transition-colors" />
-          <div className="w-8 h-8 rounded-full bg-zinc-800 border border-zinc-700 flex items-center justify-center cursor-pointer">
-            <span className="text-xs font-medium text-zinc-100">ON</span>
+          <div className="hidden md:flex flex-col items-end mr-2">
+            <span className="text-xs font-semibold text-zinc-100">{user?.full_name || user?.email || "Guest"}</span>
+            <span className="text-[10px] uppercase tracking-[0.2em] text-zinc-500">{user?.role || "user"}</span>
+          </div>
+          <button
+            type="button"
+            onClick={signOut}
+            className="px-3 py-1.5 rounded-full border border-zinc-700 bg-zinc-900 text-xs font-semibold text-zinc-200 hover:border-zinc-500 hover:text-white transition-colors"
+          >
+            Logout
+          </button>
+          <div className="w-8 h-8 rounded-full bg-zinc-800 border border-zinc-700 flex items-center justify-center">
+            <span className="text-xs font-medium text-zinc-100">{(user?.email || "ON").slice(0, 2).toUpperCase()}</span>
           </div>
         </div>
       </header>

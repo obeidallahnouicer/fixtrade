@@ -14,6 +14,10 @@ pydantic-settings==2.5.2
 # --- Security ---
 # slowapi: Rate limiting middleware for FastAPI/Starlette
 slowapi==0.1.9
+# passlib: Password hashing utilities for authentication
+passlib[bcrypt]==1.7.4
+# PyJWT: JWT creation and validation for auth tokens
+PyJWT==2.10.1
 
 # --- WSGI Compatibility ---
 # asgiref: ASGI-to-WSGI bridge for legacy server deployments
@@ -24,6 +28,8 @@ gunicorn==23.0.0
 # --- Scraping ---
 # Scrapy: Web scraping framework for news article collection
 scrapy==2.11.2
+# Twisted: pin to a Scrapy-compatible version; newer releases removed symbols Scrapy 2.11 still imports
+Twisted==24.11.0
 
 # --- Database ---
 # SQLAlchemy: ORM and DB toolkit

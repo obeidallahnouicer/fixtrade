@@ -36,6 +36,9 @@ from app.infrastructure.trading.portfolio_repository import (
 from app.infrastructure.trading.price_prediction_adapter import (
     PricePredictionAdapter,
 )
+from app.infrastructure.trading.stock_price_repository import (
+    StockPriceRepositoryAdapter,
+)
 from app.infrastructure.trading.scraped_article_repository import (
     ScrapedArticleRepositoryAdapter,
 )
@@ -58,6 +61,11 @@ def get_predict_price_use_case() -> PredictPriceUseCase:
     return PredictPriceUseCase(
         prediction_port=PricePredictionAdapter(),
     )
+
+
+def get_stock_price_repository() -> StockPriceRepositoryAdapter:
+    """Build StockPriceRepositoryAdapter with its infrastructure dependencies."""
+    return StockPriceRepositoryAdapter()
 
 
 def get_predict_volume_use_case() -> PredictVolumeUseCase:

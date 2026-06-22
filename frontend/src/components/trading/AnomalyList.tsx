@@ -7,7 +7,12 @@ export function AnomalyList() {
   const { anomalies } = useStore();
 
   if (anomalies.length === 0) {
-    return <div className="text-sm text-zinc-500">No live anomalies detected.</div>;
+    return (
+      <div className="rounded-md border border-zinc-800 bg-zinc-950/60 px-4 py-3 text-sm text-zinc-500">
+        No anomaly alerts were returned for this symbol yet. The live detector is
+        running against the real dataset, but this market slice currently has no alerts.
+      </div>
+    );
   }
 
   return (

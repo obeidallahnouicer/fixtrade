@@ -11,6 +11,11 @@ import logging
 from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
 
+from app.domain.auth.errors import (
+    InvalidCredentialsError,
+    UserAlreadyExistsError,
+    UserNotFoundError,
+)
 from app.domain.trading.errors import (
     AnomalyDetectionError,
     InsufficientFundsError,
@@ -24,6 +29,7 @@ from app.domain.trading.errors import (
 logger = logging.getLogger(__name__)
 
 HTTP_400 = 400
+HTTP_401 = 401
 HTTP_404 = 404
 HTTP_422 = 422
 HTTP_500 = 500
@@ -99,6 +105,30 @@ def register_error_handlers(app: FastAPI) -> None:
         """Catch-all for unhandled trading domain errors."""
         logger.error("Unhandled trading domain error: %s", exc.message)
         return _error_response(HTTP_500, "Internal server error")
+
+    @app.exception_handler(UserAlreadyExistsError)
+    async def handle_user_already_exists(
+        _request: Request, exc: UserAlreadyExistsError
+    ) -> JSONResponse:
+        """Handle duplicate registration attempts."""
+        logger.warning("User already exists: %s", exc)
+        return _error_response(HTTP_400, "User already exists")
+
+    @app.exception_handler(InvalidCredentialsError)
+    async def handle_invalid_credentials(
+        _request: Request, exc: InvalidCredentialsError
+    ) -> JSONResponse:
+        """Handle invalid login attempts."""
+        logger.warning("Invalid credentials")
+        return _error_response(HTTP_401, "Invalid credentials")
+
+    @app.exception_handler(UserNotFoundError)
+    async def handle_user_not_found(
+        _request: Request, exc: UserNotFoundError
+    ) -> JSONResponse:
+        """Handle missing users in auth flows."""
+        logger.warning("User not found: %s", exc)
+        return _error_response(HTTP_404, "User not found")
 
     @app.exception_handler(Exception)
     async def handle_unexpected(

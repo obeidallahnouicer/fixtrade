@@ -1,0 +1,18 @@
+FROM python:3.11-slim
+
+WORKDIR /app
+
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1
+
+COPY requirements-ml-service.txt ./
+RUN pip install --no-cache-dir -r requirements-ml-service.txt
+
+COPY . /app
+
+RUN useradd -m mluser && chown -R mluser:mluser /app
+USER mluser
+
+EXPOSE 8001
+
+CMD ["uvicorn", "app.ml_service.main:app", "--host", "0.0.0.0", "--port", "8001", "--workers", "1"]
