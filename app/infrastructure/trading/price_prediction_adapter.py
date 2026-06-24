@@ -33,16 +33,7 @@ class PricePredictionAdapter(PricePredictionPort):
 
     def __init__(self) -> None:
         self._remote_url = None
-        try:
-            from prediction.inference import PredictionService
-            self._service = PredictionService()
-        except ImportError:
-            logger.warning(
-                "prediction module not available. "
-                "Install ML dependencies (numpy, pandas, torch, xgboost, prophet)."
-            )
-            self._service = None
-
+        self._service = None
         try:
             from app.core.config import settings
 
@@ -50,6 +41,19 @@ class PricePredictionAdapter(PricePredictionPort):
                 self._remote_url = settings.ml_service_url.rstrip("/")
         except Exception:
             self._remote_url = None
+
+        if self._remote_url:
+            return
+
+        try:
+            from prediction.inference import PredictionService
+            self._service = PredictionService()
+        except Exception:
+            logger.warning(
+                "prediction module not available. "
+                "Install or repair ML dependencies to enable local inference.",
+                exc_info=True,
+            )
 
     def _remote_post(self, path: str, payload: dict, key: str) -> list[dict]:
         if not self._remote_url:
@@ -78,13 +82,6 @@ class PricePredictionAdapter(PricePredictionPort):
         Returns:
             List of PricePrediction entities ordered by target date.
         """
-        if self._service is None:
-            logger.error(
-                "Prediction service unavailable. "
-                "Ensure ML dependencies are installed."
-            )
-            return []
-
         if self._remote_url:
             try:
                 results = self._remote_post(
@@ -104,6 +101,10 @@ class PricePredictionAdapter(PricePredictionPort):
                 ]
             except Exception:
                 logger.exception("Remote ML service unavailable, falling back to local prediction")
+
+        if self._service is None:
+            logger.error("Prediction service unavailable.")
+            return []
 
         results = self._service.predict(
             symbol=symbol,
@@ -135,10 +136,6 @@ class PricePredictionAdapter(PricePredictionPort):
         Returns:
             List of VolumePrediction entities ordered by target date.
         """
-        if self._service is None:
-            logger.error("Prediction service unavailable for volume forecast.")
-            return []
-
         if self._remote_url:
             try:
                 results = self._remote_post(
@@ -156,6 +153,10 @@ class PricePredictionAdapter(PricePredictionPort):
                 ]
             except Exception:
                 logger.exception("Remote ML service unavailable for volume forecast; falling back local")
+
+        if self._service is None:
+            logger.error("Prediction service unavailable for volume forecast.")
+            return []
 
         results = self._service.predict_volume(
             symbol=symbol,
@@ -183,10 +184,6 @@ class PricePredictionAdapter(PricePredictionPort):
         Returns:
             List of LiquidityForecast entities with probability vectors.
         """
-        if self._service is None:
-            logger.error("Prediction service unavailable for liquidity forecast.")
-            return []
-
         if self._remote_url:
             try:
                 results = self._remote_post(
@@ -206,6 +203,10 @@ class PricePredictionAdapter(PricePredictionPort):
                 ]
             except Exception:
                 logger.exception("Remote ML service unavailable for liquidity forecast; falling back local")
+
+        if self._service is None:
+            logger.error("Prediction service unavailable for liquidity forecast.")
+            return []
 
         results = self._service.predict_liquidity(
             symbol=symbol,

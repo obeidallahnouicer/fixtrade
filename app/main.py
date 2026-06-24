@@ -12,6 +12,7 @@ No business logic belongs here.
 """
 
 from contextlib import asynccontextmanager
+import os
 
 from fastapi import FastAPI
 from slowapi import _rate_limit_exceeded_handler
@@ -24,12 +25,24 @@ from app.interfaces.auth.router import router as auth_router
 from app.interfaces.dashboard.router import router as dashboard_router
 from app.interfaces.health import router as health_router
 from app.interfaces.trading.router import router as trading_router
-from app.ai.router import router as ai_router
-from app.ai.router_extended import router as portfolio_router
 from app.shared.errors.handlers import register_error_handlers
 from app.shared.logging import configure_logging
 from app.shared.security.headers import SecurityHeadersMiddleware
 from app.shared.security.rate_limiting import limiter
+
+ai_router = None
+portfolio_router = None
+if os.getenv("FIXTRADE_ENABLE_AI_ROUTERS", "false").lower() in {"1", "true", "yes"}:
+    try:
+        from app.ai.router import router as ai_router
+        from app.ai.router_extended import router as portfolio_router
+    except Exception:
+        import logging
+
+        logging.getLogger(__name__).warning(
+            "Optional AI routers are unavailable; starting the core demo API.",
+            exc_info=True,
+        )
 
 
 # ── Real-time components (optional, degrade gracefully) ──────────
@@ -43,7 +56,13 @@ async def lifespan(app: FastAPI):
     """Application lifespan: start/stop real-time pipeline components."""
     global _stream_manager, _scheduler, _watcher
 
-    create_tables()
+    try:
+        create_tables()
+    except Exception:
+        import logging
+        logging.getLogger(__name__).warning(
+            "Database unavailable at startup; continuing in demo-capable mode."
+        )
 
     # DISABLED: Real-time components cause startup hangs and API errors
     # Re-enable only when needed for production with proper error handling
@@ -140,8 +159,10 @@ def create_app() -> FastAPI:
     app.include_router(auth_router, prefix="/api/v1")
     app.include_router(dashboard_router, prefix="/api/v1")
     app.include_router(trading_router, prefix="/api/v1")
-    app.include_router(ai_router, prefix="/api/v1")
-    app.include_router(portfolio_router, prefix="/api/v1")
+    if ai_router is not None:
+        app.include_router(ai_router, prefix="/api/v1")
+    if portfolio_router is not None:
+        app.include_router(portfolio_router, prefix="/api/v1")
 
     return app
 

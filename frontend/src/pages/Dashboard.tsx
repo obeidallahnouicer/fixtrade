@@ -12,7 +12,7 @@ import { formatCurrency, formatPercentage, formatNumber } from "@/lib/utils";
 import { Activity, Bell, Cpu, Menu, Search, Settings } from "lucide-react";
 
 export function Dashboard() {
-  const { stocks, selectedStockId, chartData, recommendation } = useStore();
+  const { stocks, selectedStockId, chartData, recommendation, loading, error } = useStore();
   const { user, signOut } = useAuthStore();
   
   const selectedStock = useMemo(() => 
@@ -86,6 +86,15 @@ export function Dashboard() {
         <div className="md:col-span-9 lg:col-span-7 flex flex-col space-y-6 overflow-y-auto min-h-0 pb-12">
           
           <div className="flex flex-col space-y-6">
+            {(loading || error) && (
+              <div className={`rounded-lg border px-4 py-3 text-sm ${
+                error
+                  ? "border-amber-500/30 bg-amber-500/10 text-amber-200"
+                  : "border-zinc-800 bg-zinc-900 text-zinc-400"
+              }`}>
+                {error ? `Dashboard API unavailable: ${error}` : `Loading ${selectedStockId} market data...`}
+              </div>
+            )}
             <div className="flex items-start justify-between">
               <div className="flex flex-col">
                 <div className="flex items-center gap-3">

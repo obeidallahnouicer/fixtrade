@@ -2,6 +2,7 @@ import { create } from "zustand";
 import { fetchCurrentUser, loginUser, registerUser, AuthUser } from "@/services/api";
 
 const TOKEN_KEY = "fixtrade_auth_token";
+const DEMO_KEY = "fixtrade_demo_mode";
 
 type AuthMode = "login" | "register";
 
@@ -17,18 +18,32 @@ interface AuthState {
   signIn: (email: string, password: string) => Promise<void>;
   signUp: (email: string, password: string, fullName?: string) => Promise<void>;
   signOut: () => void;
+  continueAsGuest: () => void;
 }
 
 function saveSession(token: string) {
+  localStorage.removeItem(DEMO_KEY);
   localStorage.setItem(TOKEN_KEY, token);
 }
 
 function clearSession() {
   localStorage.removeItem(TOKEN_KEY);
+  localStorage.removeItem(DEMO_KEY);
 }
 
 function readSession() {
   return localStorage.getItem(TOKEN_KEY);
+}
+
+function demoUser(): AuthUser {
+  return {
+    id: "demo",
+    email: "demo@fixtrade.local",
+    full_name: "Demo Guest",
+    role: "demo",
+    is_active: true,
+    created_at: new Date().toISOString(),
+  };
 }
 
 export const useAuthStore = create<AuthState>((set, get) => ({
@@ -42,6 +57,10 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   hydrate: async () => {
     const token = readSession();
     if (!token) {
+      if (localStorage.getItem(DEMO_KEY) === "true") {
+        set({ isHydrated: true, token: null, user: demoUser() });
+        return;
+      }
       set({ isHydrated: true, token: null, user: null });
       return;
     }
@@ -78,5 +97,15 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   signOut: () => {
     clearSession();
     set({ user: null, token: null, error: null });
+  },
+  continueAsGuest: () => {
+    clearSession();
+    localStorage.setItem(DEMO_KEY, "true");
+    set({
+      user: demoUser(),
+      token: null,
+      error: null,
+      isHydrated: true,
+    });
   },
 }));

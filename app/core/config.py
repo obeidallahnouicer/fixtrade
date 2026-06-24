@@ -8,6 +8,7 @@ Both the FastAPI app and the prediction module import from here.
 
 from typing import Optional
 
+from pydantic import field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -68,6 +69,18 @@ class Settings(BaseSettings):
     auth_secret_key: str = "dev-secret-key-change-in-production"
     auth_algorithm: str = "HS256"
     access_token_expire_minutes: int = 60
+
+    @field_validator("debug", mode="before")
+    @classmethod
+    def parse_debug_mode(cls, value):
+        """Accept common environment labels in addition to booleans."""
+        if isinstance(value, str):
+            normalized = value.strip().lower()
+            if normalized in {"release", "production", "prod"}:
+                return False
+            if normalized in {"development", "develop", "dev"}:
+                return True
+        return value
 
     # --- Scraping / shared fallback settings ---
     scraping_postgres_dsn: Optional[str] = None

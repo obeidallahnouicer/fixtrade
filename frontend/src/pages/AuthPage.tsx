@@ -5,7 +5,7 @@ import { Badge } from "@/components/ui/Badge";
 import { useAuthStore } from "@/store/useAuthStore";
 
 export function AuthPage() {
-  const { mode, setMode, signIn, signUp, loading, error, user } = useAuthStore();
+  const { mode, setMode, signIn, signUp, continueAsGuest, loading, error, user } = useAuthStore();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [fullName, setFullName] = useState("");
@@ -146,6 +146,13 @@ export function AuthPage() {
               >
                 {loading ? "Working..." : mode === "login" ? "Enter dashboard" : "Create account"}
                 <ArrowRight size={16} />
+              </button>
+              <button
+                type="button"
+                onClick={continueAsGuest}
+                className="w-full rounded-2xl border border-zinc-700 px-4 py-3 text-sm font-semibold text-zinc-200 transition hover:border-emerald-500/60 hover:text-white"
+              >
+                Continue in demo mode
               </button>
             </form>
 

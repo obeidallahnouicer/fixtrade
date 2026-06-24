@@ -26,7 +26,6 @@ export const useStore = create<TradingStore>((set, get) => ({
   selectedStockId: STATIC_STOCKS[0].symbol,
   setSelectedStockId: (id) => {
     set({ selectedStockId: id });
-    get().fetchStockData(id);
   },
   stocks: STATIC_STOCKS,
   chartData: [],
@@ -79,7 +78,7 @@ export const useStore = create<TradingStore>((set, get) => ({
       const newRecommendation = data.recommendation
         ? ({
             symbol: data.recommendation.symbol,
-            action: data.recommendation.action,
+            action: data.recommendation.action.toUpperCase() as AIRecommendation["action"],
             confidence: Number(data.recommendation.confidence),
             reasoning: data.recommendation.reasoning,
             predictedReturn: 0,
@@ -96,6 +95,24 @@ export const useStore = create<TradingStore>((set, get) => ({
                   sentimentScore: Number(data.sentiment?.score ?? s.sentimentScore),
                 }
               : s,
+          ),
+        }));
+      }
+
+      if (historicalSeries.length > 0) {
+        const latest = historicalSeries[historicalSeries.length - 1].historicalPrice ?? 0;
+        const previous = historicalSeries[historicalSeries.length - 2]?.historicalPrice ?? latest;
+        const change = latest - previous;
+        set((state) => ({
+          stocks: state.stocks.map((stock) =>
+            stock.symbol === symbol
+              ? {
+                  ...stock,
+                  price: latest,
+                  change,
+                  changePercent: previous ? (change / previous) * 100 : 0,
+                }
+              : stock,
           ),
         }));
       }
