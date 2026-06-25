@@ -38,6 +38,20 @@ docker compose up -d
 # API :8000 | ML :8001 | Auth :8002 | GenAI :8003 | Frontend :3000
 ```
 
+The `etl-worker` is a long-running automation service. On first startup it
+loads the bundled BVMT history and article backlog, then every five minutes it
+links and scores new articles, refreshes persisted forecasts, detects
+anomalies, and writes recommendations. The scraper runs hourly. Model
+retraining is attempted weekly; data-derived persisted forecasts remain
+available if the heavyweight ML runtime is unavailable.
+
+Check the pipeline:
+
+```bash
+curl http://localhost:8000/api/v1/dashboard/pipeline-status
+docker compose logs -f etl-worker scraper
+```
+
 | Service | URL |
 |---------|-----|
 | API | http://localhost:8000 |
