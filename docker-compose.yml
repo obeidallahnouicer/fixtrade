@@ -51,11 +51,16 @@ services:
       - ./data:/app/data
       - ./models:/app/models
     depends_on:
-      - postgres
-      - redis
-      - ml-service
-      - auth-service
-      - genai-service
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      ml-service:
+        condition: service_healthy
+      auth-service:
+        condition: service_healthy
+      genai-service:
+        condition: service_healthy
     restart: unless-stopped
     healthcheck:
       test:
@@ -89,8 +94,10 @@ services:
       - ./data:/app/data
       - ./models:/app/models
     depends_on:
-      - postgres
-      - redis
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
     restart: unless-stopped
     command: ["uvicorn", "app.ml_service.main:app", "--host", "0.0.0.0", "--port", "8001", "--workers", "1"]
     healthcheck:
@@ -119,7 +126,8 @@ services:
     volumes:
       - .:/app:rw
     depends_on:
-      - postgres
+      postgres:
+        condition: service_healthy
     restart: unless-stopped
     healthcheck:
       test:
@@ -146,7 +154,8 @@ services:
     volumes:
       - .:/app:rw
     depends_on:
-      - redis
+      redis:
+        condition: service_healthy
     restart: unless-stopped
     healthcheck:
       test:
@@ -177,25 +186,57 @@ services:
     env_file:
       - .env
     environment:
-      - SCRAPING_POSTGRES_DSN=${SCRAPING_POSTGRES_DSN}
+      - POSTGRES_HOST=postgres
+      - POSTGRES_PORT=5432
+      - POSTGRES_DB=fixtrade
+      - POSTGRES_USER=fixtrade
+      - POSTGRES_PASSWORD=fixtrade
+      - DATABASE_URL=postgresql://fixtrade:fixtrade@postgres:5432/fixtrade
+      - SCRAPING_POSTGRES_DSN=postgresql://fixtrade:fixtrade@postgres:5432/fixtrade
       - SCRAPER_USER_AGENT=fixtrade-etl-worker/1.0
+      - PIPELINE_INTERVAL_SECONDS=300
+      - PIPELINE_RETRAIN_INTERVAL_SECONDS=604800
+      - PIPELINE_SYMBOLS=BIAT,SFBT,BT
+      - PIPELINE_ENABLE_ML=true
     volumes:
       - .:/app:rw
       - ./data:/app/data
+      - ./models:/app/models
     depends_on:
-      - postgres
-    command: ["python", "scripts/load_fallback_articles.py"]
-    restart: "no"
+      postgres:
+        condition: service_healthy
+    command: ["python", "scripts/automation_worker.py"]
+    restart: unless-stopped
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "python",
+          "-c",
+          "import os,psycopg2; c=psycopg2.connect(os.environ['DATABASE_URL']); q=c.cursor(); q.execute(\"SELECT EXISTS (SELECT 1 FROM pipeline_runs WHERE job_name='automation_cycle' AND status='completed' AND started_at > NOW() - INTERVAL '20 minutes')\"); raise SystemExit(0 if q.fetchone()[0] else 1)",
+        ]
+      interval: 60s
+      timeout: 10s
+      retries: 5
+      start_period: 10m
 
   scraper:
     build:
       context: .
       dockerfile: docker/scraper.Dockerfile
     depends_on:
-      - postgres
+      postgres:
+        condition: service_healthy
     env_file: .env
     environment:
-      SCRAPING_POSTGRES_DSN: ${SCRAPING_POSTGRES_DSN}
+      POSTGRES_HOST: postgres
+      POSTGRES_PORT: 5432
+      POSTGRES_DB: fixtrade
+      POSTGRES_USER: fixtrade
+      POSTGRES_PASSWORD: fixtrade
+      SCRAPING_POSTGRES_DSN: postgresql://fixtrade:fixtrade@postgres:5432/fixtrade
+      SCRAPING_FALLBACK_PATH: /app/data/scraped_fallback.jsonl
+      SCRAPER_INTERVAL_SECONDS: 3600
     volumes:
       - .:/app:rw
       - ./data:/app/data
@@ -208,13 +249,7 @@ services:
           "CMD",
           "python",
           "-c",
-          "import os,sys,time; p='data/last_scrape.txt';
-try:
-    if not os.path.exists(p): raise SystemExit(1)
-    t=time.time()-float(open(p).read().strip());
-    sys.exit(0 if t<86400 else 1)
-except Exception:
-    raise SystemExit(1)",
+          "import os,sys,time; p='data/last_scrape.txt'; sys.exit(0 if os.path.exists(p) and time.time()-float(open(p).read().strip())<86400 else 1)",
         ]
       interval: 60s
       timeout: 5s
