@@ -1,0 +1,104 @@
+{
+  "generated_at": "2026-06-26",
+  "pipeline_runs": [
+    "2026-06-25T23:07:37Z — BIAT uniquement (training_biat_cv.log)",
+    "2026-06-26T00:54:57Z — 37 titres BVMT (training_all_tickers.log)"
+  ],
+  "dataset": {
+    "silver_rows": 920139,
+    "tickers_trained": 37,
+    "min_rows_threshold": 2400,
+    "date_range": "2016–2025"
+  },
+  "environment": {
+    "gpu": "NVIDIA GeForce RTX 4060",
+    "docker_image": "docker/ml_service.Dockerfile",
+    "python": "3.11"
+  },
+  "lstm_fix": {
+    "fixed": true,
+    "commit_date": "2026-06-26",
+    "fix": "np.nan_to_num after MinMaxScaler + safe val_loss accumulation with n_val_batches counter",
+    "file": "prediction/models/lstm.py"
+  },
+  "global_averages": {
+    "XGBoost": {
+      "mae_tnd": 0.5095,
+      "rmse_tnd": 0.6608,
+      "dir_acc_pct": 36.29,
+      "r2": 0.2581,
+      "r2_positive_tickers": 25,
+      "r2_positive_pct": 67.6
+    },
+    "LSTM": {
+      "mae_tnd": 0.6486,
+      "rmse_tnd": 0.7843,
+      "dir_acc_pct": 36.70,
+      "r2": -0.3241,
+      "r2_positive_tickers": 24,
+      "r2_positive_pct": 64.9
+    },
+    "Prophet": {
+      "mae_tnd": 4.8452,
+      "rmse_tnd": 5.0134,
+      "dir_acc_pct": 36.69,
+      "r2": -319.03,
+      "note": "Inadapte au contexte BVMT"
+    },
+    "LiquidityXGB": {
+      "accuracy_pct_mean": 57.46,
+      "accuracy_pct_max": 92.84,
+      "accuracy_pct_max_ticker": "CARTHAGE CEMENT",
+      "accuracy_pct_min": 36.61,
+      "accuracy_pct_min_ticker": "TUNISAIR",
+      "tickers_above_random_threshold": 36
+    }
+  },
+  "best_xgboost_tickers": [
+    {"ticker": "SOTETEL",          "r2": 0.9718, "mae_tnd": 0.0934},
+    {"ticker": "ATB",              "r2": 0.9620, "mae_tnd": 0.0419},
+    {"ticker": "CARTHAGE CEMENT",  "r2": 0.9577, "mae_tnd": 0.0220},
+    {"ticker": "BNA",              "r2": 0.9481, "mae_tnd": 0.0998},
+    {"ticker": "ONE TECH HOLDING", "r2": 0.9410, "mae_tnd": 0.0787},
+    {"ticker": "TELNET HOLDING",   "r2": 0.9076, "mae_tnd": 0.1006},
+    {"ticker": "UIB",              "r2": 0.9042, "mae_tnd": 0.3270}
+  ],
+  "worst_xgboost_tickers": [
+    {"ticker": "ATL",      "r2": -2.456,  "reason": "forte volatilite, sauts de prix"},
+    {"ticker": "ARTES",    "r2": -1.402,  "reason": "faible liquidite"},
+    {"ticker": "TPR",      "r2": -1.432,  "reason": "ruptures structurelles"},
+    {"ticker": "TUNISAIR", "r2": -1.142,  "reason": "pression financiere durable"},
+    {"ticker": "SOTUVER",  "r2": -0.837,  "reason": "illiquidite episodique"},
+    {"ticker": "SOMOCER",  "r2": -0.803,  "reason": "prix tres bas < 0.60 TND"}
+  ],
+  "ensemble_weights_example_biat_post_fix": {
+    "XGBoost": 0.73,
+    "LSTM": 0.24,
+    "Prophet": 0.03,
+    "method": "inverse RMSE normalization"
+  },
+  "feature_importance_pattern": {
+    "top_3": ["cloture", "plus_haut", "plus_bas"],
+    "top_5": ["cloture", "plus_haut", "plus_bas", "close_lag_1", "close_lag_2"],
+    "top_3_coverage_pct": 84.5,
+    "note": "Constant across all 37 tickers"
+  },
+  "api_endpoints": {
+    "ml_service_port": 8001,
+    "dashboard_bff_port": 8000
+  },
+  "artifacts": {
+    "metrics_json_full": "logs/metrics_all_tickers.json",
+    "training_log_multiticker": "logs/training_all_tickers.log",
+    "training_log_biat": "logs/training_biat_cv.log",
+    "figures": [
+      "docs/thesis/assets/ml/xgboost_mae_all_tickers.png",
+      "docs/thesis/assets/ml/xgboost_rmse_all_tickers.png",
+      "docs/thesis/assets/ml/xgboost_r2_all_tickers.png",
+      "docs/thesis/assets/ml/directional_accuracy_all_tickers.png",
+      "docs/thesis/assets/ml/liquidity_accuracy_all_tickers.png",
+      "docs/thesis/assets/ml/xgboost_heatmap_all_tickers.png",
+      "docs/thesis/assets/ml/model_comparison_all_tickers_avg.png"
+    ]
+  }
+}

@@ -34,7 +34,9 @@ try:
     env_file = project_root / ".env"
     
     if env_file.exists():
-        load_dotenv(env_file, override=True)
+        # Docker Compose and explicit shell variables must win over local
+        # developer defaults from .env.
+        load_dotenv(env_file, override=False)
         # Verify DATABASE_URL is loaded
         if os.getenv("DATABASE_URL"):
             print(f"✓ Loaded environment from {env_file}")

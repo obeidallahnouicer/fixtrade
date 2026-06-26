@@ -45,7 +45,16 @@ services:
       - DATABASE_URL=postgresql://fixtrade:fixtrade@postgres:5432/fixtrade
       - REDIS_URL=redis://redis:6379/0
       - ML_SERVICE_URL=http://ml-service:8001
+      - LM_STUDIO_BASE_URL=http://host.docker.internal:1234/v1
+      - LM_STUDIO_MODEL=auto
+      - LM_STUDIO_TIMEOUT_SECONDS=120
+      - OPENROUTER_MODEL=meta-llama/llama-3.3-70b-instruct:free
+      - OPENROUTER_TIMEOUT_SECONDS=30
+      - OPENROUTER_SITE_URL=http://localhost:3000
+      - PORTFOLIO_RISK_FREE_RATE=0.07
       - AUTH_SECRET_KEY=dev-secret-key-change-in-production
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     volumes:
       - .:/app:rw
       - ./data:/app/data
@@ -78,6 +87,7 @@ services:
     build:
       context: .
       dockerfile: docker/ml_service.Dockerfile
+    gpus: all
     ports:
       - "8001:8001"
     env_file:
@@ -89,6 +99,8 @@ services:
       - DATABASE_URL=postgresql://fixtrade:fixtrade@postgres:5432/fixtrade
       - REDIS_URL=redis://redis:6379/0
       - AUTH_SECRET_KEY=dev-secret-key-change-in-production
+      - NVIDIA_VISIBLE_DEVICES=all
+      - NVIDIA_DRIVER_CAPABILITIES=compute,utility
     volumes:
       - .:/app:rw
       - ./data:/app/data

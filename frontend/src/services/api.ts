@@ -21,7 +21,13 @@ async function apiFetch(path: string, options: RequestInit = {}, includeAuth = f
   });
 
   if (!response.ok) {
-    const body = await response.json().catch(() => null);
+    const responseText = await response.text();
+    let body: any = null;
+    try {
+      body = responseText ? JSON.parse(responseText) : null;
+    } catch {
+      body = null;
+    }
     const detail = body?.detail;
     const validationMessage = Array.isArray(detail)
       ? detail
@@ -32,7 +38,17 @@ async function apiFetch(path: string, options: RequestInit = {}, includeAuth = f
           .filter(Boolean)
           .join(". ")
       : null;
-    const message = body?.error || body?.message || validationMessage || detail || "Request failed";
+    const proxyMessage =
+      response.status === 504
+        ? "Le calcul est terminé côté serveur, mais le proxy a expiré en attendant l'IA locale."
+        : null;
+    const message =
+      body?.error ||
+      body?.message ||
+      validationMessage ||
+      detail ||
+      proxyMessage ||
+      `Request failed (${response.status})`;
     throw new Error(message);
   }
 
@@ -85,6 +101,13 @@ export interface AuthResponse {
 
 export interface DashboardBootstrapResponse {
   symbol: string;
+  current_snapshot: {
+    date: string;
+    close: string;
+    previous_close: string;
+    volume: number;
+    average_volume: number;
+  } | null;
   historical_prices: Array<{
     date: string;
     close: string;
@@ -120,6 +143,21 @@ export interface DashboardBootstrapResponse {
   warnings: string[];
 }
 
+export interface MarketSnapshotResponse {
+  symbol: string;
+  date: string;
+  close: string;
+  previous_close: string;
+  change: string;
+  change_percent: string;
+  volume: number;
+  average_volume: number;
+  sentiment_score: string;
+  recommendation: "buy" | "sell" | "hold" | null;
+  recommendation_confidence: string;
+  anomaly_count: number;
+}
+
 export interface LoginPayload {
   email: string;
   password: string;
@@ -151,4 +189,67 @@ export async function fetchCurrentUser(): Promise<AuthUser> {
 
 export async function fetchDashboardBootstrap(symbol: string): Promise<DashboardBootstrapResponse> {
   return apiFetch(`/dashboard/bootstrap?symbol=${encodeURIComponent(symbol)}`);
+}
+
+export async function fetchMarketUniverse(limit = 60): Promise<MarketSnapshotResponse[]> {
+  const response = await apiFetch(`/dashboard/markets?limit=${limit}`);
+  return response.markets || [];
+}
+
+export type PortfolioRiskProfile = "conservative" | "moderate" | "aggressive";
+
+export interface PortfolioOptimizationResponse {
+  risk_profile: PortfolioRiskProfile;
+  company_count: number;
+  investment_amount: number;
+  assets: Array<{
+    symbol: string;
+    latest_price: number;
+    weight: number;
+    allocation_amount: number;
+    shares: number;
+    invested_amount: number;
+    beta: number;
+    covariance_with_market: number;
+    volatility: number;
+    capm_return: number;
+  }>;
+  metrics: {
+    expected_return: number;
+    volatility: number;
+    variance: number;
+    beta: number;
+    market_return: number;
+    risk_free_rate: number;
+    invested_amount: number;
+    cash_remaining: number;
+  };
+  efficient_frontier: Array<{
+    expected_return: number;
+    volatility: number;
+    is_pvm: boolean;
+  }>;
+  methodology: {
+    observations: number;
+    trading_days_per_year: number;
+    market_variance: number;
+    market_risk_premium: number;
+    minimum_weight: number;
+    maximum_weight: number;
+  };
+  explanation: string;
+  explanation_source: "openrouter" | "lm_studio" | "multi_agent" | "fallback";
+  generated_at: string;
+  warnings: string[];
+}
+
+export async function optimizePortfolio(payload: {
+  risk_profile: PortfolioRiskProfile;
+  company_count: number;
+  investment_amount: number;
+}): Promise<PortfolioOptimizationResponse> {
+  return apiFetch("/portfolio/optimize", {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
 }

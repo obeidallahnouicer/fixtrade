@@ -7,6 +7,10 @@ export interface StockSnapshot {
   volume: number;
   avgVolume: number;
   sentimentScore: number;
+  recommendation?: "BUY" | "SELL" | "HOLD";
+  recommendationConfidence?: number;
+  anomalyCount?: number;
+  marketDate?: string;
 }
 
 export interface PricePoint {

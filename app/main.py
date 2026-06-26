@@ -24,6 +24,7 @@ from app.core.db import create_tables
 from app.interfaces.auth.router import router as auth_router
 from app.interfaces.dashboard.router import router as dashboard_router
 from app.interfaces.health import router as health_router
+from app.interfaces.portfolio.router import router as portfolio_optimizer_router
 from app.interfaces.trading.router import router as trading_router
 from app.shared.errors.handlers import register_error_handlers
 from app.shared.logging import configure_logging
@@ -158,6 +159,7 @@ def create_app() -> FastAPI:
     app.include_router(health_router, prefix="/api/v1")
     app.include_router(auth_router, prefix="/api/v1")
     app.include_router(dashboard_router, prefix="/api/v1")
+    app.include_router(portfolio_optimizer_router, prefix="/api/v1")
     app.include_router(trading_router, prefix="/api/v1")
     if ai_router is not None:
         app.include_router(ai_router, prefix="/api/v1")

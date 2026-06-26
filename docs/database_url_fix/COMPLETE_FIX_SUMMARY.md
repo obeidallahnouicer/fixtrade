@@ -183,7 +183,7 @@ POSTGRES_DB=fixtrade
 POSTGRES_PORT=5432
 REDIS_HOST=redis
 REDIS_PORT=6379
-OPENROUTER_API_KEY=sk-or-v1-...
+OPENROUTER_API_KEY=your_openrouter_api_key_here
 DEFAULT_LLM_PROVIDER=openrouter
 DEFAULT_LLM_MODEL=anthropic/claude-3.5-sonnet
 ... (and all others from .env)

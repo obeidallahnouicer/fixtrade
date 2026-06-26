@@ -166,7 +166,7 @@ POSTGRES_USER=fixtrade
 POSTGRES_PASSWORD=fixtrade
 POSTGRES_DB=fixtrade
 POSTGRES_PORT=5432
-OPENROUTER_API_KEY=sk-or-v1-...
+OPENROUTER_API_KEY=your_openrouter_api_key_here
 DEFAULT_LLM_PROVIDER=openrouter
 ... (and all other settings)
 ```

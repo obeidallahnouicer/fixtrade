@@ -1,5 +1,5 @@
 import React from "react";
-import { Bot, Target, Clock, ArrowUpRight, ArrowDownRight } from "lucide-react";
+import { Bot, Target, Clock, ArrowUpRight, ArrowDownRight, Minus } from "lucide-react";
 import { Badge } from "@/components/ui/Badge";
 import { formatPercentage } from "@/lib/utils";
 import { AIRecommendation } from "@/types/trading";
@@ -11,6 +11,8 @@ interface AICardProps {
 
 export function AICard({ recommendation }: AICardProps) {
   const isBuy = recommendation.action === "BUY";
+  const forecastIsPositive = recommendation.predictedReturn > 0.005;
+  const forecastIsNegative = recommendation.predictedReturn < -0.005;
   
   return (
     <motion.div 
@@ -42,8 +44,20 @@ export function AICard({ recommendation }: AICardProps) {
           <span className="text-xs text-zinc-500 uppercase tracking-wide flex items-center gap-1.5">
             <Clock size={12} /> {recommendation.horizonDays}-Day Forecast
           </span>
-          <span className="font-mono text-xl text-emerald-400 flex items-center">
-            {isBuy ? <ArrowUpRight size={18} className="mr-1" /> : <ArrowDownRight size={18} className="mr-1 text-red-400" />}
+          <span className={`font-mono text-xl flex items-center ${
+            forecastIsPositive
+              ? "text-emerald-400"
+              : forecastIsNegative
+                ? "text-red-400"
+                : "text-zinc-300"
+          }`}>
+            {forecastIsPositive ? (
+              <ArrowUpRight size={18} className="mr-1" />
+            ) : forecastIsNegative ? (
+              <ArrowDownRight size={18} className="mr-1" />
+            ) : (
+              <Minus size={18} className="mr-1" />
+            )}
             {formatPercentage(recommendation.predictedReturn)}
           </span>
         </div>

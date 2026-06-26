@@ -7,6 +7,28 @@ if (-not (Test-Path $LogDir)) { New-Item -ItemType Directory -Path $LogDir | Out
 
 $services = @('postgres','redis','auth-service','ml-service','api','genai-service','scraper','etl-worker')
 Write-Output "Starting services: $($services -join ', ')" | Tee-Object -FilePath "$LogDir\startup.log"
+
+$lms = Get-Command lms -ErrorAction SilentlyContinue
+if ($lms) {
+    $lmStatus = & lms server status 2>&1 | Out-String
+    if ($lmStatus -notmatch 'running') {
+        & lms server start 2>&1 | Tee-Object -FilePath "$LogDir\startup.log" -Append
+    }
+    try {
+        $models = Invoke-RestMethod -Uri 'http://127.0.0.1:1234/v1/models' -TimeoutSec 10
+        $localLlama = $models.data.id | Where-Object { $_ -match 'llama' } | Select-Object -First 1
+        if ($localLlama) {
+            Write-Output "LM Studio fallback is ready with $localLlama" | Tee-Object -FilePath "$LogDir\startup.log" -Append
+        } else {
+            Write-Output 'LM Studio is running; no local Llama model is available yet.' | Tee-Object -FilePath "$LogDir\startup.log" -Append
+        }
+    } catch {
+        Write-Output 'LM Studio was found but its API did not become ready on port 1234.' | Tee-Object -FilePath "$LogDir\startup.log" -Append
+    }
+} else {
+    Write-Output 'LM Studio CLI not found; portfolio explanations will use fallback mode.' | Tee-Object -FilePath "$LogDir\startup.log" -Append
+}
+
 docker compose up -d --build $services 2>&1 | Tee-Object -FilePath "$LogDir\startup.log" -Append
 
 function Wait-ForUrl {
@@ -32,12 +54,7 @@ Wait-ForUrl 'http://127.0.0.1:8001/api/v1/health' 'ml-service' 120 | Out-Null
 Wait-ForUrl 'http://127.0.0.1:8002/api/v1/health' 'auth-service' 120 | Out-Null
 Wait-ForUrl 'http://127.0.0.1:8003/api/v1/health' 'genai-service' 120 | Out-Null
 
-Write-Output "Running ETL loader inside etl-worker (if available)" | Tee-Object -FilePath "$LogDir\startup.log" -Append
-try {
-    docker compose exec -T etl-worker python scripts/load_fallback_articles.py 2>&1 | Tee-Object -FilePath "$LogDir\etl_run.log"
-} catch {
-    Write-Output "ETL run failed: $_" | Tee-Object -FilePath "$LogDir\startup.log" -Append
-}
+Write-Output "Automation worker is running ETL, enrichment, predictions, and anomalies in the background." | Tee-Object -FilePath "$LogDir\startup.log" -Append
 
 if (Test-Path './scraped_fallback.jsonl') {
     Copy-Item './scraped_fallback.jsonl' -Destination './data/' -Force

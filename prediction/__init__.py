@@ -29,15 +29,9 @@ Public API
 """
 
 # ── Public façade ──────────────────────────────────────────────────
+from importlib import import_module
+
 from prediction.config import PredictionConfig, config
-from prediction.pipeline import ETLPipeline
-from prediction.training import TrainingPipeline
-from prediction.inference import (
-    PredictionService,
-    PredictionResult,
-    VolumeResult,
-    LiquidityResult,
-)
 
 __all__ = [
     "PredictionConfig",
@@ -49,3 +43,19 @@ __all__ = [
     "VolumeResult",
     "LiquidityResult",
 ]
+
+
+def __getattr__(name: str):
+    """Lazy-load heavyweight ETL and ML classes on first use."""
+    exports = {
+        "ETLPipeline": ("prediction.pipeline", "ETLPipeline"),
+        "TrainingPipeline": ("prediction.training", "TrainingPipeline"),
+        "PredictionService": ("prediction.inference", "PredictionService"),
+        "PredictionResult": ("prediction.inference", "PredictionResult"),
+        "VolumeResult": ("prediction.inference", "VolumeResult"),
+        "LiquidityResult": ("prediction.inference", "LiquidityResult"),
+    }
+    if name not in exports:
+        raise AttributeError(name)
+    module_name, attribute_name = exports[name]
+    return getattr(import_module(module_name), attribute_name)

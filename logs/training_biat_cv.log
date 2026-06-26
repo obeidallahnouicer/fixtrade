@@ -1,0 +1,92 @@
+ Container fixtrade-ml-service-run-a442c07b3b07 Creating 
+ Container fixtrade-ml-service-run-a442c07b3b07 Created 
+✓ Loaded environment from /app/.env
+2026-06-25 23:07:37,703 [INFO] matplotlib.font_manager — generated new fontManager
+2026-06-25 23:07:38,749 [INFO] prediction.db_sink — Connected to PostgreSQL postgres:5432/fixtrade
+2026-06-25 23:07:38,754 [INFO] prediction.db_sink — Database tables verified/created.
+2026-06-25 23:07:57,536 [INFO] prediction.cli — Training on symbol BIAT — 2502 rows.
+2026-06-25 23:07:57,543 [WARNING] prediction.training — MLflow setup failed. Tracking disabled.
+2026-06-25 23:07:57,547 [INFO] prediction.db_sink — Connected to PostgreSQL postgres:5432/fixtrade
+2026-06-25 23:07:57,550 [INFO] prediction.db_sink — Database tables verified/created.
+2026-06-25 23:07:57,550 [INFO] prediction.training — ============================================================
+2026-06-25 23:07:57,550 [INFO] prediction.training — Training CV split: split_1
+2026-06-25 23:07:57,551 [INFO] prediction.training — ============================================================
+2026-06-25 23:07:57,570 [INFO] prediction.etl.transform.silver_to_gold — Gold splits — Train: 1746, Val: 252, Test: 494
+2026-06-25 23:07:57,573 [INFO] prediction.training — Training LSTM on split_1...
+2026-06-25 23:07:57,654 [INFO] prediction.models.lstm — [LSTM] Training device: cuda (NVIDIA GeForce RTX 4060)
+2026-06-25 23:07:59,830 [INFO] prediction.models.lstm — [LSTM] Early stopping at epoch 8 (val_loss=nan)
+2026-06-25 23:07:59,830 [INFO] prediction.models.lstm — [LSTM] Training complete.
+2026-06-25 23:07:59,834 [INFO] prediction.models.base — [LSTM] Evaluation: MAE=0.0000 | RMSE=0.0000 | MAPE=0.00% | DirAcc=0.00% | R²=0.0000
+2026-06-25 23:07:59,834 [INFO] prediction.training — Training XGBoost on split_1...
+2026-06-25 23:08:01,384 [INFO] prediction.models.xgboost_model — [XGBoost] Training complete. Top 5 features: ['plus_haut', 'plus_bas', 'cloture', 'close_lag_1', 'close_lag_2']
+2026-06-25 23:08:01,386 [INFO] prediction.models.base — [XGBoost] Evaluation: MAE=0.7823 | RMSE=1.1798 | MAPE=0.85% | DirAcc=49.80% | R²=0.7809
+2026-06-25 23:08:01,387 [INFO] prediction.training — Training Prophet on split_1...
+2026-06-25 23:08:02,430 [INFO] prediction.models.prophet_model — [Prophet] Training complete on 1746 rows.
+2026-06-25 23:08:02,476 [INFO] prediction.models.base — [Prophet] Evaluation: MAE=7.0467 | RMSE=7.9809 | MAPE=7.57% | DirAcc=43.82% | R²=-9.0242
+2026-06-25 23:08:02,476 [INFO] prediction.training — ============================================================
+2026-06-25 23:08:02,476 [INFO] prediction.training — Training CV split: split_2
+2026-06-25 23:08:02,477 [INFO] prediction.training — ============================================================
+2026-06-25 23:08:02,486 [INFO] prediction.etl.transform.silver_to_gold — Gold splits — Train: 1998, Val: 251, Test: 243
+2026-06-25 23:08:02,490 [INFO] prediction.training — Training LSTM on split_2...
+2026-06-25 23:08:02,507 [INFO] prediction.models.lstm — [LSTM] Training device: cuda (NVIDIA GeForce RTX 4060)
+2026-06-25 23:08:02,687 [INFO] prediction.models.lstm — [LSTM] Early stopping at epoch 8 (val_loss=nan)
+2026-06-25 23:08:02,687 [INFO] prediction.models.lstm — [LSTM] Training complete.
+2026-06-25 23:08:02,691 [INFO] prediction.models.base — [LSTM] Evaluation: MAE=0.0000 | RMSE=0.0000 | MAPE=0.00% | DirAcc=0.00% | R²=0.0000
+2026-06-25 23:08:02,691 [INFO] prediction.training — Training XGBoost on split_2...
+2026-06-25 23:08:04,277 [INFO] prediction.models.xgboost_model — [XGBoost] Training complete. Top 5 features: ['plus_bas', 'cloture', 'plus_haut', 'close_lag_1', 'close_lag_3']
+2026-06-25 23:08:04,279 [INFO] prediction.models.base — [XGBoost] Evaluation: MAE=0.9608 | RMSE=1.5404 | MAPE=0.97% | DirAcc=41.60% | R²=0.9304
+2026-06-25 23:08:04,279 [INFO] prediction.training — Training Prophet on split_2...
+2026-06-25 23:08:05,319 [INFO] prediction.models.prophet_model — [Prophet] Training complete on 1998 rows.
+2026-06-25 23:08:05,359 [INFO] prediction.models.base — [Prophet] Evaluation: MAE=11.4016 | RMSE=11.7899 | MAPE=11.67% | DirAcc=43.20% | R²=-3.0780
+2026-06-25 23:08:05,359 [INFO] prediction.training — ============================================================
+2026-06-25 23:08:05,359 [INFO] prediction.training — Training CV split: split_3
+2026-06-25 23:08:05,359 [INFO] prediction.training — ============================================================
+2026-06-25 23:08:05,373 [INFO] prediction.etl.transform.silver_to_gold — Gold splits — Train: 2249, Val: 243, Test: 0
+2026-06-25 23:08:05,380 [INFO] prediction.training — Training LSTM on split_3...
+2026-06-25 23:08:05,399 [INFO] prediction.models.lstm — [LSTM] Training device: cuda (NVIDIA GeForce RTX 4060)
+2026-06-25 23:08:05,767 [INFO] prediction.models.lstm — [LSTM] Early stopping at epoch 8 (val_loss=nan)
+2026-06-25 23:08:05,768 [INFO] prediction.models.lstm — [LSTM] Training complete.
+2026-06-25 23:08:05,774 [INFO] prediction.models.base — [LSTM] Evaluation: MAE=0.0000 | RMSE=0.0000 | MAPE=0.00% | DirAcc=0.00% | R²=0.0000
+2026-06-25 23:08:05,774 [INFO] prediction.training — Training XGBoost on split_3...
+2026-06-25 23:08:07,496 [INFO] prediction.models.xgboost_model — [XGBoost] Training complete. Top 5 features: ['plus_bas', 'cloture', 'plus_haut', 'close_lag_1', 'close_lag_2']
+2026-06-25 23:08:07,499 [INFO] prediction.models.base — [XGBoost] Evaluation: MAE=0.7167 | RMSE=1.1604 | MAPE=0.71% | DirAcc=40.08% | R²=0.9524
+2026-06-25 23:08:07,499 [INFO] prediction.training — Training Prophet on split_3...
+2026-06-25 23:08:08,476 [INFO] prediction.models.prophet_model — [Prophet] Training complete on 2249 rows.
+2026-06-25 23:08:08,519 [INFO] prediction.models.base — [Prophet] Evaluation: MAE=13.8140 | RMSE=14.3466 | MAPE=13.83% | DirAcc=48.35% | R²=-6.2791
+2026-06-25 23:08:08,519 [INFO] prediction.training — ============================================================
+2026-06-25 23:08:08,519 [INFO] prediction.training — TRAINING SUMMARY (Averaged across CV splits)
+2026-06-25 23:08:08,519 [INFO] prediction.training — ============================================================
+2026-06-25 23:08:08,519 [INFO] prediction.training — [LSTM] MAE=0.0000 | RMSE=0.0000 | MAPE=0.00% | DirAcc=0.00% | R²=0.0000
+2026-06-25 23:08:08,519 [INFO] prediction.training — [XGBoost] MAE=0.8199 | RMSE=1.2935 | MAPE=0.84% | DirAcc=43.83% | R²=0.8879
+2026-06-25 23:08:08,519 [INFO] prediction.training — [Prophet] MAE=10.7541 | RMSE=11.3725 | MAPE=11.02% | DirAcc=45.12% | R²=-6.1271
+2026-06-25 23:08:08,519 [INFO] prediction.training — ============================================================
+2026-06-25 23:08:08,519 [INFO] prediction.training — VOLUME PREDICTION TRAINING
+2026-06-25 23:08:08,519 [INFO] prediction.training — ============================================================
+2026-06-25 23:08:08,529 [INFO] prediction.etl.transform.silver_to_gold — Gold splits — Train: 1746, Val: 252, Test: 494
+2026-06-25 23:08:09,303 [INFO] prediction.models.volume_predictor — [VolumeXGB] Training complete.
+2026-06-25 23:08:09,306 [INFO] prediction.models.base — [VolumeXGB] Evaluation: MAE=5813.1660 | RMSE=41908.0396 | MAPE=231.27% | DirAcc=51.00% | R²=-0.0109
+2026-06-25 23:08:09,315 [INFO] prediction.etl.transform.silver_to_gold — Gold splits — Train: 1998, Val: 251, Test: 243
+2026-06-25 23:08:10,281 [INFO] prediction.models.volume_predictor — [VolumeXGB] Training complete.
+2026-06-25 23:08:10,284 [INFO] prediction.models.base — [VolumeXGB] Evaluation: MAE=4085.3210 | RMSE=15275.1051 | MAPE=183.36% | DirAcc=44.40% | R²=-0.0467
+2026-06-25 23:08:10,294 [INFO] prediction.etl.transform.silver_to_gold — Gold splits — Train: 2249, Val: 243, Test: 0
+2026-06-25 23:08:11,096 [INFO] prediction.models.volume_predictor — [VolumeXGB] Training complete.
+2026-06-25 23:08:11,098 [INFO] prediction.models.base — [VolumeXGB] Evaluation: MAE=2101.4194 | RMSE=4205.0884 | MAPE=318.19% | DirAcc=45.04% | R²=-0.0765
+2026-06-25 23:08:11,099 [INFO] prediction.training — [VolumeXGB] Avg CV: MAE=3999.9688 | RMSE=20462.7444 | MAPE=244.28% | DirAcc=46.81% | R²=-0.0447
+2026-06-25 23:08:11,099 [INFO] prediction.training — ============================================================
+2026-06-25 23:08:11,099 [INFO] prediction.training — LIQUIDITY CLASSIFICATION TRAINING
+2026-06-25 23:08:11,099 [INFO] prediction.training — ============================================================
+2026-06-25 23:08:11,110 [INFO] prediction.etl.transform.silver_to_gold — Gold splits — Train: 1746, Val: 252, Test: 494
+2026-06-25 23:08:12,093 [INFO] prediction.models.liquidity_classifier — [LiquidityXGB] Training complete. Class distribution: {'low': 823, 'medium': 847, 'high': 76}
+2026-06-25 23:08:12,097 [INFO] prediction.models.liquidity_classifier — [LiquidityXGB] Accuracy=69.44% (252 samples)
+2026-06-25 23:08:12,110 [INFO] prediction.etl.transform.silver_to_gold — Gold splits — Train: 1998, Val: 251, Test: 243
+2026-06-25 23:08:13,091 [INFO] prediction.models.liquidity_classifier — [LiquidityXGB] Training complete. Class distribution: {'low': 886, 'medium': 1019, 'high': 93}
+2026-06-25 23:08:13,094 [INFO] prediction.models.liquidity_classifier — [LiquidityXGB] Accuracy=62.15% (251 samples)
+2026-06-25 23:08:13,103 [INFO] prediction.etl.transform.silver_to_gold — Gold splits — Train: 2249, Val: 243, Test: 0
+2026-06-25 23:08:14,141 [INFO] prediction.models.liquidity_classifier — [LiquidityXGB] Training complete. Class distribution: {'low': 947, 'medium': 1187, 'high': 115}
+2026-06-25 23:08:14,144 [INFO] prediction.models.liquidity_classifier — [LiquidityXGB] Accuracy=70.37% (243 samples)
+2026-06-25 23:08:14,145 [INFO] prediction.training — [LiquidityXGB] Avg CV Accuracy: 67.32%
+2026-06-25 23:08:14,147 [INFO] prediction.cli — [LSTM] MAE=0.0000 | RMSE=0.0000 | MAPE=0.00% | DirAcc=0.00% | R²=0.0000
+2026-06-25 23:08:14,147 [INFO] prediction.cli — [XGBoost] MAE=0.8199 | RMSE=1.2935 | MAPE=0.84% | DirAcc=43.83% | R²=0.8879
+2026-06-25 23:08:14,147 [INFO] prediction.cli — [Prophet] MAE=10.7541 | RMSE=11.3725 | MAPE=11.02% | DirAcc=45.12% | R²=-6.1271
+2026-06-25 23:08:14,147 [INFO] prediction.cli — [VolumeXGB] MAE=3999.9688 | RMSE=20462.7444 | MAPE=244.28% | DirAcc=46.81% | R²=-0.0447
+2026-06-25 23:08:14,147 [INFO] prediction.cli — [LiquidityXGB] MAE=0.0000 | RMSE=0.0000 | MAPE=0.00% | DirAcc=67.32% | R²=0.0000

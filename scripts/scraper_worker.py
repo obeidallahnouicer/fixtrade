@@ -13,6 +13,13 @@ import sys
 DATA_PATH = os.path.join(os.path.dirname(__file__), "..", "data")
 LAST_SCRAPE = os.path.join(DATA_PATH, "last_scrape.txt")
 SLEEP_SECONDS = int(os.environ.get("SCRAPER_INTERVAL_SECONDS", 3600))
+SPIDERS = [
+    value.strip()
+    for value in os.environ.get(
+        "SCRAPER_SPIDERS", "millim,ilboursa,tustex"
+    ).split(",")
+    if value.strip()
+]
 
 
 def write_timestamp():
@@ -23,13 +30,17 @@ def write_timestamp():
 
 def run_crawl():
     try:
-        print("Starting scrapy crawl...")
-        res = subprocess.run(["scrapy", "crawl", "millim"], check=False)
-        if res.returncode == 0:
-            print("Crawl succeeded, updating timestamp")
+        success = False
+        for spider in SPIDERS:
+            print(f"Starting scrapy crawl: {spider}")
+            res = subprocess.run(["scrapy", "crawl", spider], check=False)
+            if res.returncode == 0:
+                success = True
+            else:
+                print(f"Crawl {spider} failed with return code {res.returncode}")
+        if success:
+            print("At least one crawl succeeded, updating timestamp")
             write_timestamp()
-        else:
-            print(f"Crawl failed with return code {res.returncode}")
     except FileNotFoundError:
         print("scrapy executable not found in container", file=sys.stderr)
 

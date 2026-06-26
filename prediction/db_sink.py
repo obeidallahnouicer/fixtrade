@@ -18,6 +18,7 @@ All writes are idempotent (UPSERT / ON CONFLICT).
 """
 
 import logging
+import os
 from datetime import date, datetime, timezone
 from decimal import Decimal
 from typing import Any
@@ -63,6 +64,17 @@ class DatabaseSink:
             user=user, password=password,
         )
         self._conn: Any = None
+
+    @classmethod
+    def from_environment(cls) -> "DatabaseSink":
+        """Build a sink from the shared POSTGRES_* service variables."""
+        return cls(
+            host=os.getenv("POSTGRES_HOST", "localhost"),
+            port=int(os.getenv("POSTGRES_PORT", "5432")),
+            database=os.getenv("POSTGRES_DB", "fixtrade"),
+            user=os.getenv("POSTGRES_USER", "fixtrade"),
+            password=os.getenv("POSTGRES_PASSWORD", "fixtrade"),
+        )
 
     # ------------------------------------------------------------------
     # Connection management

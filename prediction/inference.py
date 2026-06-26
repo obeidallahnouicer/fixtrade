@@ -122,9 +122,10 @@ class PredictionService:
     ) -> None:
         self._cfg = cfg or config
         self._cache = cache or CacheClient(redis_url=self._cfg.redis.url)
-        self._ensemble: EnsemblePredictor | None = None
+        self._ensembles: dict[str, EnsemblePredictor] = {}
+        self._symbol_file_index: dict[str, list[Path]] | None = None
         self._models_dir = self._cfg.paths.models_dir
-        self._db = DatabaseSink()
+        self._db = DatabaseSink.from_environment()
 
     def predict(
         self,
@@ -161,7 +162,22 @@ class PredictionService:
             logger.warning("No features available for %s. Using fallback.", symbol)
             return self._fallback_prediction(symbol, horizon_days)
 
+        latest_observed_close: float | None = None
+        if "cloture" in features.columns:
+            try:
+                latest_observed_close = float(features["cloture"].iloc[-1])
+            except (TypeError, ValueError):
+                latest_observed_close = None
+
         # Strip metadata columns — keep only numeric feature columns
+        base_date = date.today()
+        if "seance" in features.columns:
+            latest_feature_date = pd.to_datetime(
+                features["seance"], errors="coerce"
+            ).max()
+            if pd.notna(latest_feature_date):
+                base_date = latest_feature_date.date()
+
         from prediction.etl.transform.silver_to_gold import SilverToGoldTransformer
         feature_cols = SilverToGoldTransformer.get_feature_columns(features)
         features = features[feature_cols].replace(
@@ -170,8 +186,6 @@ class PredictionService:
 
         # 4. Run inference
         results: list[PredictionResult] = []
-        base_date = date.today()
-
         for day_offset in range(1, horizon_days + 1):
             target_date = self._next_trading_day(base_date, day_offset)
 
@@ -212,6 +226,27 @@ class PredictionService:
                     confidence_score=0.0,
                 ))
 
+        if latest_observed_close and latest_observed_close > 0:
+            lower_bound = latest_observed_close * 0.65
+            upper_bound = latest_observed_close * 1.35
+            for result in results:
+                predicted = float(result.predicted_close)
+                if predicted < lower_bound or predicted > upper_bound:
+                    logger.warning(
+                        "Rejecting implausible %s forecast for %s: %.3f "
+                        "outside [%.3f, %.3f]",
+                        result.model_name,
+                        symbol,
+                        predicted,
+                        lower_bound,
+                        upper_bound,
+                    )
+                    result.model_name = "fallback"
+                    result.predicted_close = Decimal("0")
+                    result.confidence_lower = Decimal("0")
+                    result.confidence_upper = Decimal("0")
+                    result.confidence_score = 0.0
+
         # 5. Cache result
         self._cache.set_prediction(
             symbol, self._serialize_predictions(results), model
@@ -228,10 +263,12 @@ class PredictionService:
         Tries per-symbol models first (models/ensemble/{SYMBOL}/),
         then falls back to global models (models/ensemble/).
         """
-        if self._ensemble is not None and self._ensemble.is_fitted:
-            return self._ensemble
+        cache_key = (symbol or "__global__").upper()
+        cached_ensemble = self._ensembles.get(cache_key)
+        if cached_ensemble is not None and cached_ensemble.is_fitted:
+            return cached_ensemble
 
-        self._ensemble = EnsemblePredictor(
+        ensemble = EnsemblePredictor(
             models={
                 "LSTM": LSTMPredictor(),
                 "XGBoost": XGBoostPredictor(),
@@ -249,7 +286,7 @@ class PredictionService:
         for ensemble_path in candidates:
             if ensemble_path.exists() and (ensemble_path / "ensemble_weights.json").exists():
                 try:
-                    self._ensemble.load_model(ensemble_path)
+                    ensemble.load_model(ensemble_path)
                     logger.info("Ensemble model loaded from %s", ensemble_path)
                     loaded = True
                     break
@@ -263,7 +300,8 @@ class PredictionService:
                 symbol or "<SYMBOL>",
             )
 
-        return self._ensemble
+        self._ensembles[cache_key] = ensemble
+        return ensemble
 
     def _get_latest_features(self, symbol: str) -> pd.DataFrame | None:
         """Fetch latest features from cache or compute on-the-fly.
@@ -285,16 +323,24 @@ class PredictionService:
         try:
             import pyarrow.parquet as pq
 
-            matched_frames: list[pd.DataFrame] = []
-            for pf in sorted(silver_path.rglob("*.parquet")):
-                # Fast check: read only the libelle column to see if this
-                # partition contains data for the requested symbol
-                schema = pq.read_schema(pf)
-                if "libelle" in schema.names:
-                    tbl = pq.read_table(pf, columns=["libelle"])
-                    labels = tbl.column("libelle").to_pylist()
-                    if not any(str(lb).upper() == symbol.upper() for lb in labels):
+            if self._symbol_file_index is None:
+                self._symbol_file_index = {}
+                for pf in sorted(silver_path.rglob("*.parquet")):
+                    schema = pq.read_schema(pf)
+                    if "libelle" not in schema.names:
                         continue
+                    labels = {
+                        str(value).upper()
+                        for value in pq.read_table(
+                            pf, columns=["libelle"]
+                        ).column("libelle").to_pylist()
+                        if value is not None
+                    }
+                    for label in labels:
+                        self._symbol_file_index.setdefault(label, []).append(pf)
+
+            matched_frames: list[pd.DataFrame] = []
+            for pf in self._symbol_file_index.get(symbol.upper(), []):
                 # Full read for matching partition
                 df = pd.read_parquet(pf)
 
@@ -516,7 +562,7 @@ class PredictionService:
                     "horizon_days": 1,
                 }
                 for r in results
-                if r.model_name != "fallback"
+                if r.model_name != "fallback" and r.predicted_close > 0
             ]
             if rows:
                 model_name = results[0].model_name

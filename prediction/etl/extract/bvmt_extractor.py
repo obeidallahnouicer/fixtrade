@@ -125,7 +125,14 @@ class BVMTExtractor:
         if df.empty:
             return df
 
-        df["seance"] = pd.to_datetime(df["seance"]).dt.date
+        parsed_dates = pd.to_datetime(
+            df["seance"],
+            format="mixed",
+            dayfirst=True,
+            errors="coerce",
+        )
+        df = df.loc[parsed_dates.notna()].copy()
+        df["seance"] = parsed_dates.loc[parsed_dates.notna()].dt.date
         return df[df["seance"] > since].reset_index(drop=True)
 
     def save_to_bronze(self, df: pd.DataFrame) -> None:
@@ -138,7 +145,10 @@ class BVMTExtractor:
             return
 
         df = df.copy()
-        df["seance"] = pd.to_datetime(df["seance"])
+        df["seance"] = pd.to_datetime(
+            df["seance"], format="mixed", dayfirst=True, errors="coerce"
+        )
+        df = df.dropna(subset=["seance"])
         df["year"] = df["seance"].dt.year
         df["month"] = df["seance"].dt.month
 

@@ -20,7 +20,7 @@ def test_llm_workflow():
     api_key = os.getenv("OPENROUTER_API_KEY")
     if not api_key:
         print("❌ No OpenRouter API key found in .env")
-        print("   Add OPENROUTER_API_KEY=sk-or-v1-... to your .env file")
+        print("   Add OPENROUTER_API_KEY=your_openrouter_api_key_here to your .env file")
         return
     
     print(f"✅ OpenRouter API key loaded: {api_key[:25]}...")

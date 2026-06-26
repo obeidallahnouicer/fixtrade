@@ -7,6 +7,20 @@ mkdir -p "$LOGDIR"
 SERVICES=(postgres redis auth-service ml-service api genai-service scraper etl-worker)
 
 echo "Starting services: ${SERVICES[*]}" | tee "$LOGDIR/startup.log"
+
+if command -v lms >/dev/null 2>&1; then
+  if ! lms server status 2>&1 | grep -qi running; then
+    lms server start 2>&1 | tee -a "$LOGDIR/startup.log"
+  fi
+  if curl -sSf "http://127.0.0.1:1234/v1/models" | grep -qi "llama"; then
+    echo "LM Studio local Llama fallback is ready" | tee -a "$LOGDIR/startup.log"
+  else
+    echo "LM Studio is running; no local Llama model is available yet." | tee -a "$LOGDIR/startup.log"
+  fi
+else
+  echo "LM Studio CLI not found; portfolio explanations will use fallback mode." | tee -a "$LOGDIR/startup.log"
+fi
+
 docker compose up -d --build "${SERVICES[@]}" 2>&1 | tee -a "$LOGDIR/startup.log"
 
 wait_for() {
@@ -33,8 +47,7 @@ wait_for "http://127.0.0.1:8001/api/v1/health" "ml-service" 120 || true
 wait_for "http://127.0.0.1:8002/api/v1/health" "auth-service" 120 || true
 wait_for "http://127.0.0.1:8003/api/v1/health" "genai-service" 120 || true
 
-echo "Running ETL loader inside etl-worker (if available)" | tee -a "$LOGDIR/startup.log"
-docker compose exec -T etl-worker python scripts/load_fallback_articles.py 2>&1 | tee "$LOGDIR/etl_run.log" || echo "ETL run failed" | tee -a "$LOGDIR/startup.log"
+echo "Automation worker is running ETL, enrichment, predictions, and anomalies in the background." | tee -a "$LOGDIR/startup.log"
 
 echo "Copying scraped_fallback.jsonl to data/ for persistence if present" | tee -a "$LOGDIR/startup.log"
 if [ -f scraped_fallback.jsonl ]; then
