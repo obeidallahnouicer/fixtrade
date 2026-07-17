@@ -26,6 +26,7 @@ from app.interfaces.portfolio.schemas import (
 )
 
 logger = logging.getLogger(__name__)
+_groq_auth_rejected = False
 _openrouter_auth_rejected = False
 
 TRADING_DAYS = 250
@@ -321,6 +322,24 @@ def _portfolio_fact_sheet(response: PortfolioOptimizationResponse) -> str:
     )
 
 
+def _allowed_percentage_prompt(response: PortfolioOptimizationResponse) -> str:
+    ranked = sorted(response.assets, key=lambda asset: asset.weight, reverse=True)
+    values = [
+        response.metrics.expected_return,
+        response.metrics.volatility,
+        response.metrics.risk_free_rate,
+        response.methodology.market_risk_premium,
+        response.metrics.expected_return - response.metrics.risk_free_rate,
+        response.methodology.maximum_weight,
+        response.methodology.minimum_weight,
+        response.metrics.cash_remaining / response.investment_amount,
+        *[asset.weight for asset in response.assets],
+        sum(asset.weight for asset in ranked[:2]),
+    ]
+    formatted = sorted({f"{value:.2%}" for value in values})
+    return ", ".join(formatted)
+
+
 def _explanation_prompt(response: PortfolioOptimizationResponse) -> str:
     return (
         "Tu es le rédacteur final d'un comité quantitatif. Explique en français "
@@ -487,12 +506,77 @@ def _is_useful_explanation(
     )
 
 
+def _groq_explanation(
+    response: PortfolioOptimizationResponse,
+    prompt: str | None = None,
+) -> tuple[str, str] | None:
+    global _groq_auth_rejected
+
+    if os.getenv("GROQ_ENABLED", "true").strip().lower() in {"0", "false", "no"}:
+        return None
+    api_key = os.getenv("GROQ_API_KEY", "").strip()
+    if not api_key or _groq_auth_rejected:
+        return None
+    model = os.getenv("GROQ_MODEL", "openai/gpt-oss-20b")
+    timeout = float(os.getenv("GROQ_TIMEOUT_SECONDS", "30"))
+    max_tokens = int(os.getenv("GROQ_MAX_TOKENS", "700"))
+    temperature = float(os.getenv("GROQ_TEMPERATURE", "0.1"))
+    reasoning_effort = os.getenv("GROQ_REASONING_EFFORT", "low").strip()
+    try:
+        result = httpx.post(
+            "https://api.groq.com/openai/v1/chat/completions",
+            headers={
+                "Authorization": f"Bearer {api_key}",
+                "Content-Type": "application/json",
+            },
+            json={
+                "model": model,
+                "messages": [
+                    {
+                        "role": "system",
+                        "content": (
+                            "Analyste FixTrade. Reponse directe en francais; "
+                            "aucun chiffre invente."
+                        ),
+                    },
+                    {"role": "user", "content": prompt or _explanation_prompt(response)},
+                ],
+                "temperature": temperature,
+                "max_completion_tokens": max_tokens,
+                "reasoning_effort": reasoning_effort,
+                "stream": False,
+            },
+            timeout=httpx.Timeout(timeout, connect=5.0),
+        )
+        if result.status_code in {401, 403}:
+            _groq_auth_rejected = True
+            logger.warning(
+                "Groq rejected the configured API key; other LLM providers will be used "
+                "until the API process restarts."
+            )
+            return None
+        result.raise_for_status()
+        content = _clean_explanation(
+            result.json()["choices"][0]["message"].get("content") or ""
+        )
+        if content:
+            return content, "groq"
+        logger.warning(
+            "Groq returned HTTP 200 but no final message content; trying the next LLM provider."
+        )
+    except (httpx.HTTPError, KeyError, TypeError, ValueError) as exc:
+        logger.warning("Groq unavailable (%s); trying the next LLM provider.", exc)
+    return None
+
+
 def _openrouter_explanation(
     response: PortfolioOptimizationResponse,
     prompt: str | None = None,
 ) -> tuple[str, str] | None:
     global _openrouter_auth_rejected
 
+    if os.getenv("OPENROUTER_ENABLED", "true").strip().lower() in {"0", "false", "no"}:
+        return None
     api_key = os.getenv("OPENROUTER_API_KEY", "").strip()
     if not api_key or _openrouter_auth_rejected:
         return None
@@ -552,17 +636,36 @@ def _select_local_model(server_url: str) -> str:
     configured = os.getenv("LM_STUDIO_MODEL", "auto").strip()
     if configured and configured.lower() != "auto":
         return configured
+    candidates: list[dict[str, object]] = []
+    try:
+        result = httpx.get(
+            f"{server_url}/v1/models",
+            timeout=httpx.Timeout(5.0, connect=2.0),
+        )
+        result.raise_for_status()
+        candidates.extend(
+            {"key": model.get("id"), "loaded_instances": True}
+            for model in result.json().get("data", [])
+            if model.get("id")
+        )
+    except (httpx.HTTPError, KeyError, TypeError, ValueError):
+        pass
     try:
         result = httpx.get(
             f"{server_url}/api/v1/models",
             timeout=httpx.Timeout(5.0, connect=2.0),
         )
         result.raise_for_status()
-        models = [
-            model
-            for model in result.json().get("models", [])
-            if model.get("type") == "llm"
-        ]
+        candidates.extend(result.json().get("models", []))
+    except (httpx.HTTPError, KeyError, TypeError, ValueError):
+        pass
+
+    models = [
+        model
+        for model in candidates
+        if model.get("key") and model.get("type", "llm") == "llm"
+    ]
+    if models:
         loaded_llama = next(
             (
                 model
@@ -585,9 +688,7 @@ def _select_local_model(server_url: str) -> str:
         )
         selected = loaded_llama or installed_llama or loaded_model
         if selected:
-            return selected["key"]
-    except (httpx.HTTPError, KeyError, TypeError, ValueError):
-        pass
+            return str(selected["key"])
     return "qwen/qwen3.6-27b"
 
 
@@ -599,9 +700,16 @@ def _lm_studio_explanation(
     server_url = base_url[:-3] if base_url.endswith("/v1") else base_url
     model = _select_local_model(server_url)
     timeout = float(os.getenv("LM_STUDIO_TIMEOUT_SECONDS", "120"))
+    portfolio_timeout = float(os.getenv("PORTFOLIO_LLM_TIMEOUT_SECONDS", "20"))
+    timeout = min(timeout, portfolio_timeout)
+    max_tokens = int(os.getenv("LM_STUDIO_MAX_TOKENS", "220"))
+    temperature = float(os.getenv("LM_STUDIO_TEMPERATURE", "0.2"))
+    api_key = os.getenv("LM_STUDIO_API_KEY", "").strip()
+    headers = {"Authorization": f"Bearer {api_key}"} if api_key else None
     try:
         result = httpx.post(
             f"{base_url}/chat/completions",
+            headers=headers,
             json={
                 "model": model,
                 "messages": [
@@ -613,8 +721,8 @@ def _lm_studio_explanation(
                     },
                     {"role": "user", "content": prompt or _explanation_prompt(response)},
                 ],
-                "temperature": 0.2,
-                "max_tokens": 220,
+                "temperature": temperature,
+                "max_tokens": max_tokens,
                 "stream": False,
             },
             timeout=httpx.Timeout(timeout, connect=2.0),
@@ -643,12 +751,33 @@ def _lm_studio_explanation(
     return None
 
 
-def _agent_completion(
-    response: PortfolioOptimizationResponse, prompt: str
-) -> tuple[str, str] | None:
-    return _openrouter_explanation(response, prompt) or _lm_studio_explanation(
-        response, prompt
+def _agent_providers_enabled() -> bool:
+    if os.getenv("PORTFOLIO_LLM_ENABLED", "true").strip().lower() in {
+        "0",
+        "false",
+        "no",
+    }:
+        return False
+    return True
+
+
+def _agent_provider_sequence():
+    providers = (
+        ("groq", _groq_explanation),
+        ("openrouter", _openrouter_explanation),
+        ("lm_studio", _lm_studio_explanation),
     )
+    return providers
+
+
+def _explanation_model_name(source: str) -> str | None:
+    if source == "groq":
+        return os.getenv("GROQ_MODEL", "openai/gpt-oss-20b")
+    if source == "openrouter":
+        return os.getenv("OPENROUTER_MODEL", "meta-llama/llama-3.3-70b-instruct:free")
+    if source == "lm_studio":
+        return os.getenv("LM_STUDIO_MODEL", "auto")
+    return None
 
 
 def _risk_agent_report(response: PortfolioOptimizationResponse) -> str:
@@ -707,15 +836,40 @@ def _multi_agent_explanation(
         "exhaustifs: n'ajoute aucun secteur, pays, qualité d'entreprise, perspective, "
         "dividende, causalité ou garantie de perte."
     )
-    generated = _agent_completion(response, synthesis_prompt)
-    if generated and _is_useful_explanation(generated[0], response):
-        return generated
-
-    validation_errors = (
-        _explanation_validation_errors(generated[0], response)
-        if generated
-        else ["provider_unavailable"]
+    synthesis_prompt += (
+        "\n\nVALIDATION OBLIGATOIRE: write exactly one French paragraph of 80 to "
+        "130 words. Include the exact terms 'rendement attendu CAPM', 'volatilite', "
+        "'beta', 'diversification', and 'simulation indicative'. Use at least two "
+        "exact numeric values from FAITS. Do not mention countries, "
+        "geography, company quality, outlook, correction, causality, "
+        "guarantees, or limited losses. Do not write any percentage except one of "
+        f"these allowed values: {_allowed_percentage_prompt(response)}."
     )
+    validation_errors = ["provider_unavailable"]
+    if not _agent_providers_enabled():
+        logger.info(
+            "Portfolio LLM providers are disabled; using the verified fact-based synthesis."
+        )
+        return _fallback_explanation(response), "multi_agent"
+
+    for _, provider in _agent_provider_sequence():
+        generated = provider(response, synthesis_prompt)
+        if not generated:
+            continue
+        errors = _explanation_validation_errors(generated[0], response)
+        if not errors and _is_useful_explanation(generated[0], response):
+            logger.info("Multi-agent synthesis accepted from %s.", generated[1])
+            return generated
+        provider_errors = errors or ["not_useful"]
+        validation_errors = [
+            f"{generated[1]}:{error}" for error in provider_errors
+        ]
+        logger.info(
+            "Multi-agent draft rejected from %s (%s); trying the next provider.",
+            generated[1],
+            ", ".join(provider_errors),
+        )
+
     logger.info(
         "Multi-agent draft rejected (%s); using the verified fact-based synthesis.",
         ", ".join(validation_errors),
@@ -799,6 +953,7 @@ def optimize_portfolio(payload: PortfolioOptimizationRequest) -> PortfolioOptimi
     )
     response.explanation = explanation
     response.explanation_source = source
+    response.explanation_model = _explanation_model_name(source)
     if source == "fallback":
         response.warnings.append(
             "Explication multi-agent indisponible ou rejetée par le contrôle qualité: "
