@@ -1,0 +1,1482 @@
+{
+  "SFBT": {
+    "n_rows": 2505,
+    "models": {
+      "LSTM": {
+        "mae": 0.5096,
+        "rmse": 0.6156,
+        "mape": 3.9401,
+        "dir_acc": 36.76,
+        "r2": 0.0352
+      },
+      "XGBoost": {
+        "mae": 0.4258,
+        "rmse": 0.5429,
+        "mape": 3.3897,
+        "dir_acc": 39.6,
+        "r2": 0.3517
+      },
+      "Prophet": {
+        "mae": 9.4352,
+        "rmse": 9.6923,
+        "mape": 74.7523,
+        "dir_acc": 39.32,
+        "r2": -306.9373
+      },
+      "VolumeXGB": {
+        "mae": 35478.3372,
+        "rmse": 151492.7763,
+        "mape": 141.1772,
+        "dir_acc": 47.98,
+        "r2": -0.0364
+      },
+      "LiquidityXGB": {
+        "mae": 0.0,
+        "rmse": 0.0,
+        "mape": 0.0,
+        "dir_acc": 63.79,
+        "r2": 0.0
+      }
+    }
+  },
+  "ATTIJARI BANK": {
+    "n_rows": 2504,
+    "models": {
+      "LSTM": {
+        "mae": 2.5538,
+        "rmse": 3.1658,
+        "mape": 4.3161,
+        "dir_acc": 44.89,
+        "r2": 0.2714
+      },
+      "XGBoost": {
+        "mae": 3.1553,
+        "rmse": 3.8447,
+        "mape": 5.1452,
+        "dir_acc": 45.24,
+        "r2": -0.1168
+      },
+      "Prophet": {
+        "mae": 23.6036,
+        "rmse": 23.7762,
+        "mape": 44.4908,
+        "dir_acc": 46.44,
+        "r2": -41.3472
+      },
+      "VolumeXGB": {
+        "mae": 6511.7525,
+        "rmse": 33688.91,
+        "mape": 349.9035,
+        "dir_acc": 43.5,
+        "r2": -0.0211
+      },
+      "LiquidityXGB": {
+        "mae": 0.0,
+        "rmse": 0.0,
+        "mape": 0.0,
+        "dir_acc": 67.21,
+        "r2": 0.0
+      }
+    }
+  },
+  "SAH": {
+    "n_rows": 2504,
+    "models": {
+      "LSTM": {
+        "mae": 0.2627,
+        "rmse": 0.3251,
+        "mape": 2.7415,
+        "dir_acc": 39.54,
+        "r2": 0.8119
+      },
+      "XGBoost": {
+        "mae": 0.1629,
+        "rmse": 0.2103,
+        "mape": 1.7173,
+        "dir_acc": 41.46,
+        "r2": 0.9161
+      },
+      "Prophet": {
+        "mae": 2.064,
+        "rmse": 2.1629,
+        "mape": 23.1759,
+        "dir_acc": 38.38,
+        "r2": -10.6903
+      },
+      "VolumeXGB": {
+        "mae": 26741.1304,
+        "rmse": 94449.7066,
+        "mape": 126.1789,
+        "dir_acc": 46.69,
+        "r2": -0.0349
+      },
+      "LiquidityXGB": {
+        "mae": 0.0,
+        "rmse": 0.0,
+        "mape": 0.0,
+        "dir_acc": 67.02,
+        "r2": 0.0
+      }
+    }
+  },
+  "SOMOCER": {
+    "n_rows": 2504,
+    "models": {
+      "LSTM": {
+        "mae": 0.0563,
+        "rmse": 0.0661,
+        "mape": 11.482,
+        "dir_acc": 27.17,
+        "r2": 0.0608
+      },
+      "XGBoost": {
+        "mae": 0.0837,
+        "rmse": 0.0993,
+        "mape": 17.2319,
+        "dir_acc": 27.11,
+        "r2": -0.8025
+      },
+      "Prophet": {
+        "mae": 1.0534,
+        "rmse": 1.0679,
+        "mape": 194.7452,
+        "dir_acc": 27.75,
+        "r2": -209.9183
+      },
+      "VolumeXGB": {
+        "mae": 18588.5312,
+        "rmse": 38482.0767,
+        "mape": 1971.2053,
+        "dir_acc": 45.0,
+        "r2": -0.1956
+      },
+      "LiquidityXGB": {
+        "mae": 0.0,
+        "rmse": 0.0,
+        "mape": 0.0,
+        "dir_acc": 46.83,
+        "r2": 0.0
+      }
+    }
+  },
+  "BT": {
+    "n_rows": 2502,
+    "models": {
+      "LSTM": {
+        "mae": 0.1464,
+        "rmse": 0.1977,
+        "mape": 2.6581,
+        "dir_acc": 33.89,
+        "r2": 0.2087
+      },
+      "XGBoost": {
+        "mae": 0.0434,
+        "rmse": 0.0648,
+        "mape": 0.809,
+        "dir_acc": 30.23,
+        "r2": 0.8477
+      },
+      "Prophet": {
+        "mae": 3.8008,
+        "rmse": 3.9169,
+        "mape": 73.008,
+        "dir_acc": 31.65,
+        "r2": -816.378
+      },
+      "VolumeXGB": {
+        "mae": 24115.3879,
+        "rmse": 110451.8671,
+        "mape": 2142.4093,
+        "dir_acc": 48.83,
+        "r2": -0.0197
+      },
+      "LiquidityXGB": {
+        "mae": 0.0,
+        "rmse": 0.0,
+        "mape": 0.0,
+        "dir_acc": 65.03,
+        "r2": 0.0
+      }
+    }
+  },
+  "BIAT": {
+    "n_rows": 2502,
+    "models": {
+      "LSTM": {
+        "mae": 2.2523,
+        "rmse": 2.9284,
+        "mape": 2.3213,
+        "dir_acc": 43.68,
+        "r2": 0.0953
+      },
+      "XGBoost": {
+        "mae": 0.8199,
+        "rmse": 1.2935,
+        "mape": 0.844,
+        "dir_acc": 43.83,
+        "r2": 0.8879
+      },
+      "Prophet": {
+        "mae": 10.7541,
+        "rmse": 11.3725,
+        "mape": 11.0238,
+        "dir_acc": 45.12,
+        "r2": -6.1271
+      },
+      "VolumeXGB": {
+        "mae": 3999.9688,
+        "rmse": 20462.7444,
+        "mape": 244.2757,
+        "dir_acc": 46.81,
+        "r2": -0.0447
+      },
+      "LiquidityXGB": {
+        "mae": 0.0,
+        "rmse": 0.0,
+        "mape": 0.0,
+        "dir_acc": 67.32,
+        "r2": 0.0
+      }
+    }
+  },
+  "SOTUVER": {
+    "n_rows": 2502,
+    "models": {
+      "LSTM": {
+        "mae": 0.4705,
+        "rmse": 0.5714,
+        "mape": 3.7847,
+        "dir_acc": 42.56,
+        "r2": 0.2835
+      },
+      "XGBoost": {
+        "mae": 0.8312,
+        "rmse": 1.0045,
+        "mape": 6.5936,
+        "dir_acc": 40.14,
+        "r2": -0.8365
+      },
+      "Prophet": {
+        "mae": 8.511,
+        "rmse": 8.5525,
+        "mape": 68.3431,
+        "dir_acc": 40.5,
+        "r2": -329.8808
+      },
+      "VolumeXGB": {
+        "mae": 24316.9156,
+        "rmse": 158354.9718,
+        "mape": 165.0615,
+        "dir_acc": 48.81,
+        "r2": -0.0156
+      },
+      "LiquidityXGB": {
+        "mae": 0.0,
+        "rmse": 0.0,
+        "mape": 0.0,
+        "dir_acc": 60.34,
+        "r2": 0.0
+      }
+    }
+  },
+  "TPR": {
+    "n_rows": 2501,
+    "models": {
+      "LSTM": {
+        "mae": 1.3399,
+        "rmse": 1.4694,
+        "mape": 14.784,
+        "dir_acc": 43.06,
+        "r2": -2.8192
+      },
+      "XGBoost": {
+        "mae": 1.3223,
+        "rmse": 1.4894,
+        "mape": 14.1501,
+        "dir_acc": 40.97,
+        "r2": -1.4319
+      },
+      "Prophet": {
+        "mae": 3.3,
+        "rmse": 3.4235,
+        "mape": 45.4219,
+        "dir_acc": 40.76,
+        "r2": -17.8178
+      },
+      "VolumeXGB": {
+        "mae": 30571.0683,
+        "rmse": 191389.6994,
+        "mape": 748.09,
+        "dir_acc": 43.43,
+        "r2": -0.0265
+      },
+      "LiquidityXGB": {
+        "mae": 0.0,
+        "rmse": 0.0,
+        "mape": 0.0,
+        "dir_acc": 55.92,
+        "r2": 0.0
+      }
+    }
+  },
+  "EURO-CYCLES": {
+    "n_rows": 2498,
+    "models": {
+      "LSTM": {
+        "mae": 2.4047,
+        "rmse": 2.6151,
+        "mape": 17.1436,
+        "dir_acc": 46.77,
+        "r2": -2.3612
+      },
+      "XGBoost": {
+        "mae": 0.4862,
+        "rmse": 0.6087,
+        "mape": 3.641,
+        "dir_acc": 46.15,
+        "r2": 0.6961
+      },
+      "Prophet": {
+        "mae": 29.4875,
+        "rmse": 29.9071,
+        "mape": 219.638,
+        "dir_acc": 46.24,
+        "r2": -1105.7024
+      },
+      "VolumeXGB": {
+        "mae": 3990.1477,
+        "rmse": 6966.3471,
+        "mape": 197.662,
+        "dir_acc": 46.99,
+        "r2": -0.0309
+      },
+      "LiquidityXGB": {
+        "mae": 0.0,
+        "rmse": 0.0,
+        "mape": 0.0,
+        "dir_acc": 69.58,
+        "r2": 0.0
+      }
+    }
+  },
+  "CARTHAGE CEMENT": {
+    "n_rows": 2497,
+    "models": {
+      "LSTM": {
+        "mae": 0.0631,
+        "rmse": 0.0788,
+        "mape": 3.2079,
+        "dir_acc": 37.02,
+        "r2": 0.681
+      },
+      "XGBoost": {
+        "mae": 0.022,
+        "rmse": 0.0286,
+        "mape": 1.1089,
+        "dir_acc": 35.67,
+        "r2": 0.9577
+      },
+      "Prophet": {
+        "mae": 0.2633,
+        "rmse": 0.3332,
+        "mape": 13.1781,
+        "dir_acc": 37.22,
+        "r2": -4.9188
+      },
+      "VolumeXGB": {
+        "mae": 103093.5093,
+        "rmse": 450433.5126,
+        "mape": 233.1178,
+        "dir_acc": 43.47,
+        "r2": -0.0023
+      },
+      "LiquidityXGB": {
+        "mae": 0.0,
+        "rmse": 0.0,
+        "mape": 0.0,
+        "dir_acc": 92.84,
+        "r2": 0.0
+      }
+    }
+  },
+  "UIB": {
+    "n_rows": 2496,
+    "models": {
+      "LSTM": {
+        "mae": 0.6324,
+        "rmse": 0.8057,
+        "mape": 2.6257,
+        "dir_acc": 38.98,
+        "r2": 0.7287
+      },
+      "XGBoost": {
+        "mae": 0.327,
+        "rmse": 0.4734,
+        "mape": 1.3208,
+        "dir_acc": 31.87,
+        "r2": 0.9042
+      },
+      "Prophet": {
+        "mae": 6.1246,
+        "rmse": 6.2503,
+        "mape": 25.3523,
+        "dir_acc": 36.16,
+        "r2": -17.0034
+      },
+      "VolumeXGB": {
+        "mae": 8168.115,
+        "rmse": 52360.283,
+        "mape": 1689.7084,
+        "dir_acc": 46.56,
+        "r2": -0.018
+      },
+      "LiquidityXGB": {
+        "mae": 0.0,
+        "rmse": 0.0,
+        "mape": 0.0,
+        "dir_acc": 50.25,
+        "r2": 0.0
+      }
+    }
+  },
+  "TUNISAIR": {
+    "n_rows": 2494,
+    "models": {
+      "LSTM": {
+        "mae": 0.0239,
+        "rmse": 0.0269,
+        "mape": 6.2273,
+        "dir_acc": 19.14,
+        "r2": -2.5787
+      },
+      "XGBoost": {
+        "mae": 0.0207,
+        "rmse": 0.0239,
+        "mape": 5.335,
+        "dir_acc": 18.97,
+        "r2": -1.1417
+      },
+      "Prophet": {
+        "mae": 0.2478,
+        "rmse": 0.2505,
+        "mape": 63.952,
+        "dir_acc": 18.93,
+        "r2": -264.7939
+      },
+      "VolumeXGB": {
+        "mae": 7894.6223,
+        "rmse": 14033.2144,
+        "mape": 1523.3042,
+        "dir_acc": 57.54,
+        "r2": -0.3435
+      },
+      "LiquidityXGB": {
+        "mae": 0.0,
+        "rmse": 0.0,
+        "mape": 0.0,
+        "dir_acc": 36.61,
+        "r2": 0.0
+      }
+    }
+  },
+  "TELNET HOLDING": {
+    "n_rows": 2493,
+    "models": {
+      "LSTM": {
+        "mae": 0.1976,
+        "rmse": 0.2392,
+        "mape": 3.0972,
+        "dir_acc": 40.94,
+        "r2": 0.6799
+      },
+      "XGBoost": {
+        "mae": 0.1006,
+        "rmse": 0.132,
+        "mape": 1.6678,
+        "dir_acc": 39.83,
+        "r2": 0.9076
+      },
+      "Prophet": {
+        "mae": 3.3338,
+        "rmse": 3.3563,
+        "mape": 51.346,
+        "dir_acc": 41.07,
+        "r2": -65.4828
+      },
+      "VolumeXGB": {
+        "mae": 4904.4503,
+        "rmse": 9176.9234,
+        "mape": 2780.7528,
+        "dir_acc": 44.82,
+        "r2": -0.0349
+      },
+      "LiquidityXGB": {
+        "mae": 0.0,
+        "rmse": 0.0,
+        "mape": 0.0,
+        "dir_acc": 57.13,
+        "r2": 0.0
+      }
+    }
+  },
+  "BNA": {
+    "n_rows": 2493,
+    "models": {
+      "LSTM": {
+        "mae": 0.2996,
+        "rmse": 0.3911,
+        "mape": 3.4018,
+        "dir_acc": 38.78,
+        "r2": 0.6649
+      },
+      "XGBoost": {
+        "mae": 0.0998,
+        "rmse": 0.1436,
+        "mape": 1.1741,
+        "dir_acc": 38.92,
+        "r2": 0.9481
+      },
+      "Prophet": {
+        "mae": 1.4922,
+        "rmse": 1.8034,
+        "mape": 17.4854,
+        "dir_acc": 37.84,
+        "r2": -7.9046
+      },
+      "VolumeXGB": {
+        "mae": 11703.0003,
+        "rmse": 25146.775,
+        "mape": 167.8286,
+        "dir_acc": 41.56,
+        "r2": -0.0676
+      },
+      "LiquidityXGB": {
+        "mae": 0.0,
+        "rmse": 0.0,
+        "mape": 0.0,
+        "dir_acc": 56.46,
+        "r2": 0.0
+      }
+    }
+  },
+  "ASSAD": {
+    "n_rows": 2488,
+    "models": {
+      "LSTM": {
+        "mae": 0.1862,
+        "rmse": 0.2176,
+        "mape": 15.2998,
+        "dir_acc": 37.31,
+        "r2": -1.6697
+      },
+      "XGBoost": {
+        "mae": 0.161,
+        "rmse": 0.2088,
+        "mape": 14.219,
+        "dir_acc": 37.6,
+        "r2": -1.3145
+      },
+      "Prophet": {
+        "mae": 3.6636,
+        "rmse": 3.7366,
+        "mape": 404.9765,
+        "dir_acc": 36.4,
+        "r2": -2063.7496
+      },
+      "VolumeXGB": {
+        "mae": 20276.2812,
+        "rmse": 49928.3149,
+        "mape": 301.8877,
+        "dir_acc": 46.51,
+        "r2": -0.1539
+      },
+      "LiquidityXGB": {
+        "mae": 0.0,
+        "rmse": 0.0,
+        "mape": 0.0,
+        "dir_acc": 47.65,
+        "r2": 0.0
+      }
+    }
+  },
+  "SOTUMAG": {
+    "n_rows": 2487,
+    "models": {
+      "LSTM": {
+        "mae": 0.2751,
+        "rmse": 0.3597,
+        "mape": 3.6659,
+        "dir_acc": 31.83,
+        "r2": 0.4372
+      },
+      "XGBoost": {
+        "mae": 0.6256,
+        "rmse": 0.8121,
+        "mape": 8.4457,
+        "dir_acc": 33.28,
+        "r2": -0.9055
+      },
+      "Prophet": {
+        "mae": 3.9576,
+        "rmse": 4.0094,
+        "mape": 63.3916,
+        "dir_acc": 31.23,
+        "r2": -213.4981
+      },
+      "VolumeXGB": {
+        "mae": 3004.6419,
+        "rmse": 6154.885,
+        "mape": 2407.83,
+        "dir_acc": 50.34,
+        "r2": -0.0545
+      },
+      "LiquidityXGB": {
+        "mae": 0.0,
+        "rmse": 0.0,
+        "mape": 0.0,
+        "dir_acc": 44.58,
+        "r2": 0.0
+      }
+    }
+  },
+  "STB": {
+    "n_rows": 2486,
+    "models": {
+      "LSTM": {
+        "mae": 0.1646,
+        "rmse": 0.2016,
+        "mape": 5.2612,
+        "dir_acc": 38.4,
+        "r2": -0.1651
+      },
+      "XGBoost": {
+        "mae": 0.0532,
+        "rmse": 0.0694,
+        "mape": 1.6162,
+        "dir_acc": 38.43,
+        "r2": 0.8471
+      },
+      "Prophet": {
+        "mae": 1.3619,
+        "rmse": 1.4733,
+        "mape": 42.9331,
+        "dir_acc": 39.33,
+        "r2": -49.1494
+      },
+      "VolumeXGB": {
+        "mae": 13211.9803,
+        "rmse": 31931.0985,
+        "mape": 491.5201,
+        "dir_acc": 41.73,
+        "r2": -0.0963
+      },
+      "LiquidityXGB": {
+        "mae": 0.0,
+        "rmse": 0.0,
+        "mape": 0.0,
+        "dir_acc": 61.22,
+        "r2": 0.0
+      }
+    }
+  },
+  "AMEN BANK": {
+    "n_rows": 2484,
+    "models": {
+      "LSTM": {
+        "mae": 1.8433,
+        "rmse": 2.1794,
+        "mape": 4.816,
+        "dir_acc": 42.71,
+        "r2": 0.4418
+      },
+      "XGBoost": {
+        "mae": 2.3068,
+        "rmse": 3.0887,
+        "mape": 5.8416,
+        "dir_acc": 40.27,
+        "r2": 0.246
+      },
+      "Prophet": {
+        "mae": 15.2167,
+        "rmse": 15.6008,
+        "mape": 38.8496,
+        "dir_acc": 38.9,
+        "r2": -16.3268
+      },
+      "VolumeXGB": {
+        "mae": 13581.1976,
+        "rmse": 74256.8032,
+        "mape": 137.475,
+        "dir_acc": 44.46,
+        "r2": -0.1003
+      },
+      "LiquidityXGB": {
+        "mae": 0.0,
+        "rmse": 0.0,
+        "mape": 0.0,
+        "dir_acc": 49.2,
+        "r2": 0.0
+      }
+    }
+  },
+  "ARTES": {
+    "n_rows": 2483,
+    "models": {
+      "LSTM": {
+        "mae": 1.1264,
+        "rmse": 1.2114,
+        "mape": 11.0334,
+        "dir_acc": 37.0,
+        "r2": -4.5696
+      },
+      "XGBoost": {
+        "mae": 0.7821,
+        "rmse": 0.8635,
+        "mape": 7.4136,
+        "dir_acc": 38.67,
+        "r2": -1.4019
+      },
+      "Prophet": {
+        "mae": 1.9764,
+        "rmse": 2.0641,
+        "mape": 26.2638,
+        "dir_acc": 38.45,
+        "r2": -7.6763
+      },
+      "VolumeXGB": {
+        "mae": 16336.7468,
+        "rmse": 153456.7613,
+        "mape": 1072.5229,
+        "dir_acc": 47.92,
+        "r2": -0.0222
+      },
+      "LiquidityXGB": {
+        "mae": 0.0,
+        "rmse": 0.0,
+        "mape": 0.0,
+        "dir_acc": 58.45,
+        "r2": 0.0
+      }
+    }
+  },
+  "SOTIPAPIER": {
+    "n_rows": 2479,
+    "models": {
+      "LSTM": {
+        "mae": 0.4094,
+        "rmse": 0.4624,
+        "mape": 7.4969,
+        "dir_acc": 38.01,
+        "r2": 0.4409
+      },
+      "XGBoost": {
+        "mae": 0.1244,
+        "rmse": 0.1756,
+        "mape": 2.7044,
+        "dir_acc": 38.38,
+        "r2": 0.9267
+      },
+      "Prophet": {
+        "mae": 1.4133,
+        "rmse": 1.4966,
+        "mape": 25.5814,
+        "dir_acc": 37.56,
+        "r2": -5.5345
+      },
+      "VolumeXGB": {
+        "mae": 40070.4968,
+        "rmse": 347535.2905,
+        "mape": 1499.5002,
+        "dir_acc": 49.13,
+        "r2": -0.1449
+      },
+      "LiquidityXGB": {
+        "mae": 0.0,
+        "rmse": 0.0,
+        "mape": 0.0,
+        "dir_acc": 54.51,
+        "r2": 0.0
+      }
+    }
+  },
+  "MONOPRIX": {
+    "n_rows": 2477,
+    "models": {
+      "LSTM": {
+        "mae": 0.2606,
+        "rmse": 0.3226,
+        "mape": 5.5133,
+        "dir_acc": 22.54,
+        "r2": 0.5387
+      },
+      "XGBoost": {
+        "mae": 0.1633,
+        "rmse": 0.21,
+        "mape": 3.8067,
+        "dir_acc": 22.15,
+        "r2": 0.7986
+      },
+      "Prophet": {
+        "mae": 6.7962,
+        "rmse": 7.0254,
+        "mape": 145.0044,
+        "dir_acc": 25.74,
+        "r2": -180.7277
+      },
+      "VolumeXGB": {
+        "mae": 1318.9024,
+        "rmse": 4564.6667,
+        "mape": 1437.8826,
+        "dir_acc": 39.18,
+        "r2": -0.0613
+      },
+      "LiquidityXGB": {
+        "mae": 0.0,
+        "rmse": 0.0,
+        "mape": 0.0,
+        "dir_acc": 65.18,
+        "r2": 0.0
+      }
+    }
+  },
+  "POULINA GP HOLDING": {
+    "n_rows": 2475,
+    "models": {
+      "LSTM": {
+        "mae": 0.5711,
+        "rmse": 0.7191,
+        "mape": 4.8078,
+        "dir_acc": 37.22,
+        "r2": 0.506
+      },
+      "XGBoost": {
+        "mae": 0.5544,
+        "rmse": 0.7334,
+        "mape": 4.521,
+        "dir_acc": 38.32,
+        "r2": 0.5529
+      },
+      "Prophet": {
+        "mae": 4.4079,
+        "rmse": 4.6249,
+        "mape": 39.9769,
+        "dir_acc": 37.36,
+        "r2": -19.8356
+      },
+      "VolumeXGB": {
+        "mae": 23441.5029,
+        "rmse": 58012.3229,
+        "mape": 2609.9109,
+        "dir_acc": 47.7,
+        "r2": -0.1291
+      },
+      "LiquidityXGB": {
+        "mae": 0.0,
+        "rmse": 0.0,
+        "mape": 0.0,
+        "dir_acc": 41.6,
+        "r2": 0.0
+      }
+    }
+  },
+  "ENNAKL AUTOMOBILES": {
+    "n_rows": 2471,
+    "models": {
+      "LSTM": {
+        "mae": 0.9219,
+        "rmse": 1.08,
+        "mape": 7.2961,
+        "dir_acc": 33.21,
+        "r2": -5.277
+      },
+      "XGBoost": {
+        "mae": 0.2345,
+        "rmse": 0.3569,
+        "mape": 1.7983,
+        "dir_acc": 29.33,
+        "r2": 0.8228
+      },
+      "Prophet": {
+        "mae": 1.6792,
+        "rmse": 1.8818,
+        "mape": 14.8791,
+        "dir_acc": 29.74,
+        "r2": -18.9798
+      },
+      "VolumeXGB": {
+        "mae": 1146.3148,
+        "rmse": 6130.612,
+        "mape": 1133.0667,
+        "dir_acc": 46.46,
+        "r2": -0.0156
+      },
+      "LiquidityXGB": {
+        "mae": 0.0,
+        "rmse": 0.0,
+        "mape": 0.0,
+        "dir_acc": 75.51,
+        "r2": 0.0
+      }
+    }
+  },
+  "SOTETEL": {
+    "n_rows": 2470,
+    "models": {
+      "LSTM": {
+        "mae": 0.1471,
+        "rmse": 0.1945,
+        "mape": 2.8901,
+        "dir_acc": 41.28,
+        "r2": 0.8867
+      },
+      "XGBoost": {
+        "mae": 0.0934,
+        "rmse": 0.1236,
+        "mape": 1.7711,
+        "dir_acc": 39.66,
+        "r2": 0.9718
+      },
+      "Prophet": {
+        "mae": 2.4463,
+        "rmse": 2.5553,
+        "mape": 45.4252,
+        "dir_acc": 41.43,
+        "r2": -11.2888
+      },
+      "VolumeXGB": {
+        "mae": 6074.2947,
+        "rmse": 11823.0169,
+        "mape": 642.3192,
+        "dir_acc": 44.96,
+        "r2": -0.0459
+      },
+      "LiquidityXGB": {
+        "mae": 0.0,
+        "rmse": 0.0,
+        "mape": 0.0,
+        "dir_acc": 58.89,
+        "r2": 0.0
+      }
+    }
+  },
+  "SIAME": {
+    "n_rows": 2457,
+    "models": {
+      "LSTM": {
+        "mae": 0.1097,
+        "rmse": 0.1458,
+        "mape": 3.517,
+        "dir_acc": 36.03,
+        "r2": 0.4318
+      },
+      "XGBoost": {
+        "mae": 0.0502,
+        "rmse": 0.0663,
+        "mape": 1.6425,
+        "dir_acc": 36.62,
+        "r2": 0.865
+      },
+      "Prophet": {
+        "mae": 1.0748,
+        "rmse": 1.1259,
+        "mape": 31.1219,
+        "dir_acc": 34.79,
+        "r2": -81.6484
+      },
+      "VolumeXGB": {
+        "mae": 7571.8856,
+        "rmse": 26594.3769,
+        "mape": 1242.1631,
+        "dir_acc": 45.11,
+        "r2": -0.0298
+      },
+      "LiquidityXGB": {
+        "mae": 0.0,
+        "rmse": 0.0,
+        "mape": 0.0,
+        "dir_acc": 48.66,
+        "r2": 0.0
+      }
+    }
+  },
+  "TAWASOL GP HOLDING": {
+    "n_rows": 2453,
+    "models": {
+      "LSTM": {
+        "mae": 0.0269,
+        "rmse": 0.0334,
+        "mape": 4.0655,
+        "dir_acc": 33.85,
+        "r2": 0.6537
+      },
+      "XGBoost": {
+        "mae": 0.0141,
+        "rmse": 0.0182,
+        "mape": 2.1316,
+        "dir_acc": 35.54,
+        "r2": 0.8956
+      },
+      "Prophet": {
+        "mae": 0.0688,
+        "rmse": 0.08,
+        "mape": 10.0921,
+        "dir_acc": 31.47,
+        "r2": -1.3504
+      },
+      "VolumeXGB": {
+        "mae": 23992.081,
+        "rmse": 50680.8651,
+        "mape": 834.2594,
+        "dir_acc": 45.71,
+        "r2": -0.1785
+      },
+      "LiquidityXGB": {
+        "mae": 0.0,
+        "rmse": 0.0,
+        "mape": 0.0,
+        "dir_acc": 49.56,
+        "r2": 0.0
+      }
+    }
+  },
+  "DELICE HOLDING": {
+    "n_rows": 2452,
+    "models": {
+      "LSTM": {
+        "mae": 1.049,
+        "rmse": 1.3032,
+        "mape": 6.1434,
+        "dir_acc": 38.31,
+        "r2": 0.724
+      },
+      "XGBoost": {
+        "mae": 0.8764,
+        "rmse": 1.3197,
+        "mape": 4.2039,
+        "dir_acc": 39.36,
+        "r2": 0.8031
+      },
+      "Prophet": {
+        "mae": 2.6745,
+        "rmse": 3.2473,
+        "mape": 16.4375,
+        "dir_acc": 39.77,
+        "r2": -1.3522
+      },
+      "VolumeXGB": {
+        "mae": 12992.772,
+        "rmse": 38594.1538,
+        "mape": 468.4117,
+        "dir_acc": 45.65,
+        "r2": -0.1263
+      },
+      "LiquidityXGB": {
+        "mae": 0.0,
+        "rmse": 0.0,
+        "mape": 0.0,
+        "dir_acc": 49.56,
+        "r2": 0.0
+      }
+    }
+  },
+  "ONE TECH HOLDING": {
+    "n_rows": 2450,
+    "models": {
+      "LSTM": {
+        "mae": 0.496,
+        "rmse": 0.6538,
+        "mape": 5.97,
+        "dir_acc": 39.66,
+        "r2": -0.9188
+      },
+      "XGBoost": {
+        "mae": 0.0787,
+        "rmse": 0.1053,
+        "mape": 0.929,
+        "dir_acc": 41.83,
+        "r2": 0.941
+      },
+      "Prophet": {
+        "mae": 1.0859,
+        "rmse": 1.179,
+        "mape": 12.3167,
+        "dir_acc": 40.86,
+        "r2": -17.1091
+      },
+      "VolumeXGB": {
+        "mae": 54228.9024,
+        "rmse": 361332.5121,
+        "mape": 247.8612,
+        "dir_acc": 42.46,
+        "r2": -0.0728
+      },
+      "LiquidityXGB": {
+        "mae": 0.0,
+        "rmse": 0.0,
+        "mape": 0.0,
+        "dir_acc": 58.84,
+        "r2": 0.0
+      }
+    }
+  },
+  "UADH": {
+    "n_rows": 2441,
+    "models": {
+      "LSTM": {
+        "mae": 0.0531,
+        "rmse": 0.0663,
+        "mape": 12.1583,
+        "dir_acc": 34.98,
+        "r2": -0.1998
+      },
+      "XGBoost": {
+        "mae": 0.0276,
+        "rmse": 0.0348,
+        "mape": 8.4607,
+        "dir_acc": 44.99,
+        "r2": 0.7847
+      },
+      "Prophet": {
+        "mae": 4.6779,
+        "rmse": 4.8315,
+        "mape": 1107.332,
+        "dir_acc": 38.29,
+        "r2": -5580.3696
+      },
+      "VolumeXGB": {
+        "mae": 9452.4192,
+        "rmse": 23915.9628,
+        "mape": 1129.263,
+        "dir_acc": 39.49,
+        "r2": -0.1654
+      },
+      "LiquidityXGB": {
+        "mae": 0.0,
+        "rmse": 0.0,
+        "mape": 0.0,
+        "dir_acc": 44.35,
+        "r2": 0.0
+      }
+    }
+  },
+  "LAND OR": {
+    "n_rows": 2438,
+    "models": {
+      "LSTM": {
+        "mae": 0.5005,
+        "rmse": 0.6878,
+        "mape": 5.2425,
+        "dir_acc": 39.26,
+        "r2": 0.42
+      },
+      "XGBoost": {
+        "mae": 0.3682,
+        "rmse": 0.6215,
+        "mape": 3.3977,
+        "dir_acc": 37.18,
+        "r2": 0.5392
+      },
+      "Prophet": {
+        "mae": 2.5017,
+        "rmse": 2.6532,
+        "mape": 27.3541,
+        "dir_acc": 36.94,
+        "r2": -9.7313
+      },
+      "VolumeXGB": {
+        "mae": 3897.5695,
+        "rmse": 10342.2551,
+        "mape": 1020.8606,
+        "dir_acc": 48.44,
+        "r2": -0.0689
+      },
+      "LiquidityXGB": {
+        "mae": 0.0,
+        "rmse": 0.0,
+        "mape": 0.0,
+        "dir_acc": 53.24,
+        "r2": 0.0
+      }
+    }
+  },
+  "MPBS": {
+    "n_rows": 2437,
+    "models": {
+      "LSTM": {
+        "mae": 1.0384,
+        "rmse": 1.4112,
+        "mape": 11.5073,
+        "dir_acc": 36.65,
+        "r2": 0.3791
+      },
+      "XGBoost": {
+        "mae": 1.5724,
+        "rmse": 2.0801,
+        "mape": 15.5865,
+        "dir_acc": 34.9,
+        "r2": -0.1544
+      },
+      "Prophet": {
+        "mae": 3.3747,
+        "rmse": 3.8266,
+        "mape": 38.0094,
+        "dir_acc": 37.58,
+        "r2": -5.5326
+      },
+      "VolumeXGB": {
+        "mae": 4825.7831,
+        "rmse": 19768.429,
+        "mape": 1293.7161,
+        "dir_acc": 46.04,
+        "r2": -0.1146
+      },
+      "LiquidityXGB": {
+        "mae": 0.0,
+        "rmse": 0.0,
+        "mape": 0.0,
+        "dir_acc": 56.14,
+        "r2": 0.0
+      }
+    }
+  },
+  "ATB": {
+    "n_rows": 2435,
+    "models": {
+      "LSTM": {
+        "mae": 0.0967,
+        "rmse": 0.1227,
+        "mape": 3.0862,
+        "dir_acc": 35.03,
+        "r2": 0.7677
+      },
+      "XGBoost": {
+        "mae": 0.0419,
+        "rmse": 0.0555,
+        "mape": 1.3882,
+        "dir_acc": 34.71,
+        "r2": 0.962
+      },
+      "Prophet": {
+        "mae": 1.7149,
+        "rmse": 1.7322,
+        "mape": 57.2053,
+        "dir_acc": 37.3,
+        "r2": -39.0492
+      },
+      "VolumeXGB": {
+        "mae": 26467.2863,
+        "rmse": 84316.6852,
+        "mape": 2085.4578,
+        "dir_acc": 45.38,
+        "r2": -0.1019
+      },
+      "LiquidityXGB": {
+        "mae": 0.0,
+        "rmse": 0.0,
+        "mape": 0.0,
+        "dir_acc": 46.01,
+        "r2": 0.0
+      }
+    }
+  },
+  "CITY CARS": {
+    "n_rows": 2435,
+    "models": {
+      "LSTM": {
+        "mae": 0.7425,
+        "rmse": 0.9412,
+        "mape": 4.9297,
+        "dir_acc": 37.03,
+        "r2": -0.048
+      },
+      "XGBoost": {
+        "mae": 0.6096,
+        "rmse": 0.896,
+        "mape": 3.469,
+        "dir_acc": 34.06,
+        "r2": 0.5384
+      },
+      "Prophet": {
+        "mae": 2.4553,
+        "rmse": 2.6776,
+        "mape": 18.5744,
+        "dir_acc": 38.39,
+        "r2": -15.2051
+      },
+      "VolumeXGB": {
+        "mae": 4653.6398,
+        "rmse": 30643.6607,
+        "mape": 1107.9427,
+        "dir_acc": 44.34,
+        "r2": -0.0916
+      },
+      "LiquidityXGB": {
+        "mae": 0.0,
+        "rmse": 0.0,
+        "mape": 0.0,
+        "dir_acc": 53.61,
+        "r2": 0.0
+      }
+    }
+  },
+  "ATL": {
+    "n_rows": 2431,
+    "models": {
+      "LSTM": {
+        "mae": 0.4092,
+        "rmse": 0.4582,
+        "mape": 7.7929,
+        "dir_acc": 31.46,
+        "r2": -0.7525
+      },
+      "XGBoost": {
+        "mae": 0.6341,
+        "rmse": 0.7167,
+        "mape": 12.4411,
+        "dir_acc": 30.97,
+        "r2": -2.456
+      },
+      "Prophet": {
+        "mae": 1.2456,
+        "rmse": 1.2945,
+        "mape": 26.0064,
+        "dir_acc": 34.46,
+        "r2": -13.1203
+      },
+      "VolumeXGB": {
+        "mae": 7360.5309,
+        "rmse": 30268.1454,
+        "mape": 546.2927,
+        "dir_acc": 48.11,
+        "r2": -0.0915
+      },
+      "LiquidityXGB": {
+        "mae": 0.0,
+        "rmse": 0.0,
+        "mape": 0.0,
+        "dir_acc": 48.74,
+        "r2": 0.0
+      }
+    }
+  },
+  "TUNIS RE": {
+    "n_rows": 2424,
+    "models": {
+      "LSTM": {
+        "mae": 0.4411,
+        "rmse": 0.5174,
+        "mape": 5.6849,
+        "dir_acc": 24.65,
+        "r2": -0.8018
+      },
+      "XGBoost": {
+        "mae": 0.1414,
+        "rmse": 0.1903,
+        "mape": 1.9801,
+        "dir_acc": 23.25,
+        "r2": 0.5672
+      },
+      "Prophet": {
+        "mae": 1.4432,
+        "rmse": 1.5021,
+        "mape": 21.1469,
+        "dir_acc": 21.22,
+        "r2": -30.6814
+      },
+      "VolumeXGB": {
+        "mae": 1098.2415,
+        "rmse": 3598.4528,
+        "mape": 1010.2055,
+        "dir_acc": 45.91,
+        "r2": -0.1529
+      },
+      "LiquidityXGB": {
+        "mae": 0.0,
+        "rmse": 0.0,
+        "mape": 0.0,
+        "dir_acc": 66.26,
+        "r2": 0.0
+      }
+    }
+  },
+  "SOTRAPIL": {
+    "n_rows": 2419,
+    "models": {
+      "LSTM": {
+        "mae": 1.676,
+        "rmse": 1.9174,
+        "mape": 8.5329,
+        "dir_acc": 36.29,
+        "r2": -1.4094
+      },
+      "XGBoost": {
+        "mae": 1.3385,
+        "rmse": 1.6032,
+        "mape": 6.3481,
+        "dir_acc": 35.43,
+        "r2": -0.0685
+      },
+      "Prophet": {
+        "mae": 7.2866,
+        "rmse": 7.4862,
+        "mape": 42.4309,
+        "dir_acc": 39.34,
+        "r2": -70.0113
+      },
+      "VolumeXGB": {
+        "mae": 1073.8048,
+        "rmse": 2514.7363,
+        "mape": 742.2193,
+        "dir_acc": 44.99,
+        "r2": -0.2338
+      },
+      "LiquidityXGB": {
+        "mae": 0.0,
+        "rmse": 0.0,
+        "mape": 0.0,
+        "dir_acc": 65.35,
+        "r2": 0.0
+      }
+    }
+  },
+  "UNIMED": {
+    "n_rows": 2409,
+    "models": {
+      "LSTM": {
+        "mae": 0.2413,
+        "rmse": 0.3164,
+        "mape": 3.0527,
+        "dir_acc": 42.03,
+        "r2": 0.4285
+      },
+      "XGBoost": {
+        "mae": 0.0986,
+        "rmse": 0.1416,
+        "mape": 1.3418,
+        "dir_acc": 37.65,
+        "r2": 0.7019
+      },
+      "Prophet": {
+        "mae": 3.2787,
+        "rmse": 3.5259,
+        "mape": 44.8483,
+        "dir_acc": 43.75,
+        "r2": -147.1397
+      },
+      "VolumeXGB": {
+        "mae": 14845.9929,
+        "rmse": 49925.4273,
+        "mape": 547.8408,
+        "dir_acc": 45.61,
+        "r2": -0.1131
+      },
+      "LiquidityXGB": {
+        "mae": 0.0,
+        "rmse": 0.0,
+        "mape": 0.0,
+        "dir_acc": 58.85,
+        "r2": 0.0
+      }
+    }
+  }
+}

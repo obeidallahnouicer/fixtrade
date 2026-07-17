@@ -10,15 +10,13 @@ Wraps the SentimentAnalyzer NLP service to provide both:
 import logging
 from datetime import date
 from decimal import Decimal
-from typing import Optional
+from typing import Any, Optional
 
 from sqlalchemy import text as sql_text
 from sqlalchemy.engine import Engine
 
 from app.domain.trading.entities import Sentiment, SentimentScore
 from app.domain.trading.ports import SentimentAnalysisPort
-from app.nlp.sentiment import SentimentAnalyzer
-
 logger = logging.getLogger(__name__)
 
 
@@ -32,14 +30,16 @@ class SentimentAnalysisAdapter(SentimentAnalysisPort):
     def __init__(
         self,
         engine: Optional[Engine] = None,
-        analyzer: Optional[SentimentAnalyzer] = None,
+        analyzer: Optional[Any] = None,
     ) -> None:
         self._engine = engine
         self._analyzer = analyzer
 
-    def _get_analyzer(self) -> SentimentAnalyzer:
+    def _get_analyzer(self):
         """Lazy-load the NLP model to avoid startup cost if unused."""
         if self._analyzer is None:
+            from app.nlp.sentiment import SentimentAnalyzer
+
             logger.info("Lazy-loading SentimentAnalyzer…")
             self._analyzer = SentimentAnalyzer()
         return self._analyzer

@@ -31,7 +31,7 @@ case "${1:-help}" in
         SYMBOL="${2:-BIAT}"
         echo "🔮 Running prediction for $SYMBOL..."
         echo ""
-        python -m prediction predict --symbol "$SYMBOL" --horizon 5
+        python -m prediction predict --symbol "$SYMBOL" --days 5
         ;;
     
     backend)

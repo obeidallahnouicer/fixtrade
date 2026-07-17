@@ -49,7 +49,7 @@ class ETLPipeline:
             val_end_year=self._cfg.model.train_test_split_year,
             prediction_horizons=self._cfg.features.prediction_horizons,
         )
-        self._db = DatabaseSink()
+        self._db = DatabaseSink.from_environment()
         self._db.ensure_tables()
 
     def run(self) -> pd.DataFrame:

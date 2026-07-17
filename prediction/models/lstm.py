@@ -121,9 +121,12 @@ class LSTMPredictor(BasePredictionModel):
         self._scaler_y = MinMaxScaler()
 
         X_scaled = self._scaler_X.fit_transform(X_train.values)
+        X_scaled = np.nan_to_num(X_scaled, nan=0.0, posinf=1.0, neginf=0.0)
+
         y_scaled = self._scaler_y.fit_transform(
             y_train.values.reshape(-1, 1)
         ).ravel()
+        y_scaled = np.nan_to_num(y_scaled, nan=0.0, posinf=1.0, neginf=0.0)
 
         # Create sequences
         X_seq, y_seq = self._create_sequences(X_scaled, y_scaled)
@@ -133,6 +136,15 @@ class LSTMPredictor(BasePredictionModel):
             return self
 
         device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        logger.info(
+            "[LSTM] Training device: %s%s",
+            device,
+            (
+                f" ({torch.cuda.get_device_name(0)})"
+                if device.type == "cuda"
+                else ""
+            ),
+        )
         self._model = _LSTMNetwork(
             input_size=X_train.shape[1],
             hidden_size=self._hidden_size,
@@ -153,9 +165,11 @@ class LSTMPredictor(BasePredictionModel):
         val_loader = None
         if X_val is not None and y_val is not None:
             X_val_scaled = self._scaler_X.transform(X_val.values)
+            X_val_scaled = np.nan_to_num(X_val_scaled, nan=0.0, posinf=1.0, neginf=0.0)
             y_val_scaled = self._scaler_y.transform(
                 y_val.values.reshape(-1, 1)
             ).ravel()
+            y_val_scaled = np.nan_to_num(y_val_scaled, nan=0.0, posinf=1.0, neginf=0.0)
             X_val_seq, y_val_seq = self._create_sequences(X_val_scaled, y_val_scaled)
             if len(X_val_seq) > 0:
                 val_dataset = TensorDataset(
@@ -187,11 +201,15 @@ class LSTMPredictor(BasePredictionModel):
             if val_loader is not None:
                 self._model.eval()
                 val_loss = 0.0
+                n_val_batches = 0
                 with torch.no_grad():
                     for X_batch, y_batch in val_loader:
                         output = self._model(X_batch)
-                        val_loss += criterion(output, y_batch).item()
-                val_loss /= len(val_loader)
+                        batch_loss = criterion(output, y_batch).item()
+                        if not (batch_loss != batch_loss):  # skip NaN batches
+                            val_loss += batch_loss
+                            n_val_batches += 1
+                val_loss = val_loss / n_val_batches if n_val_batches > 0 else float("inf")
 
                 if val_loss < best_val_loss:
                     best_val_loss = val_loss

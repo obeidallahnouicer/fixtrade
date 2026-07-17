@@ -151,7 +151,7 @@ class TrainingPipeline:
         self._monitor = ModelMonitor()
         self._models_dir = self._cfg.paths.models_dir
         self._mlflow_ok = _setup_mlflow(self._cfg)
-        self._db = DatabaseSink()
+        self._db = DatabaseSink.from_environment()
         self._db.ensure_tables()
 
     def run(

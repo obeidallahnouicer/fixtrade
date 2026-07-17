@@ -155,7 +155,7 @@ print(f"ROI: {metrics['roi']:.2f}%")
 - Review README.md for detailed documentation
 - Check examples.py for usage scenarios
 - Explore API docs at /docs endpoint
-- Integrate with frontend (see front_fixtrade/PREDICTION_INTEGRATION.md)
+- Integrate with frontend (see frontend/README.md)
 
 
 ## 9. Support

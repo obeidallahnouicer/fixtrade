@@ -1,0 +1,20 @@
+ Container fixtrade-ml-service-run-58df6269f6b8 Creating 
+ Container fixtrade-ml-service-run-58df6269f6b8 Created 
+2026-06-25 23:04:46,984 [INFO] run_training — Skipping ETL — loading existing Silver layer data...
+2026-06-25 23:04:47,806 [INFO] prediction.db_sink — Connected to PostgreSQL postgres:5432/fixtrade
+2026-06-25 23:04:47,809 [INFO] prediction.db_sink — Database tables verified/created.
+2026-06-25 23:05:08,129 [INFO] run_training — Loaded 920139 rows from Silver layer.
+2026-06-25 23:05:15,154 [INFO] matplotlib.font_manager — generated new fontManager
+2026-06-25 23:05:16,934 [WARNING] prediction.training — MLflow setup failed. Tracking disabled.
+2026-06-25 23:05:16,940 [INFO] prediction.db_sink — Connected to PostgreSQL postgres:5432/fixtrade
+2026-06-25 23:05:16,946 [INFO] prediction.db_sink — Database tables verified/created.
+2026-06-25 23:05:16,947 [INFO] run_training — 
+2026-06-25 23:05:16,947 [INFO] run_training — ======================================================================
+2026-06-25 23:05:16,947 [INFO] run_training — STEP 2 / 3 — WALK-FORWARD CROSS-VALIDATION (MLflow tracked)
+2026-06-25 23:05:16,947 [INFO] run_training — ======================================================================
+2026-06-25 23:05:16,947 [INFO] prediction.training — ============================================================
+2026-06-25 23:05:16,947 [INFO] prediction.training — Training CV split: split_1
+2026-06-25 23:05:16,949 [INFO] prediction.training — ============================================================
+2026-06-25 23:05:40,086 [INFO] prediction.etl.transform.silver_to_gold — Gold splits — Train: 482623, Val: 146862, Test: 284289
+2026-06-25 23:05:40,956 [INFO] prediction.training — Training LSTM on split_1...
+

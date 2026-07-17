@@ -6,8 +6,10 @@ No hardcoded values — all defaults live in .env only.
 Both the FastAPI app and the prediction module import from here.
 """
 
-from pydantic_settings import BaseSettings, SettingsConfigDict
 from typing import Optional
+
+from pydantic import field_validator
+from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class Settings(BaseSettings):
@@ -47,26 +49,40 @@ class Settings(BaseSettings):
     # --- ML / Prediction ---
     prediction_cache_ttl: int
     model_dir: str
+    ml_service_url: str = ""
 
     # --- MLflow ---
     mlflow_tracking_uri: str = "mlruns"
     mlflow_experiment_name: str = "fixtrade-prediction"
 
-    # --- AI Agent (Groq) ---
+    # --- AI / Groq ---
     groq_api_key: str = ""
     groq_model: str = "llama-3.3-70b-versatile"
     groq_max_tokens: int = 1024
     groq_temperature: float = 0.7
 
-    # --- AI / Groq ---
-    groq_api_key: str = ""
-    groq_model: str = "llama-3.3-70b-versatile"
-
     # --- Rate Limiting ---
     rate_limit_default: str
     rate_limit_heavy: str
 
-    # Postgres settings (used by the scraping pipeline and other components)
+    # --- Authentication ---
+    auth_secret_key: str = "dev-secret-key-change-in-production"
+    auth_algorithm: str = "HS256"
+    access_token_expire_minutes: int = 60
+
+    @field_validator("debug", mode="before")
+    @classmethod
+    def parse_debug_mode(cls, value):
+        """Accept common environment labels in addition to booleans."""
+        if isinstance(value, str):
+            normalized = value.strip().lower()
+            if normalized in {"release", "production", "prod"}:
+                return False
+            if normalized in {"development", "develop", "dev"}:
+                return True
+        return value
+
+    # --- Scraping / shared fallback settings ---
     scraping_postgres_dsn: Optional[str] = None
     postgres_user: str = "postgres"
     postgres_password: str = "postgres"

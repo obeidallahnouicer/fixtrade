@@ -54,6 +54,13 @@ class PredictPriceResponse(BaseModel):
     predictions: list[PredictPriceItem]
 
 
+class HistoricalPriceItem(BaseModel):
+    """A single historical close price in the response."""
+
+    date: date
+    close: Decimal
+
+
 class GetSentimentRequest(BaseModel):
     """Request schema for sentiment analysis endpoint.
 
