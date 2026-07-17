@@ -63,6 +63,9 @@ class PortfolioOptimizationResponse(BaseModel):
     efficient_frontier: list[EfficientFrontierPoint]
     methodology: PortfolioMethodology
     explanation: str
-    explanation_source: Literal["openrouter", "lm_studio", "multi_agent", "fallback"]
+    explanation_source: Literal[
+        "groq", "openrouter", "lm_studio", "multi_agent", "fallback"
+    ]
+    explanation_model: str | None = None
     generated_at: datetime
     warnings: list[str] = []
