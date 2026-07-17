@@ -238,7 +238,6 @@ export interface PortfolioOptimizationResponse {
     maximum_weight: number;
   };
   explanation: string;
-  explanation_source: "openrouter" | "lm_studio" | "multi_agent" | "fallback";
   generated_at: string;
   warnings: string[];
 }
