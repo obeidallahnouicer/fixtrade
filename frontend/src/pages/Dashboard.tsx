@@ -44,6 +44,7 @@ const NAV_ITEMS: Array<{ id: ViewName; label: string }> = [
   { id: "screener", label: "Screener" },
 ];
 
+
 export function Dashboard() {
   const {
     stocks,
@@ -757,17 +758,8 @@ function PortfolioView({
           <div className="rounded-xl border border-emerald-900/70 bg-emerald-950/20 p-5">
             <div className="flex items-center justify-between gap-3 mb-3">
               <div className="text-xs uppercase tracking-wider text-emerald-400">
-                Explication de l’agent local
+                Explication multi-agent
               </div>
-              <Badge variant={result.explanation_source !== "fallback" ? "success" : "warning"}>
-                {result.explanation_source === "openrouter"
-                  ? "OpenRouter · Llama 3.3"
-                  : result.explanation_source === "lm_studio"
-                    ? "LM Studio · Llama local"
-                    : result.explanation_source === "multi_agent"
-                      ? "Comité multi-agent vérifié"
-                      : "Mode de secours"}
-              </Badge>
             </div>
             <p className="text-sm leading-7 text-zinc-300 whitespace-pre-line">
               {result.explanation}
